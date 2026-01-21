@@ -1,0 +1,64 @@
+models:
+  Doctor:
+    especialidad: string nullable
+    name: string
+    descripcion: text nullable
+    fecha: date nullable
+    image: string nullable
+    telefono: string nullable
+    idioma: string nullable
+    cedula: string nullable
+    direccion: string nullable
+    costos: decimal:8,2
+    horarioentrada: time
+    horariosalida: time
+
+controllers:
+  Doctor:
+    resource: index, create, store, edit, update, destroy
+    index:
+      query: all
+      render: doctores.index with:doctors
+    create:
+      render: doctores.form
+    store:
+      validate: name, especialidad, cedula, costos, horarioentrada
+      save: doctor
+      flash: doctor.name
+      redirect: doctores.index
+    edit:
+      find: id
+      render: doctores.form with:doctor
+    update:
+      validate: name, especialidad, cedula
+      update: doctor
+      flash: doctor.name
+      redirect: doctores.index
+    destroy:
+      delete: doctor
+      redirect: doctores.index
+  API\DoctorController:
+    resource: api
+    index:
+      query: all
+      resource: Doctor
+    
+    store:
+      validate: name, especialidad, cedula, costos, horarioentrada
+      save: doctor
+      resource: Doctor
+    
+    show:
+      find: id
+      resource: Doctor
+    
+    update:
+      validate: name, especialidad, cedula
+      update: doctor
+      resource: Doctor
+    
+    destroy:
+      delete: doctor
+      respond: 204
+
+seeders: Doctor

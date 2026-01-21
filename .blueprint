@@ -1,0 +1,23 @@
+created:
+    - app/Http/Controllers/DoctorController.php
+    - app/Http/Controllers/API/DoctorController.php
+    - database/factories/DoctorFactory.php
+    - database/migrations/2025_12_04_023401_create_doctors_table.php
+    - app/Models/Doctor.php
+    - database/seeders/DoctorSeeder.php
+    - tests/Feature/Http/Controllers/DoctorControllerTest.php
+    - tests/Feature/Http/Controllers/API/DoctorControllerTest.php
+    - app/Http/Requests/DoctorStoreRequest.php
+    - app/Http/Requests/DoctorUpdateRequest.php
+    - app/Http/Requests/API/DoctorStoreRequest.php
+    - app/Http/Requests/API/DoctorUpdateRequest.php
+    - app/Http/Resources/API/DoctorResource.php
+updated:
+    - routes/api.php
+    - routes/web.php
+skipped:
+    - resources/views/doctores/index.blade.php
+    - resources/views/doctores/form.blade.php
+    - resources/views/doctores/form.blade.php
+models:
+    Doctor: { especialidad: 'string nullable', name: string, descripcion: 'text nullable', fecha: 'date nullable', image: 'string nullable', telefono: 'string nullable', idioma: 'string nullable', cedula: 'string nullable', direccion: 'string nullable', costos: 'decimal:8,2', horarioentrada: time, horariosalida: time }
