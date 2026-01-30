@@ -62,8 +62,7 @@ class DoctorController extends Controller
             
             $rutaFoto = null;
             if ($request->hasFile("image")) {
-                $file = $request->file("image");
-                $rutaFoto = $file->store('users', 'public'); 
+                $rutaFoto = $request->file("image")->store('users', 'public');
             }
             $user = User::create([
                 'name' => $request->name,
@@ -124,8 +123,9 @@ class DoctorController extends Controller
                 'longitud' => $request->longitud,
             ];
             
-            if ($request->filled('password')) {
-                $userData['password'] = Hash::make($request->password);
+            if ($request->hasFile("image")) {
+                if ($user->foto) Storage::disk('public')->delete($user->foto);
+                $userData['foto'] = $request->file("image")->store('users', 'public');
             }
              if ($request->hasFile("image")) {
                  $userData['foto'] = $request->file("image")->store('users', 'public');

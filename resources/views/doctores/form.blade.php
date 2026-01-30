@@ -157,7 +157,21 @@
                     </div>
                 </div>
             </div>
-
+            <div class="col-10">
+                <label class="form-label fw-bold ms-3">Foto de Perfil</label>
+                <div class="p-4 bg-light rounded-4 border-0 shadow-sm text-center">
+                    {{-- Componente Dropzone --}}
+                    <x-image-dropzone 
+                        name="image"
+                        :current-image="(isset($doctor) && $doctor->user->foto) ? asset('storage/'.$doctor->user->foto) : null"
+                        :current-image-alt="isset($doctor) ? $doctor->user->name : ''"
+                        :error="$errors->first('image')"
+                        title="Arrastra la foto de perfil aquí"
+                        subtitle="Formatos: JPG, PNG, WEBP (Máx 5MB)"
+                        :show-current-image="true"
+                    />
+                </div>
+            </div>
             <div class="col-lg-10">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
                     <div class="card-header bg-danger text-white py-3">
