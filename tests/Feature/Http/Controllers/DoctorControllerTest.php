@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Models\Doctor;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use JMac\Testing\Traits\AdditionalAssertions;
@@ -35,7 +36,7 @@ final class DoctorControllerTest extends TestCase
         $response = $this->get(route('doctors.create'));
 
         $response->assertOk();
-        $response->assertViewIs('doctores.form');
+        $response->assertViewIs('doctor.create');
     }
 
 
@@ -52,32 +53,25 @@ final class DoctorControllerTest extends TestCase
     #[Test]
     public function store_saves_and_redirects(): void
     {
-        $name = fake()->name();
-        $especialidad = fake()->word();
+        $user = User::factory()->create();
         $cedula = fake()->word();
-        $costos = fake()->randomFloat(/** decimal_attributes **/);
-        $horarioentrada = fake()->time();
+        $costo = fake()->randomFloat(/** decimal_attributes **/);
 
         $response = $this->post(route('doctors.store'), [
-            'name' => $name,
-            'especialidad' => $especialidad,
+            'user_id' => $user->id,
             'cedula' => $cedula,
-            'costos' => $costos,
-            'horarioentrada' => $horarioentrada,
+            'costo' => $costo,
         ]);
 
         $doctors = Doctor::query()
-            ->where('name', $name)
-            ->where('especialidad', $especialidad)
+            ->where('user_id', $user->id)
             ->where('cedula', $cedula)
-            ->where('costos', $costos)
-            ->where('horarioentrada', $horarioentrada)
+            ->where('costo', $costo)
             ->get();
         $this->assertCount(1, $doctors);
         $doctor = $doctors->first();
 
         $response->assertRedirect(route('doctores.index'));
-        $response->assertSessionHas('doctor.name', $doctor->name);
     }
 
 
@@ -89,7 +83,7 @@ final class DoctorControllerTest extends TestCase
         $response = $this->get(route('doctors.edit', $doctor));
 
         $response->assertOk();
-        $response->assertViewIs('doctores.form');
+        $response->assertViewIs('doctor.edit');
         $response->assertViewHas('doctor', $doctor);
     }
 
@@ -108,24 +102,20 @@ final class DoctorControllerTest extends TestCase
     public function update_redirects(): void
     {
         $doctor = Doctor::factory()->create();
-        $name = fake()->name();
-        $especialidad = fake()->word();
         $cedula = fake()->word();
+        $costo = fake()->randomFloat(/** decimal_attributes **/);
 
         $response = $this->put(route('doctors.update', $doctor), [
-            'name' => $name,
-            'especialidad' => $especialidad,
             'cedula' => $cedula,
+            'costo' => $costo,
         ]);
 
         $doctor->refresh();
 
         $response->assertRedirect(route('doctores.index'));
-        $response->assertSessionHas('doctor.name', $doctor->name);
 
-        $this->assertEquals($name, $doctor->name);
-        $this->assertEquals($especialidad, $doctor->especialidad);
         $this->assertEquals($cedula, $doctor->cedula);
+        $this->assertEquals($costo, $doctor->costo);
     }
 
 
@@ -136,7 +126,7 @@ final class DoctorControllerTest extends TestCase
 
         $response = $this->delete(route('doctors.destroy', $doctor));
 
-        $response->assertRedirect(route('doctores.index'));
+        $response->assertRedirect(route('doctors.index'));
 
         $this->assertModelMissing($doctor);
     }

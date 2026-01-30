@@ -70,25 +70,30 @@ Route::middleware(["auth", "security:auth"])->group(function () {
     //     "downloadImage",
     // ])->name("products.download-image");
 
-    Route::resource("doctores", DoctorController::class)->except([
-        "show",
-        // "update"
+    // Route::resource("doctores", DoctorController::class)->except([
+    //     "show",
+    //     // "update"
 
-    ]);
-    Route::get("doctores", [DoctorController::class, "index"])->name(
-        "doctores.index"
-    );
-    Route::get("doctores/{doctor}", [DoctorController::class, "show"])->name("doctores.show");
-    Route::get("doctores/agregar", [DoctorController::class, "create"])->name(
-        "doctores.create",
-    );
-    Route::get("doctor/data", [DoctorController::class, "dataTable"])->name(
-        "doctor.data",
-    );
-    Route::get("doctores/{doctor}/download-image", [
-        DoctorController::class,
-        "downloadImage",
-    ])->name("doctor.download-image");
+    // ]);
+    // Route::get("doctores", [DoctorController::class, "index"])->name(
+    //     "doctores.index"
+    // );
+    // Route::get("doctores/{doctor}", [DoctorController::class, "show"])->name("doctores.show");
+    // Route::get("doctores/agregar", [DoctorController::class, "create"])->name(
+    //     "doctores.create",
+    // );
+    // Route::get("doctor/data", [DoctorController::class, "dataTable"])->name(
+    //     "doctor.data",
+    // );
+    // Route::get("doctores/{doctor}/download-image", [
+    //     DoctorController::class,
+    //     "downloadImage",
+    // ])->name("doctor.download-image");
+
+    Route::get("doctor/data", [DoctorController::class, "dataTable"])->name("doctor.data");
+    Route::get("doctores/agregar", [DoctorController::class, "create"])->name("doctores.agregar");
+    Route::get("doctores/{doctor}/download-image", [DoctorController::class, "downloadImage"])->name("doctor.download-image");
+    Route::resource("doctores", DoctorController::class);
 
 });
 
@@ -99,3 +104,11 @@ Route::middleware(["auth", "security:auth"])->group(function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');

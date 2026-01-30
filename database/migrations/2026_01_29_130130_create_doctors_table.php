@@ -11,22 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
+
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
-            $table->string('especialidad')->nullable();
-            $table->string('name');
-            $table->text('descripcion')->nullable();
-            $table->date('fecha')->nullable();
-            $table->string('image')->nullable();
-            $table->string('telefono')->nullable();
-            $table->string('idioma')->nullable();
+            $table->string('tableName');
+            $table->foreignId('user_id')->constrained();
             $table->string('cedula')->nullable();
-            $table->string('direccion')->nullable();
-            $table->decimal('costos', 8, 2);
-            $table->time('horarioentrada');
-            $table->time('horariosalida');
+            $table->string('idiomas')->nullable();
+            $table->text('descripcion')->nullable();
+            $table->decimal('costo', 8, 2);
+            $table->time('horario_entrada')->nullable();
+            $table->time('horario_salida')->nullable();
             $table->timestamps();
         });
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

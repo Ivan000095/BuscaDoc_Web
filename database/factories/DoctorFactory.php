@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DoctorFactory extends Factory
@@ -12,18 +13,14 @@ class DoctorFactory extends Factory
     public function definition(): array
     {
         return [
-            'especialidad' => fake()->word(),
-            'name' => fake()->name(),
-            'descripcion' => fake()->text(),
-            'fecha' => fake()->date(),
-            'image' => fake()->word(),
-            'telefono' => fake()->word(),
-            'idioma' => fake()->word(),
+            'tableName' => fake()->word(),
+            'user_id' => User::factory(),
             'cedula' => fake()->word(),
-            'direccion' => fake()->word(),
-            'costos' => fake()->randomFloat(2, 0, 999999.99),
-            'horarioentrada' => fake()->time(),
-            'horariosalida' => fake()->time(),
+            'idiomas' => fake()->word(),
+            'descripcion' => fake()->text(),
+            'costo' => fake()->randomFloat(2, 0, 999999.99),
+            'horario_entrada' => fake()->time(),
+            'horario_salida' => fake()->time(),
         ];
     }
 }

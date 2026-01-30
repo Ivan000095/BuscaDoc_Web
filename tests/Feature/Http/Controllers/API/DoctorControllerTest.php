@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers\API;
 
 use App\Models\Doctor;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use JMac\Testing\Traits\AdditionalAssertions;
@@ -41,26 +42,20 @@ final class DoctorControllerTest extends TestCase
     #[Test]
     public function store_saves(): void
     {
-        $name = fake()->name();
-        $especialidad = fake()->word();
+        $user = User::factory()->create();
         $cedula = fake()->word();
-        $costos = fake()->randomFloat(/** decimal_attributes **/);
-        $horarioentrada = fake()->time();
+        $costo = fake()->randomFloat(/** decimal_attributes **/);
 
         $response = $this->post(route('doctors.store'), [
-            'name' => $name,
-            'especialidad' => $especialidad,
+            'user_id' => $user->id,
             'cedula' => $cedula,
-            'costos' => $costos,
-            'horarioentrada' => $horarioentrada,
+            'costo' => $costo,
         ]);
 
         $doctors = Doctor::query()
-            ->where('name', $name)
-            ->where('especialidad', $especialidad)
+            ->where('user_id', $user->id)
             ->where('cedula', $cedula)
-            ->where('costos', $costos)
-            ->where('horarioentrada', $horarioentrada)
+            ->where('costo', $costo)
             ->get();
         $this->assertCount(1, $doctors);
         $doctor = $doctors->first();
@@ -96,14 +91,12 @@ final class DoctorControllerTest extends TestCase
     public function update_behaves_as_expected(): void
     {
         $doctor = Doctor::factory()->create();
-        $name = fake()->name();
-        $especialidad = fake()->word();
-        $cedula = fake()->word();
+        $costo = fake()->randomFloat(/** decimal_attributes **/);
+        $descripcion = fake()->text();
 
         $response = $this->put(route('doctors.update', $doctor), [
-            'name' => $name,
-            'especialidad' => $especialidad,
-            'cedula' => $cedula,
+            'costo' => $costo,
+            'descripcion' => $descripcion,
         ]);
 
         $doctor->refresh();
@@ -111,9 +104,8 @@ final class DoctorControllerTest extends TestCase
         $response->assertOk();
         $response->assertJsonStructure([]);
 
-        $this->assertEquals($name, $doctor->name);
-        $this->assertEquals($especialidad, $doctor->especialidad);
-        $this->assertEquals($cedula, $doctor->cedula);
+        $this->assertEquals($costo, $doctor->costo);
+        $this->assertEquals($descripcion, $doctor->descripcion);
     }
 
 

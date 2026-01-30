@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::disableForeignKeyConstraints();
+
+        Schema::create('doctor__especialidads', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
-            $table->text('description')->nullable();
-            $table->decimal('price', 9, 2);
+            $table->string('tableName');
+            $table->foreignId('doctor_id')->constrained();
+            $table->foreignId('especialidad_id')->constrained();
             $table->timestamps();
         });
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
@@ -25,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('doctor__especialidads');
     }
 };

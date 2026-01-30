@@ -2,30 +2,46 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Foundation\Auth\User as Authenticatable; // <--- ESTA ES LA CLAVE
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens; // Necesario para tu API
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array
      */
-    protected $fillable = ["name", "email", "password"];
+    
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'foto',
+        'f_nacimiento',
+        'genero',
+        'latitud',
+        'longitud',
+        'estado',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array
      */
-    protected $hidden = ["password", "remember_token"];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -35,8 +51,43 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            "email_verified_at" => "datetime",
-            "password" => "hashed",
+            'id' => 'integer',
+            'email_verified_at' => 'datetime', // Agregado estándar
+            'password' => 'hashed',            // Agregado estándar
+            'f_nacimiento' => 'date',
+            'latitud' => 'decimal:8',
+            'longitud' => 'decimal:8',
+            'estado' => 'boolean',
         ];
+    }
+
+    public function doctor(): HasOne
+    {
+        return $this->hasOne(Doctor::class);
+    }
+
+    public function paciente(): HasOne
+    {
+        return $this->hasOne(Paciente::class);
+    }
+
+    public function farmacia(): HasOne
+    {
+        return $this->hasOne(Farmacia::class);
+    }
+
+    public function mensajes(): HasMany
+    {
+        return $this->hasMany(Mensaje::class);
+    }
+
+    public function comentarios(): HasMany
+    {
+        return $this->hasMany(Comentario::class);
+    }
+
+    public function citas(): HasMany
+    {
+        return $this->hasMany(Cita::class);
     }
 }

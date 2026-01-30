@@ -1,23 +1,87 @@
 created:
     - app/Http/Controllers/DoctorController.php
+    - app/Http/Controllers/ComentarioController.php
+    - app/Http/Controllers/RespuestaController.php
+    - app/Http/Controllers/MensajeController.php
     - app/Http/Controllers/API/DoctorController.php
+    - app/Http/Controllers/API/ComentarioController.php
+    - app/Http/Controllers/API/RespuestaController.php
+    - app/Http/Controllers/API/MensajeController.php
+    - database/factories/UserFactory.php
+    - database/factories/EspecialidadFactory.php
     - database/factories/DoctorFactory.php
-    - database/migrations/2025_12_04_023401_create_doctors_table.php
+    - database/factories/PacienteFactory.php
+    - database/factories/FarmaciaFactory.php
+    - database/factories/ComentarioFactory.php
+    - database/factories/RespuestaFactory.php
+    - database/factories/MensajeFactory.php
+    - database/factories/CitaFactory.php
+    - database/factories/ReporteFactory.php
+    - database/factories/DoctorEspecialidadFactory.php
+    - database/migrations/2026_01_29_130128_create_users_table.php
+    - database/migrations/2026_01_29_130129_create_especialidads_table.php
+    - database/migrations/2026_01_29_130130_create_doctors_table.php
+    - database/migrations/2026_01_29_130131_create_pacientes_table.php
+    - database/migrations/2026_01_29_130132_create_farmacias_table.php
+    - database/migrations/2026_01_29_130133_create_comentarios_table.php
+    - database/migrations/2026_01_29_130134_create_respuestas_table.php
+    - database/migrations/2026_01_29_130135_create_mensajes_table.php
+    - database/migrations/2026_01_29_130136_create_citas_table.php
+    - database/migrations/2026_01_29_130137_create_reportes_table.php
+    - database/migrations/2026_01_29_130138_create_doctor__especialidads_table.php
+    - app/Models/User.php
+    - app/Models/Especialidad.php
     - app/Models/Doctor.php
+    - app/Models/Paciente.php
+    - app/Models/Farmacia.php
+    - app/Models/Comentario.php
+    - app/Models/Respuesta.php
+    - app/Models/Mensaje.php
+    - app/Models/Cita.php
+    - app/Models/Reporte.php
+    - app/Models/Doctor_Especialidad.php
+    - database/seeders/UserSeeder.php
     - database/seeders/DoctorSeeder.php
+    - database/seeders/FarmaciaSeeder.php
+    - database/seeders/EspecialidadSeeder.php
     - tests/Feature/Http/Controllers/DoctorControllerTest.php
+    - tests/Feature/Http/Controllers/ComentarioControllerTest.php
+    - tests/Feature/Http/Controllers/RespuestaControllerTest.php
+    - tests/Feature/Http/Controllers/MensajeControllerTest.php
     - tests/Feature/Http/Controllers/API/DoctorControllerTest.php
-    - app/Http/Requests/DoctorStoreRequest.php
-    - app/Http/Requests/DoctorUpdateRequest.php
-    - app/Http/Requests/API/DoctorStoreRequest.php
-    - app/Http/Requests/API/DoctorUpdateRequest.php
-    - app/Http/Resources/API/DoctorResource.php
+    - tests/Feature/Http/Controllers/API/ComentarioControllerTest.php
+    - tests/Feature/Http/Controllers/API/RespuestaControllerTest.php
+    - tests/Feature/Http/Controllers/API/MensajeControllerTest.php
+    - app/Http/Requests/ComentarioStoreRequest.php
+    - app/Http/Requests/RespuestumStoreRequest.php
+    - app/Http/Requests/MensajeStoreRequest.php
+    - app/Http/Requests/API/ComentarioStoreRequest.php
+    - app/Http/Requests/API/ComentarioUpdateRequest.php
+    - app/Http/Requests/API/RespuestumStoreRequest.php
+    - app/Http/Requests/API/RespuestumUpdateRequest.php
+    - app/Http/Requests/API/MensajeStoreRequest.php
+    - app/Http/Requests/API/MensajeUpdateRequest.php
+    - app/Http/Resources/API/ComentarioResource.php
+    - app/Http/Resources/API/RespuestumCollection.php
+    - app/Http/Resources/API/RespuestumResource.php
+    - app/Http/Resources/API/MensajeResource.php
+    - resources/views/doctor/create.blade.php
+    - resources/views/doctor/edit.blade.php
+    - resources/views/mensajes/index.blade.php
 updated:
     - routes/api.php
     - routes/web.php
 skipped:
     - resources/views/doctores/index.blade.php
-    - resources/views/doctores/form.blade.php
-    - resources/views/doctores/form.blade.php
 models:
-    Doctor: { especialidad: 'string nullable', name: string, descripcion: 'text nullable', fecha: 'date nullable', image: 'string nullable', telefono: 'string nullable', idioma: 'string nullable', cedula: 'string nullable', direccion: 'string nullable', costos: 'decimal:8,2', horarioentrada: time, horariosalida: time }
+    Doctor: { tableName: doctores, user_id: 'id foreign:users.id', cedula: 'string nullable', idiomas: 'string nullable', descripcion: 'text nullable', costo: 'decimal:8,2', horario_entrada: 'time nullable', horario_salida: 'time nullable', relationships: { belongsTo: User } }
+    User: { name: string, email: 'string unique', password: string, role: 'enum:admin,doctor,paciente,farmacia', foto: 'string nullable', f_nacimiento: 'date nullable', genero: 'string nullable', latitud: 'decimal:10,8 nullable', longitud: 'decimal:11,8 nullable', estado: 'boolean default:true', relationships: { hasOne: 'Doctor, Paciente, Farmacia', hasMany: 'Mensaje, Comentario, Cita' } }
+    Especialidad: { tableName: especialidades, nombre: string }
+    Paciente: { user_id: 'id foreign:users.id', tipo_sangre: 'string nullable', alergias: 'text nullable', relationships: { belongsTo: User, hasMany: Cita } }
+    Farmacia: { tableName: farmacias, user_id: 'id foreign:users.id', nom_farmacia: string, rfc: 'string nullable', telefono: 'string nullable', descripcion: 'text nullable', horario: 'string nullable', dias_op: 'string nullable', relationships: { belongsTo: User } }
+    Comentario: { id_autor: 'id foreign:users.id', id_destinatario: 'id foreign:users.id', tipo: 'enum:resena,pregunta', calificacion: 'integer nullable', contenido: 'text nullable', relationships: { belongsTo: User, hasMany: Respuesta } }
+    Respuesta: { comentario_id: 'id foreign:comentarios.id', id_respondedor: 'id foreign:users.id', contenido: text, relationships: { belongsTo: 'Comentario, User' } }
+    Mensaje: { id_remitente: 'id foreign:users.id', id_destinatario: 'id foreign:users.id', contenido: text, leido: 'boolean default:false', relationships: { belongsTo: User } }
+    Cita: { doctor_id: 'id foreign:doctors.id', paciente_id: 'id foreign:pacientes.id', fecha_hora: datetime, detalles: 'text nullable', estado: 'enum:pendiente,confirmada,cancelada,completada', relationships: { belongsTo: User } }
+    Reporte: { id_usr_reporte: 'id foreign:users.id', id_usr_reportado: 'id foreign:users.id', razon: text, relationships: { belongsTo: User } }
+    Doctor_Especialidad: { tableName: doctor_especialidad, doctor_id: 'id foreign:doctors.id', especialidad_id: 'id foreign:especialidads.id' }

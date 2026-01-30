@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Doctor extends Model
 {
@@ -15,19 +16,15 @@ class Doctor extends Model
      * @var array
      */
     protected $fillable = [
-        'id',
-        'especialidad',
-        'name',
-        'descripcion',
-        'fecha',
-        'image',
-        'telefono',
-        'idioma',
+        'tableName',
+        'user_id',
         'cedula',
-        'direccion',
-        'costos',
-        'horarioentrada',
-        'horariosalida',
+        'idiomas',
+        'descripcion',
+        'costo',
+        'especialidad',
+        'horario_entrada',
+        'horario_salida',
     ];
 
     /**
@@ -39,11 +36,18 @@ class Doctor extends Model
     {
         return [
             'id' => 'integer',
-            'fecha' => 'date',
-            'costos' => 'decimal:2',
+            'user_id' => 'integer',
+            'costo' => 'decimal:2',
         ];
     }
-    protected $casts = [
-        'fecha' => 'date', // Esto convierte el texto a Objeto Carbon automágicamente
-    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function especialidades()
+    {
+        return $this->belongsToMany(Especialidad::class, 'doctor__especialidads', 'doctor_id', 'especialidad_id');
+    }
 }

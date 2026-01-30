@@ -1,17 +1,11 @@
 <x-layout>
 
-    <?php
-// $products = [
-//     ['id' => 1, 'name' => 'Coca600ml', 'description' => 'Coca cola de 600 grs', 'price' => 18.00],
-//     ['id' => 2, 'name' => 'Coca1lt', 'description' => 'Coca cola de 1 litro', 'price' => 38.00],
-// ];
-?>
     <div class="container">
         <div class="row my-4 mx-1">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="mb-0">Doctores</h1>
-                <button class="btn btn-primary btn-sm" onclick="execute('/doctores/agregar')">
-                    <i class="bi bi-plus"></i>
+                <button style="background-color: #00213D!important;"class="btn btn-primary rounded-5" onclick="execute('{{ route('doctores.create') }}')">
+                    <i class=" bi bi-plus"></i>
                     <span class="d-none d-sm-inline">Agregar</span>
                 </button>
             </div>
@@ -19,44 +13,22 @@
 
         <div class="row justify-content-center">
             <div class="table-responsive">
-                <table id="myTable" class="table table-striped table-hover">
-                    <thead>
+                <table id="myTable" class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
                         <tr>
-                            <th>name</th>
-                            <th>especialidad</th>
-                            <th>descripcion</th>
-                            <th>fecha</th>
-                            <th>image</th>
-                            <th>telefono</th>
-                            <th>idioma</th>
-                            <th>cedula</th>
-                            <th>direccion</th>
-                            <th>costos</th>
-                            <th>horarioentrada</th>
-                            <th>horariosalida</th>
-                            <th class="text-end text-nowrap w-auto">Actions</th>
+                            <th>Nombre</th>
+                            <th>Especialidad</th>
+                            <th>Cédula</th>
+                            <th>Descripción</th>
+                            <th>Costo</th>
+                            <th>Entrada</th>
+                            <th>Salida</th>
+                            <th>Fecha Nac.</th>
+                            <th>Foto</th>
+                            <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- @foreach ($products as $product)
-                        <tr>
-                            <td>{{ $product['name'] }}</td>
-                            <td>{{ $product['description'] }}</td>
-                            <td>${{ number_format($product['price'], 2) }}</td>
-                            <td class="text-end text-nowrap w-auto">
-                                <button class="btn btn-primary btn-sm"
-                                    onclick="execute('/products/{{ $product['id'] }}/edit')">
-                                    <i class="bi bi-pencil"></i>
-                                    <span class="d-none d-sm-inline">Edit</span>
-                                </button>
-                                <button class="btn btn-danger btn-sm"
-                                    onclick="deleteRecord('/products/{{ $product['id'] }}')">
-                                    <i class="bi bi-trash"></i>
-                                    <span class="d-none d-sm-inline">Delete</span>
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach --}}
                     </tbody>
                 </table>
             </div>
@@ -64,58 +36,80 @@
     </div>
 
     @section('js')
+        {{-- Asegúrate de tener jQuery y DataTables JS importados en tu layout principal --}}
+
         <script>
-            $('#myTable').DataTable({
-                serverSide: true,
-                processing: true,
-                ajax: {
-                    url: '{{ route("doctor.data") }}',
-                    type: 'GET'
-                },
-                columns: [
-                    { data: 'name' },
-                    { data: 'especialidad' },
-                    { data: 'descripcion' },
-                    { data: 'fecha' },
-                    { data: 'image' },
-                    { data: 'telefono' },
-                    { data: 'idioma' },
-                    { data: 'cedula' },
-                    { data: 'direccion' },
-                    { data: 'costos' },
-                    { data: 'horarioentrada' },
-                    { data: 'horariosalida' },
-                    {
-                        data: 'actions',
-                        orderable: false,
-                        searchable: false
+            $(document).ready(function () {
+                $('#myTable').DataTable({
+                    serverSide: true,
+                    processing: true,
+                    ajax: {
+                        url: '{{ route("doctor.data") }}',
+                        type: 'GET'
+                    },
+                    columns: [
+                        { data: 'name', name: 'users.name' },
+                        { data: 'especialidad', name: 'especialidad', orderable: false },
+                        { data: 'cedula', name: 'cedula' },
+                        { data: 'descripcion', name: 'descripcion' },
+                        { data: 'costos', name: 'costo' },
+                        { data: 'horarioentrada', name: 'horario_entrada' },
+                        { data: 'horariosalida', name: 'horario_salida' },
+                        { data: 'fecha', name: 'users.f_nacimiento' },
+                        {
+                            data: 'image',
+                            name: 'image',
+                            orderable: false,
+                            searchable: false
+                        },
+                        {
+                            data: 'actions',
+                            orderable: false,
+                            searchable: false,
+                            className: 'text-end'
+                        }
+                    ],
+                    pageLength: 10,
+                    language: {
+                        url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
                     }
-                ],
-                pageLength: 10, // Items por página
-                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-                // language: {
-                //     url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' // Opcional: español
-                // }
+                });
             });
 
             function execute(url) {
-                window.open(url, '_self');
+                window.location.href = url;
             }
+
             function deleteRecord(url) {
-                if (confirm('¿Está seguro de eliminar este registro?')) {
-                    $('<form>', { 'action': url, 'method': 'POST' })
-                        .append($('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }))
-                        .append($('<input>', { type: 'hidden', name: '_method', value: 'DELETE' }))
-                        .appendTo('body')
-                        .submit()
-                        .remove();
+                if (confirm('¿Está seguro de eliminar este doctor y su usuario asociado?')) {
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+
+                    let csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+
+                    let methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+                    form.appendChild(methodField);
+
+                    document.body.appendChild(form);
+                    form.submit();
                 }
             }
-            // Obtener de la sessión el mensaje de éxito o error
+
+            // Alertas de sesión (SweetAlert o nativo)
             @if (session('success'))
-                alert(`{{ session('success') }}`);
-                // Opcional: Recarga la tabla después de agregar/eliminar
-                // $('#myTable').DataTable().ajax.reload(null, false); // false para no resetear paginación
+                alert("{{ session('success') }}");
+            @endif
+
+            @if (session('error'))
+                alert("{{ session('error') }}");
             @endif
         </script>
     @endsection
