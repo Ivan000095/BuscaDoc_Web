@@ -86,12 +86,3 @@ Route::fallback(function () {
 });
 
 
-
-
-Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
-
-Route::apiResource('comentarios', App\Http\Controllers\API\ComentarioController::class);
-
-Route::apiResource('respuestas', App\Http\Controllers\API\RespuestaController::class);
-
-Route::apiResource('mensajes', App\Http\Controllers\API\MensajeController::class);

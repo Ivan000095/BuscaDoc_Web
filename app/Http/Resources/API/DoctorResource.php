@@ -7,25 +7,38 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DoctorResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     */
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'especialidad' => $this->especialidad,
-            'name' => $this->name,
-            'descripcion' => $this->descripcion,
-            'fecha' => $this->fecha,
-            'image' => $this->image,
-            'telefono' => $this->telefono,
-            'idioma' => $this->idioma,
+            // --- datos de doctor) ---
+            'id_doctor' => $this->id,
             'cedula' => $this->cedula,
-            'direccion' => $this->direccion,
-            'costos' => $this->costos,
-            'horarioentrada' => $this->horarioentrada,
-            'horariosalida' => $this->horariosalida,
+            'descripcion' => $this->descripcion,
+            'precio_consulta' => (float) $this->costo,
+            'idiomas' => $this->idiomas,
+            'horarios' => [
+                'entrada' => $this->horario_entrada,
+                'salida' => $this->horario_salida,
+            ],
+
+            // --- datos de usuario ---
+            'nombre' => $this->user->name,
+            'email' => $this->user->email,
+            'fecha_nacimiento' => $this->user->f_nacimiento,
+            'foto_perfil' => $this->user->foto 
+                ? asset('storage/' . $this->user->foto) 
+                : null, // Genera la URL completa automáticamente
+            'ubicacion' => [
+                'latitud' => (float) $this->user->latitud,
+                'longitud' => (float) $this->user->longitud,
+            ],
+
+            'especialidades' => $this->especialidades->map(function ($esp) {
+                return [
+                    'id' => $esp->id,
+                    'nombre' => $esp->nombre,
+                ];
+            }),
         ];
     }
 }
