@@ -36,6 +36,13 @@ class DoctorController extends Controller
         ]);
     }
 
+    public function vistageneral(Request $request)
+{
+    $doctores = Doctor::with(['user', 'especialidades'])->get();
+    return view('doctores.vista', compact('doctores'));
+}
+
+
 
     public function store(Request $request)
     {

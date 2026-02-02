@@ -107,7 +107,7 @@
     @endif
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-dark bg-custom-dark shadow-lg rounded-pill mt-4 mx-auto"
-            style="max-width: 1100px; width: 95%;">
+            style="width: 95%;">
 
             <div class="container px-4">
                 <a class="navbar-brand d-flex align-items-center" href="{{ url('/home') }}">
@@ -126,7 +126,7 @@
                             <a class="nav-link px-3" href="{{ route('home') }}">Inicio</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-3" href="{{ route('doctores.index') }}">Doctores</a>
+                            <a class="nav-link px-3" href="{{ route('doctores.vista') }}">Doctores</a>
                         </li>
                     </ul>
 

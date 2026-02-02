@@ -1,5 +1,5 @@
 <x-layout>
-
+    @if (Auth::user()->role == 'admin')   
     <div class="container">
         <div class="row my-4 mx-1">
             <div class="d-flex justify-content-between align-items-center">
@@ -34,6 +34,10 @@
             </div>
         </div>
     </div>
+    @else
+        <h1 class="justify-content-center">No tendría por que estar aquí...</h1>
+    @endif
+
 
     @section('js')
         {{-- Asegúrate de tener jQuery y DataTables JS importados en tu layout principal --}}

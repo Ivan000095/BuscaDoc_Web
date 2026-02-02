@@ -117,3 +117,5 @@ Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only
 
 Route::get('google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->name('doctores.vista');

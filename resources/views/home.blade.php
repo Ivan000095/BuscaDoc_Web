@@ -27,18 +27,16 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row justify-content-center">
 
             <div class="col-12 col-md-6 col-lg-3 mb-4">
                 <div class="card h-100 border-50 shadow-sm hover-card">
                     <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
 
-                        <img src="{{ asset('images/Ivan.jpg') }}" alt="Ivan"
+                        <img src="{{ asset('images/doctores.jpg') }}" alt="Ivan"
                             class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
 
                         <h5 class="card-title fw-bold custom-text-dark">Doctores</h5>
-                        <p class="card-text text-muted small">Hecho por Jose Ivan Lanestosa Pelayo.</p>
-
                         <a href="{{ route('doctores.index') }}"
                             class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                     </div>
@@ -49,12 +47,10 @@
                 <div class="card h-100 border-50 shadow-sm hover-card">
                     <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
 
-                        <img src="" alt="" class="rounded-circle mb-3 shadow-sm object-fit-cover"
+                        <img src="{{ asset('images/farmacias.jpeg') }}" alt="" class="rounded-circle mb-3 shadow-sm object-fit-cover"
                             style="width: 80px; height: 80px;">
 
-                        <h5 class="card-title fw-bold custom-text-dark">No se que más hayan hecho</h5>
-                        <p class="card-text text-muted small">xx</p>
-
+                        <h5 class="card-title fw-bold custom-text-dark">Farmacias</h5>
                         <a href="#" class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                     </div>
                 </div>
@@ -64,35 +60,15 @@
                 <div class="card h-100 border-50 shadow-sm hover-card">
                     <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
 
-                        <img src="" alt="" class="rounded-circle mb-3 shadow-sm object-fit-cover"
+                        <img src="{{ asset('images/pacientes.jpg') }}" alt="" class="rounded-circle mb-3 shadow-sm object-fit-cover"
                             style="width: 80px; height: 80px;">
 
-                        <h5 class="card-title fw-bold custom-text-dark">xx</h5>
-                        <p class="card-text text-muted small">xxx</p>
-
+                        <h5 class="card-title fw-bold custom-text-dark">Pacientes</h5>
                         <a href="#" class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                     </div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-lg-3 mb-4">
-                <div class="card h-100 border-50 shadow-sm hover-card">
-                    <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
-
-                        <img src="" alt="" class="rounded-circle mb-3 shadow-sm object-fit-cover"
-                            style="width: 80px; height: 80px;">
-
-                        <h5 class="card-title fw-bold custom-text-dark">xx</h5>
-                        <p class="card-text text-muted small">xx</p>
-
-                        <a href="#" class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
-                    </div>
-                </div>
-            </div>
-
-
         </div>
-        <!-- <iframe src="https://nadgames.com/WebGL/Combat_Online/" frameborder="0" style="border:none;" width="960" height="600" scrolling="no"></iframe> -->
     </div>
 @endsection
 
