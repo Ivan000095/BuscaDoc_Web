@@ -31,6 +31,7 @@ class User extends Authenticatable
         'latitud',
         'longitud',
         'estado',
+        'google_id',
     ];
 
     /**

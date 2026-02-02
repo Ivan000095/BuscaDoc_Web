@@ -96,7 +96,7 @@
         <nav class="navbar navbar-expand-sm navbar-dark bg-custom-dark shadow-lg rounded-pill mt-2 mx-auto" 
              style="width: 95%;">
             
-            <div class="container px-4"> {{-- px-4 evita que el logo quede muy pegado a la curva --}}
+            <div class="container px-4">
                 
                 <img class="rounded me-3" width="60px" src="{{ asset('images/logo.png') }}" alt="">
                 
@@ -105,43 +105,62 @@
                     aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 
-                <div class="collapse navbar-collapse" id="collapsibleNavId">
-                    <ul class="navbar-nav me-auto mt-2 mt-lg-0">
-                        {{-- Espacio para items del menú izquierda --}}
+                
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0 text-center">
+                        <li class="nav-item">
+                            <a class="nav-link px-3" href="{{ route('home') }}">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" href="{{ route('doctores.index') }}">Doctores</a>
+                        </li>
                     </ul>
-                    
-                    <div class="d-flex my-2 my-lg-0">
-                        <ul class="navbar-nav me-auto mt-2 mt-lg-0">
+
+                    <ul class="navbar-nav ms-0">
+                        @guest
+                            @if (Route::has('login'))
+                                <li class="nav-item">
+                                    <a class="btn btn-outline-light rounded-pill px-4 btn-sm me-2"
+                                        href="{{ route('login') }}">{{ __('Iniciar sesión') }}</a>
+                                </li>
+                            @endif
+                            @if (Route::has('register'))
+                                <li class="nav-item">
+                                    <a class="btn btn-light rounded-pill px-4 btn-sm text-dark"
+                                        href="{{ route('register') }}">{{ __('Registrarse') }}</a>
+                                </li>
+                            @endif
+                        @else
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-2" href="#" id="dropdownId" data-bs-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">
-                                    
-                                    <img class="rounded-circle border border-light" width="30px" height="30px"
-                                        src="{{ asset('images/avtar.avif') }}" alt="" style="object-fit: cover;">
-                                    
-                                    <span>{{ Auth::check() ? Auth::user()->name : 'Invitado' }}</span>
+                                <a id="navbarDropdown"
+                                    class="nav-link dropdown-toggle btn btn-light text-dark rounded-pill px-2 py-1" href="#"
+                                    role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre
+                                    style="background-color: white; color: black !important;">
+                                    <img src="{{ Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=random' }}"
+                                        alt="{{ Auth::user()->name }}" class="rounded-circle"
+                                        style="width: 32px; height: 32px; object-fit: cover;">
+                                    {{ Auth::user()->name }}
                                 </a>
-                                
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownId">
-                                    <a class="dropdown-item" href="#">
-                                        <i class="bi bi-person-circle me-2"></i>
-                                        Editar Perfil
+
+                                <div class="dropdown-menu dropdown-menu-end rounded-4 shadow border-0 mt-2"
+                                    aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="{{ route('users.show', Auth::user()->id) }}">
+                                        <i class="bi bi-person-circle custom-icon-color"></i>{{ __(' ver mi perfil') }}
                                     </a>
-                                    <hr class="dropdown-divider">
-                                    <a class="dropdown-item text-danger" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        <i class="bi bi-box-arrow-left me-2"></i>
-                                        Cerrar sesión
+                                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+                                                             document.getElementById('logout-form').submit();">
+                                        <i class="bi bi-box-arrow-left custom-icon-color"></i>{{ __(' Cerrar sesión') }}
                                     </a>
-                                    {{-- Formulario oculto necesario para el logout en Laravel --}}
+
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
                                     </form>
                                 </div>
                             </li>
-                        </ul>
-                    </div>
+                        @endguest
+                    </ul>
                 </div>
             </div>
         </nav>

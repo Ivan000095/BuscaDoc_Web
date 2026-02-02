@@ -10,6 +10,8 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\GoogleController;
 
 Route::get("/", function () {
     return view("welcome-simple");
@@ -94,6 +96,7 @@ Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get("doctores/agregar", [DoctorController::class, "create"])->name("doctores.agregar");
     Route::get("doctores/{doctor}/download-image", [DoctorController::class, "downloadImage"])->name("doctor.download-image");
     Route::resource("doctores", DoctorController::class);
+    Route::resource('users', UserController::class);
 });
 
 // Route::middleware('auth:api')->group(function({
@@ -111,3 +114,6 @@ Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)
 Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
 
 Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+Route::get('google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback']);

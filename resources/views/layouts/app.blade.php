@@ -25,6 +25,10 @@
             background-color: var(--custom-dark-blue) !important;
         }
 
+        .custom-icon-color {
+            color: #00213D;
+        }
+
         .navbar-brand img {
             max-height: 40px;
             width: auto;
@@ -143,21 +147,28 @@
                         @else
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown"
-                                    class="nav-link dropdown-toggle btn btn-light text-dark rounded-pill px-4 py-1" href="#"
+                                    class="nav-link dropdown-toggle btn btn-light text-dark rounded-pill px-2 py-1" href="#"
                                     role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre
                                     style="background-color: white; color: black !important;">
+                                    <img src="{{ Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=random' }}"
+                                        alt="{{ Auth::user()->name }}" class="rounded-circle"
+                                        style="width: 32px; height: 32px; object-fit: cover;">
                                     {{ Auth::user()->name }}
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end rounded-4 shadow border-0 mt-2"
                                     aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="{{ route('users.show', Auth::user()->id) }}">
+                                        <i class="bi bi-person-circle custom-icon-color"></i>{{ __(' ver mi perfil') }}
+                                    </a>
                                     <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
-                                                         document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
+                                                             document.getElementById('logout-form').submit();">
+                                        <i class="bi bi-box-arrow-left custom-icon-color"></i>{{ __(' Logout') }}
                                     </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
+
                                     </form>
                                 </div>
                             </li>
