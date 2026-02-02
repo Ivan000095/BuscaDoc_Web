@@ -193,12 +193,7 @@ class DoctorController extends Controller
 
     public function dataTable(Request $request)
     {
-        // ... (Validación igual) ...
-        
-        // 1. QUERY CON RELACIÓN (Eager Loading)
         $query = Doctor::with('user');
-
-        // 2. BÚSQUEDA AVANZADA (En User y Doctor)
         $search = $request->input("search.value");
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
@@ -210,60 +205,46 @@ class DoctorController extends Controller
                 ->orWhere("descripcion", "like", "%{$search}%");
             });
         }
-
         $totalRecords = Doctor::count();
         $recordsFiltered = $query->count();
-
-        // Ordenamiento (ajustar si ordenan por nombre)
-        // ... (Simplificado para brevedad, idealmente manejar join si ordenas por nombre) ...
         $start = $request->input("start", 0);
         $length = $request->input("length", 10);
         $doctors = $query->skip($start)->take($length)->get();
-
         $meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-
         $data = $doctors->map(function ($doctor) use ($meses) {
-            // MAPEO DE DATOS (User + Doctor)
-            
-            // FOTO (Ahora viene del user)
             $imageHtml = "";
-            $fotoPath = $doctor->user->foto; // <--- CAMBIO IMPORTANTE
-            
+            $fotoPath = $doctor->user->foto;
             if ($fotoPath && Storage::disk("public")->exists($fotoPath)) {
                 $url = asset("storage/" . $fotoPath);
                 $imageHtml = "<img src='{$url}' class='img-thumbnail' style='width: 50px; height: 50px; object-fit: cover;'>";
             } else {
                 $imageHtml = '<div class="bg-light..." ><i class="bi bi-person"></i></div>';
             }
-
-            // FECHA (Viene de f_nacimiento del user)
             $fechaformato = "sin fecha";
             if ($doctor->user->f_nacimiento) {
-                // Lógica de formato de fecha igual...
                 $fechaObj = Carbon::parse($doctor->user->f_nacimiento);
                 $fechaformato = $fechaObj->isoFormat('D [de] MMMM [del] YYYY');
             }
-
             return [
                 "id" => $doctor->id,
-                "name" => $doctor->user->name, // <--- Nombre del User
-                "especialidad" => "General", // Ajustar según tu lógica de especialidades
+                "name" => $doctor->user->name,
+                "especialidad" => "General",
                 "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 30),
                 "fecha" => $fechaformato,
                 "image" => $imageHtml,
                 "cedula" => $doctor->cedula,
-                "costos" => '$' . number_format($doctor->costo, 2), // Nota: 'costo' singular en DB nueva
+                "costos" => '$' . number_format($doctor->costo, 2),
                 "horarioentrada" => $doctor->horario_entrada,
                 "horariosalida" => $doctor->horario_salida,
                 "actions" => '
                     <div class="d-flex gap-1 justify-content-end">
                         <button class="btn btn-primary btn-sm" onclick="execute(\'/doctores/' . $doctor->id . '/edit\')">Edit</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteRecord(\'/doctores/' . $doctor->id . '\')">Delete</button>
+                        <button class="btn btn-success btn-sm" onclick="execute(\'/doctores/' . $doctor->id . '\')"><i class="bi bi-person"></i> <span class="d-none d-sm-inline">Ver</span></button>
                     </div>
                 ',
             ];
         });
-
         return response()->json([
             "draw" => (int) $request->input("draw"),
             "recordsTotal" => $totalRecords,

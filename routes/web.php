@@ -94,7 +94,6 @@ Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get("doctores/agregar", [DoctorController::class, "create"])->name("doctores.agregar");
     Route::get("doctores/{doctor}/download-image", [DoctorController::class, "downloadImage"])->name("doctor.download-image");
     Route::resource("doctores", DoctorController::class);
-
 });
 
 // Route::middleware('auth:api')->group(function({

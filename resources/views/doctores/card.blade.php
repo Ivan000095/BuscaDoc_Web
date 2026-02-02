@@ -1,45 +1,15 @@
 <?php
 $apiKey = "AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ";
-
-$requestData = [
-    "origin" => ["location" => ["latLng" => ["latitude" => 16.768256, "longitude" => -93.1357181]]],
-    "destination" => ["location" => ["latLng" => ["latitude" => 17.9072, "longitude" => -91.0961]]],
-    "travelMode" => "DRIVE"
-];
-
-$ch = curl_init('https://routes.googleapis.com/directions/v2:computeRoutes');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestData));
-$headers = [
-    'Content-Type: application/json',
-    'X-Goog-Api-Key: ' . $apiKey,
-    'X-Goog-FieldMask: routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline'
-];
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-$response = curl_exec($ch);
-curl_close($ch);
-
-$data = json_decode($response, true);
-
-$encodedString = "";
-if (!empty($data['routes'])) {
-    $encodedString = $data['routes'][0]['polyline']['encodedPolyline'];
-}
+$lat = $doctor->user->latitud ?? 16.9080;
+$lng = $doctor->user->longitud ?? -92.0946;
 ?>
 
 <x-layout>
 
     <head>
         <style>
-            #map {
-                height: 250px;
-                width: 25%;
-            }
-
-            /* Estilos específicos para esta vista */
             .profile-header {
-                background: linear-gradient(to bottom right, var(--custom-dark-blue), #004e8d);
+                background: linear-gradient(to bottom right, #0d6efd, #004e8d); /* Azul Bootstrap */
                 color: white;
                 padding-top: 3rem;
                 padding-bottom: 3rem;
@@ -53,6 +23,7 @@ if (!empty($data['routes'])) {
                 object-fit: cover;
                 border: 5px solid white;
                 box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+                background-color: #fff;
             }
 
             .info-card {
@@ -69,7 +40,7 @@ if (!empty($data['routes'])) {
                 width: 40px;
                 height: 40px;
                 background-color: #eef2f6;
-                color: var(--custom-dark-blue);
+                color: #0d6efd;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -78,32 +49,37 @@ if (!empty($data['routes'])) {
                 font-size: 1.2rem;
             }
 
-            /* Mapa Ajustado */
             #map {
                 height: 350px;
-                /* Un poco más alto para que luzca */
                 width: 100%;
-                /* Ancho completo del contenedor */
                 border-radius: 15px;
             }
         </style>
     </head>
-    <!-- <div id="map"></div> -->
 
     <div class="profile-header text-center">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-8">
-                    {{-- Imagen Circular --}}
-                    <img src="{{Storage::url($doctor->image) }}" alt="{{ $doctor->name }}"
+                    <img src="{{ $doctor->user->foto ? asset('storage/' . $doctor->user->foto) : 'https://ui-avatars.com/api/?name='.urlencode($doctor->user->name) }}" 
+                        alt="{{ $doctor->user->name }}"
                         class="rounded-circle profile-img mb-3">
 
-                    <h1 class="fw-bold display-5">{{ $doctor->name }}</h1>
-                    <p class="fs-4 opacity-75"><i class="bi bi-award-fill me-2"></i>{{ $doctor->especialidad }}</p>
+                    <h1 class="fw-bold display-5">{{$doctor->user->name }}</h1>
+                    
+                    {{-- Especialidades: Es una relación de muchos a muchos --}}
+                    <p class="fs-4 opacity-75">
+                        <i class="bi bi-award-fill me-2"></i>
+                        @if($doctor->especialidades->count() > 0)
+                            {{ $doctor->especialidades->pluck('nombre')->join(', ') }}
+                        @else
+                            Sin especialidad registrada
+                        @endif
+                    </p>
 
                     <div class="d-flex justify-content-center gap-2 mt-3">
                         <span class="badge bg-light text-dark rounded-pill px-3 py-2">
-                            <i class="bi bi-translate me-1"></i> {{ $doctor->idioma }}
+                            <i class="bi bi-translate me-1"></i> {{ $doctor->idiomas }}
                         </span>
                         <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
                             <i class="bi bi-card-heading me-1"></i> Cédula: {{ $doctor->cedula }}
@@ -126,17 +102,23 @@ if (!empty($data['routes'])) {
                         <p class="card-text text-muted lead" style="font-size: 1.1rem;">
                             {{ $doctor->descripcion }}
                         </p>
-                        <p class="text-end text-muted small">Registrado el: {{ $doctor->fecha }}</p>
+                        {{-- Fecha de creación viene de 'created_at' --}}
+                        <p class="text-end text-muted small mt-3">
+                            Registrado desde: {{ $doctor->created_at->format('d/m/Y') }}
+                        </p>
                     </div>
                 </div>
 
-                {{-- Tarjeta del Mapa (Ruta) --}}
+                {{-- Tarjeta del Mapa (Ubicación Fija) --}}
                 <div class="card info-card shadow-lg border-0">
                     <div class="card-header bg-white border-0 pt-4 px-4">
-                        <h4 class="fw-bold text-primary"><i class="bi bi-map-fill me-2"></i>Ruta de Llegada</h4>
+                        <h4 class="fw-bold text-primary"><i class="bi bi-geo-alt-fill me-2"></i>Ubicación del Consultorio</h4>
                     </div>
                     <div class="card-body p-4">
                         <div id="map" class="shadow-sm"></div>
+                        <div class="mt-2 text-muted small text-center">
+                            <i class="bi bi-info-circle"></i> Esta es la ubicación registrada del consultorio.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -148,18 +130,19 @@ if (!empty($data['routes'])) {
                 <div class="card info-card shadow-sm mb-4 bg-primary text-white">
                     <div class="card-body p-4">
                         <h5 class="mb-3"><i class="bi bi-cash-coin me-2"></i>Costo de Consulta</h5>
-                        <h2 class="fw-bold mb-4">{{ $doctor->costos }}</h2>
+                        <h2 class="fw-bold mb-4">${{ number_format($doctor->costo, 2) }}</h2>
 
                         <hr class="border-white opacity-25">
 
                         <h5 class="mb-3"><i class="bi bi-clock me-2"></i>Horario de Atención</h5>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span>Entrada:</span>
-                            <span class="fw-bold">{{ $doctor->horarioentrada }}</span>
+                            {{-- Formateamos la hora para quitar segundos si es necesario --}}
+                            <span class="fw-bold">{{ \Carbon\Carbon::parse($doctor->horario_entrada)->format('H:i') }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
                             <span>Salida:</span>
-                            <span class="fw-bold">{{ $doctor->horariosalida }}</span>
+                            <span class="fw-bold">{{ \Carbon\Carbon::parse($doctor->horario_salida)->format('H:i') }}</span>
                         </div>
                     </div>
                 </div>
@@ -169,79 +152,67 @@ if (!empty($data['routes'])) {
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-4">Información de Contacto</h5>
 
+                        {{-- EMAIL (Sustituye a Teléfono porque Teléfono ya no está en BD) --}}
                         <div class="d-flex align-items-center mb-3">
                             <div class="icon-box">
-                                <i class="bi bi-telephone-fill"></i>
+                                <i class="bi bi-envelope-fill"></i>
                             </div>
-                            <div>
-                                <small class="text-muted d-block">Teléfono</small>
-                                <span class="fw-bold">{{ $doctor->telefono }}</span>
+                            <div class="overflow-hidden">
+                                <small class="text-muted d-block">Correo Electrónico</small>
+                                <span class="fw-bold text-truncate d-block" title="{{ $doctor->user->email }}">
+                                    {{ $doctor->user->email }}
+                                </span>
                             </div>
                         </div>
 
+                        {{-- Mensaje sobre dirección (Ya que no hay campo dirección texto, usamos mapa) --}}
                         <div class="d-flex align-items-center mb-3">
                             <div class="icon-box">
-                                <i class="bi bi-geo-alt-fill"></i>
+                                <i class="bi bi-pin-map-fill"></i>
                             </div>
                             <div>
-                                <small class="text-muted d-block">Dirección</small>
-                                <span>{{ $doctor->direccion }}</span>
+                                <small class="text-muted d-block">Ubicación</small>
+                                <span>Ver en el mapa adjunto</span>
                             </div>
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
-                            <a href="tel:{{ $doctor->telefono }}" class="btn btn-outline-primary rounded-pill">
-                                Llamar Ahora
+                            <a href="mailto:{{ $doctor->user->email }}" class="btn btn-outline-primary rounded-pill">
+                                <i class="bi bi-envelope me-2"></i> Contactar
                             </a>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
+    {{-- SCRIPTS DEL MAPA --}}
     <script async
-        src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&libraries=geometry&callback=initMap"></script>
+        src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap">
+    </script>
 
     <script>
         function initMap() {
-            const encodedPolyline = <?php echo json_encode($encodedString); ?>;
+            // Coordenadas del doctor
+            const doctorLocation = { 
+                lat: <?php echo $lat; ?>, 
+                lng: <?php echo $lng; ?> 
+            };
 
-            // Coordenadas iniciales para centrar el mapa (Ocosingo aprox)
-            const centro = { lat: 16.9072, lng: -92.0961 };
-
-            // 2. Crear el mapa
+            // 1. Crear el mapa centrado en el doctor
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 8,
-                center: centro,
+                zoom: 15, // Zoom más cercano para ver la ubicación exacta
+                center: doctorLocation,
             });
 
-            if (encodedPolyline) {
-                // 3. Decodificar la línea mágica
-                // La API de geometría convierte ese string raro en coordenadas
-                const decodedPath = google.maps.geometry.encoding.decodePath(encodedPolyline);
-
-                // 4. Dibujar la línea azul (Polyline)
-                const routeLine = new google.maps.Polyline({
-                    path: decodedPath,
-                    geodesic: true,
-                    strokeColor: "#2196F3", // Color azul Google
-                    strokeOpacity: 1.0,
-                    strokeWeight: 4,
-                });
-
-                routeLine.setMap(map);
-
-                // 5. Ajustar el zoom automáticamente para que se vea toda la ruta
-                const bounds = new google.maps.LatLngBounds();
-                decodedPath.forEach((point) => {
-                    bounds.extend(point);
-                });
-                map.fitBounds(bounds);
-            } else {
-                alert("No se pudo obtener la ruta desde el servidor PHP.");
-            }
+            // 2. Agregar el Marcador Rojo
+            new google.maps.Marker({
+                position: doctorLocation,
+                map: map,
+                title: "<?php echo $doctor->user->name; ?>",
+                animation: google.maps.Animation.DROP // Efecto de caída al cargar
+            });
         }
     </script>
 </x-layout>

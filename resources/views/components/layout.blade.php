@@ -20,13 +20,48 @@
         .bg-custom-dark {
             background-color: var(--custom-dark-blue) !important;
         }
-
-        /* Ajuste opcional: Para que el dropdown no se vea cuadrado pegado a la barra redonda */
         .dropdown-menu {
             border-radius: 15px;
             margin-top: 10px !important; 
             border: none;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+                .pill-notification {
+            position: fixed;
+            top: -100px; /* Empieza escondida arriba */
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: #333;
+            padding: 12px 30px;
+            border-radius: 50px; /* Forma de píldora */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Sombra elegante */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999; /* Siempre encima de todo */
+            font-family: system-ui, -apple-system, sans-serif;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Efecto Rebote */
+        }
+        .pill-notification.show {
+            top: 30px;
+            opacity: 1;
+        }
+        .pill-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #198754;
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+        .pill-notification.error .pill-icon {
+            background: #dc3545;
         }
     </style>
 
@@ -34,19 +69,30 @@
     @stack('styles')
 </head>
 
-<body class="bg-light"> {{-- Agregué bg-light al body para que resalte la barra oscura --}}
+<body class="bg-light">
+    <!-- inicion sesiada -->
+            @if(session('success'))
+                <div id="notification-pill" class="pill-notification">
+                    <div class="pill-icon">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+            <!-- error -->
+            @if(session('error'))
+                <div id="notification-pill" class="pill-notification error">
+                    <div class="pill-icon">
+                        <i class="bi bi-x-lg"></i>
+                    </div>
+                    <span>{{ session('error') }}</span>
+                </div>
+            @endif
     
     <header>
     </header>
 
     <main>
-        {{-- 
-            CAMBIOS REALIZADOS AQUÍ:
-            1. rounded-pill: Hace los bordes redondos tipo pastilla.
-            2. shadow-lg: Sombra más fuerte para efecto flotante.
-            3. mt-3 mx-auto: Margen arriba y centrado horizontal.
-            4. style="width: 95%; max-width: 1100px;": Controla el tamaño para que no toque los bordes.
-        --}}
         <nav class="navbar navbar-expand-sm navbar-dark bg-custom-dark shadow-lg rounded-pill mt-2 mx-auto" 
              style="width: 95%;">
             

@@ -15,11 +15,9 @@ models:
       hasMany: Mensaje, Comentario, Cita
 
   Especialidad:
-    tableName: especialidades
     nombre: string
 
   Doctor:
-    tableName: doctores
     user_id: id foreign:users.id
     cedula: string nullable
     idiomas: string nullable
@@ -39,7 +37,6 @@ models:
       hasMany: Cita
 
   Farmacia:
-    tableName: farmacias
     user_id: id foreign:users.id
     nom_farmacia: string
     rfc: string nullable
@@ -92,7 +89,6 @@ models:
       belongsTo: User
 
   Doctor_Especialidad:
-    tableName: doctor_especialidad
     doctor_id: id foreign:doctors.id
     especialidad_id: id foreign:especialidads.id
 
