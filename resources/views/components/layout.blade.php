@@ -63,6 +63,19 @@
         .pill-notification.error .pill-icon {
             background: #dc3545;
         }
+        .btn-outline-navy {
+            color: #00213D;
+            border: 2px solid #00213D;
+            background-color: transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .btn-outline-navy:hover {
+            background-color: #00213D!important;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 33, 61, 0.3);
+        }
     </style>
 
     @yield('css')
