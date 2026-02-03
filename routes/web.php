@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GoogleController;
 
@@ -119,3 +120,7 @@ Route::get('google/redirect', [GoogleController::class, 'redirectToGoogle'])->na
 Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->name('doctores.vista');
+
+Route::post('/comentarios', [ComentarioController::class, 'store'])
+     ->middleware('auth')
+     ->name('comentarios.store');
