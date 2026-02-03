@@ -15,11 +15,11 @@ class Respuesta extends Model
      *
      * @var array
      */
+    protected $table = 'respuestas';
     protected $fillable = [
         'comentario_id',
         'id_respondedor',
         'contenido',
-        'user_id',
     ];
 
     /**
@@ -30,25 +30,18 @@ class Respuesta extends Model
     protected function casts(): array
     {
         return [
-            'id' => 'integer',
             'comentario_id' => 'integer',
             'id_respondedor' => 'integer',
-            'user_id' => 'integer',
         ];
     }
 
     public function comentario(): BelongsTo
     {
-        return $this->belongsTo(Comentario::class);
+        return $this->belongsTo(Comentario::class, 'comentario_id');
     }
 
-    public function user(): BelongsTo
+    public function autor(): BelongsTo
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function idRespondedor(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'id_respondedor');
     }
 }

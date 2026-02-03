@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\RespuestaController;
+use App\Models\Respuesta;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -124,3 +126,5 @@ Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->nam
 Route::post('/comentarios', [ComentarioController::class, 'store'])
      ->middleware('auth')
      ->name('comentarios.store');
+
+Route::post('/respuestas', [RespuestaController::class, 'store'])->middleware('auth')->name('respuestas.store');

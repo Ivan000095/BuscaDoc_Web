@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Utils;
+use Carbon\Carbon;
 
 class Formato
 {
@@ -19,8 +20,10 @@ class Formato
         return strtoupper($prefijo) . '-' . time() . '-' . rand(100, 999);
     }
 
-    public static function fechaFormato($date) {
-        $meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-
+    public static function fechaFormato($fecha) {
+        // $meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        $fechaObj = Carbon::parse($fecha);
+        $fechaformato = $fechaObj->isoFormat('D [de] MMMM [del] YYYY');
+        return $fechaformato;
     }
 }

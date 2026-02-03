@@ -13,6 +13,7 @@ use App\Services\FileService;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use App\Models\Especialidad;
+use App\Utils;
 
 class DoctorController extends Controller
 {
@@ -240,7 +241,7 @@ class DoctorController extends Controller
             return [
                 "id" => $doctor->id,
                 "name" => $doctor->user->name,
-                "especialidad" => "General",
+                "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
                 "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 30),
                 "fecha" => $fechaformato,
                 "image" => $imageHtml,

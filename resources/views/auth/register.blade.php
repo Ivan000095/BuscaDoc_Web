@@ -106,7 +106,6 @@
                                         class="form-select form-select-pill @error('role') is-invalid @enderror" 
                                         style="padding-left: 50px !important; padding-top: 12px; padding-bottom: 12px;" 
                                         required>
-                                    <option value="" selected disabled>Selecciona tu perfil...</option>
                                     <option value="paciente">Paciente (Busco atención médica)</option>
                                     <option value="doctor">Doctor (Quiero ofrecer consultas)</option>
                                     <option value="farmacia">Farmacia (Administro una farmacia)</option>
