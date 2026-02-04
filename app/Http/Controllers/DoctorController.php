@@ -9,6 +9,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use App\Services\FileService;
+use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
+use App\Models\Especialidad;
+use App\Utils;
+
 class DoctorController extends Controller
 {
     public function index(Request $request): View

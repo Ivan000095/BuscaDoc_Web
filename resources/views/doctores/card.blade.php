@@ -145,14 +145,17 @@ $lng = $doctor->user->longitud ?? -92.0946;
             .styled-textarea:focus {
                 background-color: #ffffff;
                 border-color: #0f172a;
-                /* Tu color Navy al enfocar */
                 box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
-                /* Sombra suave */
                 outline: none;
             }
 
             .styled-textarea::placeholder {
                 color: #94a3b8;
+            }
+
+            .textarea-respuesta {
+                width: 100%;
+                min-height: 20px !important;
             }
         </style>
     </head>
@@ -221,6 +224,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
                     </div>
                 </div>
             </div>
+
             <div class="col-lg-8">
                 <div class="soft-card p-5 mb-4">
                     <div class="info-row">
@@ -259,26 +263,14 @@ $lng = $doctor->user->longitud ?? -92.0946;
                         </div>
                     </div>
                 </div>
+
                 <div class="d-flex gap-3 mb-5">
                     <button class="btn btn-navy px-4 flex-grow-1">Solicitar cita</button>
                     <button class="btn btn-navy px-4 flex-grow-1">Reportar</button>
                 </div>
 
-                <div class="soft-card p-5 mb-4">
-                    <h4 class="mb-4 text-center text-navy fw-normal">Reseñas / Preguntas</h4>
-
-                    <div class="position-relative mb-4">
-                        <input type="text" class="form-control review-input"
-                            placeholder="Escribe tu pregunta o reseña aquí...">
-                        <button
-                            class="btn btn-navy btn-sm position-absolute end-0 top-50 translate-middle-y me-2 rounded-pill px-3">
-                            Enviar
-                        </button>
-                    </div>
-                </div>
-
+                <!-- sección de preguntas y reeñas -->
                 <div id="seccion-comentarios" class="soft-card p-4 mb-4">
-
                     <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="pills-reviews-tab" data-bs-toggle="pill"
@@ -294,6 +286,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
                         </li>
                     </ul>
 
+                    <!-- cpomentarios -->
                     <div class="tab-content" id="pills-tabContent">
                         <div class="tab-pane fade show active" id="pills-reviews" role="tabpanel">
                             <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
@@ -335,25 +328,91 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                 </form>
                             </div>
 
+                            <!-- lista de reseñas -->
                             <div class="reviews-list">
-                                @forelse($doctor->reviews ?? [] as $question)
+                                @forelse($doctor->reviews ?? [] as $review)
                                     <div class="d-flex mb-4 border-bottom pb-3">
-                                        <img src="{{ $question->autor->foto ? asset('storage/' . $question->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($question->autor->name) }}"
+                                        <img src="{{ $review->autor->foto ? asset('storage/' . $review->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($review->autor->name) }}"
                                             class="avatar-small me-3 shadow-sm">
-
                                         <div class="flex-grow-1">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <h6 class="mb-0 fw-bold">{{ $question->autor->name }}</h6>
-                                                <small
-                                                    class="text-muted">{{ $question->created_at->diffForHumans() }}</small>
+                                                <h6 class="mb-0 fw-bold">{{ $review->autor->name }}</h6>
+                                                <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
                                             </div>
                                             <div class="text-warning small mb-1">
                                                 @for($i = 1; $i <= 5; $i++)
                                                     <i
-                                                        class="bi {{ $i <= $question->calificacion ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                                        class="bi {{ $i <= $review->calificacion ? 'bi-star-fill' : 'bi-star' }}"></i>
                                                 @endfor
                                             </div>
-                                            <p class="text-muted small mb-0">{{ $question->contenido }}</p>
+                                            <p class="text-muted small mb-0">{{ $review->contenido }}</p>
+                                            <br>
+
+                                            @if ($errors->any())
+                                                <div class="alert alert-danger">
+                                                    <ul>
+                                                        @foreach ($errors->all() as $error)
+                                                            <li>{{ $error }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endif
+
+                                            <!-- FORm de respuestas -->
+                                            <form action="{{ route('respuestas.store') }}" method="POST">
+                                                @csrf
+                                                <input type="hidden" name="comentario_id" value="{{ $review->id }}">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted small">Responde a
+                                                        {{ $review->autor->name }}</span>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <textarea name="contenido" class="styled-textarea textarea-respuesta"
+                                                        cols="1"
+                                                        placeholder="Responde a este comentario con id {{ $review->id }}"
+                                                        required></textarea>
+                                                </div>
+                                                <div class="text-end">
+                                                    <button type="submit"
+                                                        class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                        Publicar Respuesta <i class="bi bi-send-fill ms-1"></i>
+                                                    </button>
+                                                </div>
+                                                <br>
+                                            </form>
+
+                                            <!-- respuestas -->
+                                            @forelse($review->respuestas as $respuesta)
+                                                <div class="d-flex mb-3 ms-5 mt-2"> {{-- ms-5: Empuja todo a la derecha --}}
+                                                    <div class="flex-shrink-0">
+                                                        <img src="{{ $respuesta->autor->foto ? asset('storage/' . $respuesta->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($respuesta->autor->name) }}"
+                                                            class="avatar-small me-2 rounded-circle shadow-sm"
+                                                            style="width: 35px; height: 35px;">
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="bg-light p-3 rounded-4">
+
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <div>
+                                                                    <span
+                                                                        class="fw-bold text-dark small">{{ $respuesta->autor->name }}</span>
+                                                                    @if($respuesta->autor->id == $doctor->user->id)
+                                                                        <span class="badge bg-primary text-white ms-1"
+                                                                            style="font-size: 0.65rem;">Propietario</span>
+                                                                    @endif
+                                                                </div>
+                                                                <small class="text-muted" style="font-size: 0.7rem;">
+                                                                    {{ $respuesta->created_at->diffForHumans() }}
+                                                                </small>
+                                                            </div>
+                                                            <p class="text-dark small mb-0 lh-sm">{{ $respuesta->contenido }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                {{-- No mostrar nada si no hay respuestas --}}
+                                            @endforelse
                                         </div>
                                     </div>
                                 @empty
@@ -364,6 +423,8 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                 @endforelse
                             </div>
                         </div>
+
+                        <!-- preguntas -->
                         <div class="tab-pane fade" id="pills-questions" role="tabpanel">
                             <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
                                 <h6 class="fw-bold mb-3 text-navy">Haz una pregunta al doctor</h6>
