@@ -13,7 +13,6 @@ class DoctorFactory extends Factory
     public function definition(): array
     {
         return [
-            'tableName' => fake()->word(),
             'user_id' => User::factory(),
             'cedula' => fake()->word(),
             'idiomas' => fake()->word(),

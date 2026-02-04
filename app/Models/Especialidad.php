@@ -2,17 +2,31 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Especialidad extends Model
 {
-    protected $table = 'especialidads'; 
+    use HasFactory;
 
-    protected $fillable = ['Nombre'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'nombre',
+    ];
 
-    // Relación inversa (opcional pero útil)
-    public function doctores()
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
-        return $this->belongsToMany(Doctor::class, 'doctor__especialidads', 'especialidad_id', 'doctor_id');
+        return [
+            'id' => 'integer',
+        ];
     }
 }

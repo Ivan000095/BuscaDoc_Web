@@ -13,7 +13,6 @@ class FarmaciaFactory extends Factory
     public function definition(): array
     {
         return [
-            'tableName' => fake()->word(),
             'user_id' => User::factory(),
             'nom_farmacia' => fake()->word(),
             'rfc' => fake()->word(),

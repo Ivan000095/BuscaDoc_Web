@@ -15,7 +15,6 @@ return new class extends Migration
 
         Schema::create('farmacias', function (Blueprint $table) {
             $table->id();
-            $table->string('tableName');
             $table->foreignId('user_id')->constrained();
             $table->string('nom_farmacia');
             $table->string('rfc')->nullable();

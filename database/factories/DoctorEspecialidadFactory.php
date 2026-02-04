@@ -14,7 +14,6 @@ class DoctorEspecialidadFactory extends Factory
     public function definition(): array
     {
         return [
-            'tableName' => fake()->word(),
             'doctor_id' => Doctor::factory(),
             'especialidad_id' => Especialidad::factory(),
         ];

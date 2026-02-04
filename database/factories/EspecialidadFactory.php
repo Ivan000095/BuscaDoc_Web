@@ -12,7 +12,6 @@ class EspecialidadFactory extends Factory
     public function definition(): array
     {
         return [
-            'tableName' => fake()->word(),
             'nombre' => fake()->word(),
         ];
     }

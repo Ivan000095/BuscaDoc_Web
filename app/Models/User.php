@@ -1,25 +1,21 @@
 <?php
 
 namespace App\Models;
-
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable; 
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // Necesario para tu API
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    
     protected $fillable = [
         'name',
         'email',
@@ -31,7 +27,6 @@ class User extends Authenticatable
         'latitud',
         'longitud',
         'estado',
-        'google_id',
     ];
 
     /**
@@ -41,7 +36,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
@@ -53,8 +47,6 @@ class User extends Authenticatable
     {
         return [
             'id' => 'integer',
-            'email_verified_at' => 'datetime', // Agregado estándar
-            'password' => 'hashed',            // Agregado estándar
             'f_nacimiento' => 'date',
             'latitud' => 'decimal:8',
             'longitud' => 'decimal:8',

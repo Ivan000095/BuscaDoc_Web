@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\PacienteController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -124,3 +124,24 @@ Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->nam
 Route::post('/comentarios', [ComentarioController::class, 'store'])
      ->middleware('auth')
      ->name('comentarios.store');
+
+Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+
+Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+
+
+Route::resource('pacientes', App\Http\Controllers\PacienteController::class);

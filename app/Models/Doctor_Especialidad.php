@@ -16,7 +16,6 @@ class DoctorEspecialidad extends Model
      * @var array
      */
     protected $fillable = [
-        'tableName',
         'doctor_id',
         'especialidad_id',
     ];

@@ -64,7 +64,7 @@
                             style="width: 80px; height: 80px;">
 
                         <h5 class="card-title fw-bold custom-text-dark">Pacientes</h5>
-                        <a href="#" class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
+                        <a href="{{ route('pacientes.index') }}" class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                     </div>
                 </div>
             </div>

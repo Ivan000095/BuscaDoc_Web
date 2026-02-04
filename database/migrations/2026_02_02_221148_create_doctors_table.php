@@ -15,7 +15,6 @@ return new class extends Migration
 
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
-            $table->string('tableName');
             $table->foreignId('user_id')->constrained();
             $table->string('cedula')->nullable();
             $table->string('idiomas')->nullable();
