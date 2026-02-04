@@ -425,49 +425,94 @@ $lng = $doctor->user->longitud ?? -92.0946;
                         </div>
 
                         <!-- preguntas -->
-                        <div class="tab-pane fade" id="pills-questions" role="tabpanel">
-                            <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
-                                <h6 class="fw-bold mb-3 text-navy">Haz una pregunta al doctor</h6>
-                                <form action="{{ route('comentarios.store') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="doctor_id" value="{{ $doctor->user->id }}">
-                                    <input type="hidden" name="tipo" value="pregunta">
-                                    <div class="mb-3">
-                                        <textarea name="contenido" class="styled-textarea"
-                                            placeholder="Ej: ¿Acepta seguro médico? ¿Tiene estacionamiento?..."
-                                            required></textarea>
-                                    </div>
-
-                                    <div class="text-end">
-                                        <button type="submit" class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
-                                            Enviar Pregunta <i class="bi bi-chat-text-fill ms-1"></i>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="questions-list">
-                                @forelse($doctor->questions ?? [] as $question)
-                                    <div class="d-flex mb-4 border-bottom pb-3">
+                        <div class="questions-list">
+                            @forelse($doctor->questions ?? [] as $question)
+                                <div class="mb-4 border-bottom pb-3"> {{-- 1. LA PREGUNTA ORIGINAL --}}
+                                    <div class="d-flex mb-3">
                                         <img src="{{ $question->autor->foto ? asset('storage/' . $question->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($question->autor->name) }}"
                                             class="avatar-small me-3 shadow-sm">
 
                                         <div class="flex-grow-1">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h6 class="mb-0 fw-bold">{{ $question->autor->name }}</h6>
-                                                <small
-                                                    class="text-muted">{{ $question->created_at->diffForHumans() }}</small>
+                                                <small class="text-muted">{{ $question->created_at->diffForHumans() }}</small>
                                             </div>
-
-                                            <p class="text-muted small mb-0">{{ $question->contenido }}</p>
+                                            <p class="text-muted small mb-0 mt-1">{{ $question->contenido }}</p>
                                         </div>
                                     </div>
-                                @empty
-                                    <div class="text-center py-4 text-muted">
-                                        <i class="bi bi-stars fs-3 d-block mb-2"></i>
-                                        Aún no hay preguntas.
-                                    </div>
-                                @endforelse
-                            </div>
+
+                                    {{-- 2. ÁREA DE RESPUESTAS (Indentada a la derecha) --}}
+                                    <div class="ms-5">
+                                        
+                                        {{-- A. Formulario para responder ESTA pregunta --}}
+                                        <div class="card border-0 bg-light rounded-4 p-3 mb-3">
+                                            <form action="{{ route('respuestas.store') }}" method="POST">
+                                                @csrf
+                                                {{-- Vinculamos la respuesta al ID de la pregunta actual --}}
+                                                <input type="hidden" name="comentario_id" value="{{ $question->id }}">
+                                                
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="text-muted small fw-bold">Responder a {{ $question->autor->name }}</span>
+                                                </div>
+
+                                                <div class="d-flex gap-2">
+                                                    <textarea name="contenido" class="styled-textarea textarea-respuesta" 
+                                                            rows="1"
+                                                            placeholder="Escribe una respuesta..." 
+                                                            style="min-height: 40px;"
+                                                            required></textarea>
+                                                    
+                                                    <button type="submit" class="btn btn-navy btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                                                            style="width: 40px; height: 40px; flex-shrink: 0;">
+                                                        <i class="bi bi-send-fill"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        {{-- B. Lista de Respuestas (Estilo Burbuja) --}}
+                                        @forelse($question->respuestas as $respuesta)
+                                            <div class="d-flex mb-3 mt-2">
+                                                {{-- Foto del que responde --}}
+                                                <div class="flex-shrink-0">
+                                                    <img src="{{ $respuesta->autor->foto ? asset('storage/' . $respuesta->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($respuesta->autor->name) }}"
+                                                        class="avatar-small me-2 rounded-circle shadow-sm"
+                                                        style="width: 35px; height: 35px;">
+                                                </div>
+
+                                                {{-- Burbuja de texto --}}
+                                                <div class="flex-grow-1">
+                                                    <div class="bg-light p-3 rounded-4">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <div>
+                                                                <span class="fw-bold text-dark small">{{ $respuesta->autor->name }}</span>
+                                                                {{-- Badge si es el Doctor --}}
+                                                                @if($respuesta->autor->id == $doctor->user->id)
+                                                                    <span class="badge bg-primary text-white ms-1" style="font-size: 0.65rem;">Propietario</span>
+                                                                @endif
+                                                            </div>
+                                                            <small class="text-muted" style="font-size: 0.7rem;">
+                                                                {{ $respuesta->created_at->diffForHumans() }}
+                                                            </small>
+                                                        </div>
+                                                        <p class="text-dark small mb-0 lh-sm">{{ $respuesta->contenido }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            {{-- No hay respuestas aún --}}
+                                        @endforelse
+
+                                    </div> 
+                                    {{-- Fin del área indentada --}}
+
+                                </div>
+                            @empty
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-chat-square-dots fs-3 d-block mb-2"></i>
+                                    Aún no hay preguntas. ¡Sé el primero!
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>

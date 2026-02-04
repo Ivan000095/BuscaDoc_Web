@@ -1,4 +1,4 @@
-<?
+<?php
 
 use App\Http\Controllers\PacienteController;
 use Illuminate\Support\Facades\Route;
@@ -99,6 +99,9 @@ Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get("doctores/{doctor}/download-image", [DoctorController::class, "downloadImage"])->name("doctor.download-image");
     Route::resource("doctores", DoctorController::class);
     Route::resource('users', UserController::class);
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
 });
 
 // Route::middleware('auth:api')->group(function({
@@ -126,23 +129,20 @@ Route::post('/comentarios', [ComentarioController::class, 'store'])
      ->middleware('auth')
      ->name('comentarios.store');
 
-Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
-
-Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
-
-Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
-
-Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
-
-
-Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
-
-Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
-
-Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
-
-Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
-
-
-
 Route::resource('pacientes', App\Http\Controllers\PacienteController::class);
+
+Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');

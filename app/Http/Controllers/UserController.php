@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use App\Models\Especialidad;
 
 class UserController extends Controller
 {
@@ -63,10 +65,104 @@ class UserController extends Controller
     }
     public function edit($id)
     {
-        $user = User::findOrFail($id);
-        return view('users.form', compact('user'));
+        $user = User::with(['doctor', 'paciente', 'farmacia'])->findOrFail($id);
+        
+        // Verificamos que el usuario solo edite su propio perfil (Seguridad básica)
+        if (auth()->id() !== $user->id && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $especialidades = Especialidad::all(); // Para el doctor
+        return view('users.edit', compact('user', 'especialidades'));
     }
 
+    // Guardar los cambios
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        // 1. Validaciones Generales
+        $request->validate([
+            'foto' => 'nullable|image|max:2048',
+            'f_nacimiento' => 'required|date',
+            'genero' => 'required|string',
+        ]);
+
+        // 2. Transacción para guardar todo
+        DB::transaction(function () use ($request, $user) {
+            
+            // A. Subir Foto (si hay nueva)
+            if ($request->hasFile('foto')) {
+                // Borrar foto vieja si existe
+                if ($user->foto) {
+                    Storage::disk('public')->delete($user->foto);
+                }
+                $user->foto = $request->file('foto')->store('perfiles', 'public');
+            }
+
+            // B. Actualizar tabla Users
+            $user->update([
+                'f_nacimiento' => $request->f_nacimiento,
+                'genero' => $request->genero,
+                // Puedes agregar name o email aquí si quieres que sean editables
+            ]);
+
+            // C. Guardar datos específicos según el rol
+            // Usamos updateOrCreate: Si ya existe el registro lo actualiza, si no, lo crea.
+            
+            if ($user->role === 'doctor') {
+                $request->validate([
+                    'cedula' => 'required',
+                    'costo' => 'required|numeric',
+                ]);
+
+                $doctor = $user->doctor()->updateOrCreate(
+                    ['user_id' => $user->id], // Busca por esto
+                    [
+                        'cedula' => $request->cedula,
+                        'idiomas' => $request->idiomas,
+                        'descripcion' => $request->descripcion,
+                        'costo' => $request->costo,
+                        'horario_entrada' => $request->horario_entrada,
+                        'horario_salida' => $request->horario_salida,
+                    ]
+                );
+                // Sincronizar especialidades
+                if ($request->has('especialidades')) {
+                    $doctor->especialidades()->sync($request->especialidades);
+                }
+
+            } elseif ($user->role === 'paciente') {
+                
+                $user->patient()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'tipo_sangre' => $request->tipo_sangre,
+                        'alergias' => $request->alergias,
+                        'padecimientos' => $request->padecimientos,
+                        'contacto_emergencia' => $request->contacto_emergencia,
+                    ]
+                );
+
+            } elseif ($user->role === 'farmacia') {
+                
+                $user->farmacia()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'nom_farmacia' => $request->nom_farmacia,
+                        'rfc' => $request->rfc,
+                        'telefono' => $request->telefono,
+                        'horario' => $request->horario,
+                    ]
+                );
+            }
+        });
+
+        // Redirigir al perfil actualizado
+        return redirect()->route('users.show', $user->id)
+                         ->with('success', '¡Perfil actualizado correctamente!');
+    }
+    
     public function show(User $user)
     {
         if ($user->role === 'doctor') {
@@ -74,41 +170,6 @@ class UserController extends Controller
         }
         return view('users.show', compact('user'));
 
-    }
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'password' => 'nullable|min:8', // Opcional al editar
-            'image' => 'nullable|image|max:5120',
-        ]);
-
-        $userData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role ?? $user->role,
-            'estado' => $request->has('estado') ? true : false,
-            'f_nacimiento' => $request->f_nacimiento,
-            'latitud' => $request->latitud,
-            'longitud' => $request->longitud,
-        ];
-
-        if ($request->filled('password')) {
-            $userData['password'] = Hash::make($request->password);
-        }
-
-        if ($request->hasFile('image')) {
-            if ($user->foto) {
-                Storage::disk('public')->delete($user->foto);
-            }
-            $userData['foto'] = $request->file('image')->store('users', 'public');
-        }
-        $user->update($userData);
-        return redirect()->route('users.index')
-            ->with('success', 'Usuario actualizado correctamente.');
     }
     public function destroy($id)
     {
