@@ -20,13 +20,10 @@ return new class extends Migration
             // Relación con la tabla users (Cascade asegura que si se borra el user, se borra el paciente)
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             
-            // Campos existentes corregidos/mantenidos
+
             $table->string('tipo_sangre')->nullable();
             $table->text('alergias')->nullable();
             
-            // --- NUEVOS CAMPOS SEGÚN LA IMAGEN ---
-            
-            // Usamos text para campos descriptivos largos
             $table->text('cirugias')->nullable();
             $table->text('padecimientos')->nullable();
             $table->text('habitos')->nullable();
