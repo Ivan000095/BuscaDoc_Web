@@ -104,12 +104,8 @@ class UserController extends Controller
             $user->update([
                 'f_nacimiento' => $request->f_nacimiento,
                 'genero' => $request->genero,
-                // Puedes agregar name o email aquí si quieres que sean editables
             ]);
 
-            // C. Guardar datos específicos según el rol
-            // Usamos updateOrCreate: Si ya existe el registro lo actualiza, si no, lo crea.
-            
             if ($user->role === 'doctor') {
                 $request->validate([
                     'cedula' => 'required',
@@ -117,7 +113,7 @@ class UserController extends Controller
                 ]);
 
                 $doctor = $user->doctor()->updateOrCreate(
-                    ['user_id' => $user->id], // Busca por esto
+                    ['user_id' => $user->id],
                     [
                         'cedula' => $request->cedula,
                         'idiomas' => $request->idiomas,
@@ -127,7 +123,7 @@ class UserController extends Controller
                         'horario_salida' => $request->horario_salida,
                     ]
                 );
-                // Sincronizar especialidades
+
                 if ($request->has('especialidades')) {
                     $doctor->especialidades()->sync($request->especialidades);
                 }

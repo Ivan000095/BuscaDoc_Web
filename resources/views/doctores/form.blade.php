@@ -49,7 +49,7 @@
                                     id="fecha" 
                                     value="{{ old('fecha', $doctor->user->f_nacimiento ?? '') }}" 
                                     required
-                                    max="{{ date('Y-m-d', strtotime('-18 years')) }}" {{-- <--- ¡AQUÍ ESTÁ LA MAGIA! --}}
+                                    max="{{ date('Y-m-d', strtotime('-18 years')) }}"
                                     onchange="validarEdad(this)">
                                 <div class="invalid-feedback ms-3">Debe ser mayor de 18 años.</div>
                             </div>
@@ -98,9 +98,8 @@
                                     
                                     @foreach($especialidades as $esp)
                                         <option value="{{ $esp->id }}" 
-                                            {{-- Si estamos editando y el doctor tiene esta especialidad, la seleccionamos --}}
                                             {{ (isset($doctor) && $doctor->especialidades->contains($esp->id)) ? 'selected' : '' }}>
-                                            {{ $esp->nombre }} {{-- Asegúrate que la columna en BD se llame 'Nombre' o 'nombre' --}}
+                                            {{ $esp->nombre }}
                                         </option>
                                     @endforeach
                                 </select>

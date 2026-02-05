@@ -23,7 +23,6 @@ class User extends Authenticatable
         'role',
         'foto',
         'f_nacimiento',
-        'genero',
         'latitud',
         'longitud',
         'estado',

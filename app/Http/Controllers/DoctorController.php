@@ -14,6 +14,9 @@ use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use App\Models\Especialidad;
 use App\Utils;
+use App\Models\Comentario;
+use App\Models\Respuesta;
+use App\Models\Cita;
 
 class DoctorController extends Controller
 {
@@ -58,9 +61,9 @@ class DoctorController extends Controller
             "password" => "required|min:8",
             "fecha" => "required|date|before:-18 years",
             "image" => "nullable|image|max:5120",
-            
-            "especialidad_id" => "required|exists:especialidads,id", 
-            
+
+            "especialidad_id" => "required|exists:especialidads,id",
+
             "cedula" => "required|string|max:50",
             "descripcion" => "required|string|max:1000",
             "costos" => "required|numeric|min:0",
@@ -72,7 +75,7 @@ class DoctorController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            
+
             $rutaFoto = null;
             if ($request->hasFile("image")) {
                 $rutaFoto = $request->file("image")->store('users', 'public');
@@ -126,7 +129,7 @@ class DoctorController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $doctor, $user) {
-            
+
             // Actualizar Usuario...
             $userData = [
                 'name' => $request->name,
@@ -135,13 +138,14 @@ class DoctorController extends Controller
                 'latitud' => $request->latitud,
                 'longitud' => $request->longitud,
             ];
-            
+
             if ($request->hasFile("image")) {
-                if ($user->foto) Storage::disk('public')->delete($user->foto);
+                if ($user->foto)
+                    Storage::disk('public')->delete($user->foto);
                 $userData['foto'] = $request->file("image")->store('users', 'public');
             }
-             if ($request->hasFile("image")) {
-                 $userData['foto'] = $request->file("image")->store('users', 'public');
+            if ($request->hasFile("image")) {
+                $userData['foto'] = $request->file("image")->store('users', 'public');
             }
 
             $user->update($userData);
@@ -183,23 +187,33 @@ class DoctorController extends Controller
 
         try {
             DB::transaction(function () use ($doctor, $user) {
-                
+
+                // 1. Desvincular Especialidades (Tabla Pivote)
                 $doctor->especialidades()->detach();
 
-                $doctor->delete();
-
                 if ($user) {
+                    Respuesta::where('id_respondedor', $user->id)->delete();
+                    $comentariosRecibidos = Comentario::where('id_destinatario', $user->id)->get();
+
+                    foreach ($comentariosRecibidos as $comentario) {
+                        $comentario->respuestas()->delete();
+                        $comentario->delete();
+                    }
+                    Comentario::where('id_autor', $user->id)->delete();
+                    // Cita::where('doctor_id', $doctor->id)->delete(); 
                     if ($user->foto) {
                         $this->fileService->delete($user->foto);
                     }
+                    $doctor->delete();
                     $user->delete();
+                } else {
+                    $doctor->delete();
                 }
             });
 
-            return redirect()->route('doctores.index')->with('success', 'Doctor y usuario eliminados correctamente.');
+            return redirect()->route('doctores.index')->with('success', 'Doctor y todos sus datos vinculados fueron eliminados.');
 
         } catch (\Exception $e) {
-            // Si algo falla (ej. tiene citas agendadas y la BD no deja borrar), avisamos
             return redirect()->route('doctores.index')->with('error', 'No se pudo eliminar: ' . $e->getMessage());
         }
     }
@@ -214,8 +228,8 @@ class DoctorController extends Controller
                 $q->whereHas('user', function ($subQ) use ($search) {
                     $subQ->where('name', 'like', "%{$search}%");
                 })
-                ->orWhere("cedula", "like", "%{$search}%")
-                ->orWhere("descripcion", "like", "%{$search}%");
+                    ->orWhere("cedula", "like", "%{$search}%")
+                    ->orWhere("descripcion", "like", "%{$search}%");
             });
         }
         $totalRecords = Doctor::count();

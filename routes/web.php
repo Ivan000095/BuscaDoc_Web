@@ -14,6 +14,7 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GoogleController;
+use App\Models\Especialidad;
 
 Route::get("/", function () {
     return view("welcome-simple");
@@ -146,3 +147,10 @@ Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)
 Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
 
 Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+Route::get('register', function () {
+    $especialidades = Especialidad::all();
+    return view('auth.register', compact('especialidades'));
+})->middleware('guest')->name('register');
+
+Route::post('register', [RegisterController::class, 'register']);
