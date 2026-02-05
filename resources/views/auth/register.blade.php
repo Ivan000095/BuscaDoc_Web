@@ -3,6 +3,8 @@
 @section('content')
     {{-- Alpine.js --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         body {
@@ -172,6 +174,10 @@
             background-color: #e0f2fe;
             color: #0d2e4e;
             font-weight: bold;
+        }
+
+        .bg-navy {
+            background-color: #0d2e4e!important;
         }
     </style>
 
@@ -354,6 +360,24 @@
                                             especialidades cargadas.</small> @endif
                                         </div>
                                     </div>
+
+                                    <div class="col-12">
+                                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                                            <div class="card-header bg-navy text-white py-3">
+                                                <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Ubicación del Consultorio</h5>
+                                            </div>
+                                            <div class="card-body p-4 bg-white">
+                                                <p class="text-muted ms-2 mb-3"><i class="bi bi-info-circle"></i> Arrastra el marcador rojo para indicar la ubicación exacta.</p>
+                                                
+                                                <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud', $doctor->user->latitud ?? '') }}">
+                                                <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud', $doctor->user->longitud ?? '') }}">
+
+                                                <div class="shadow-sm rounded-4 overflow-hidden border border-light">
+                                                    <div id="map" style="height: 400px; width: 100%;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -376,8 +400,20 @@
                                     </div>
                                     <div class="col-12">
                                         <textarea name="alergias" class="form-control form-control-pill" rows="2"
-                                            placeholder="Alergias (Opcional)"
+                                            placeholder="Escriba que alergias tiene"
                                             style="border-radius: 20px; resize: none;">{{ old('alergias') }}</textarea>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="text" name="cirugias" class="form-control form-control-pill"
+                                            placeholder="Escriba que cirugías ha tenido" value="{{ old('cirugias') }}">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="text" name="padecimientos" class="form-control form-control-pill"
+                                            placeholder="Describa que padecimientos tiene (diabetes, depresión, gastritis, etc..)" value="{{ old('padecimientos') }}">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="text" name="habitos" class="form-control form-control-pill"
+                                            placeholder="Describa los hábitos que tiene (si fuma, o toma, o hace deporte, etc...)" value="{{ old('padecimientos') }}">
                                     </div>
                                 </div>
                             </div>
@@ -403,7 +439,7 @@
 
                             <div class="divider-text mt-4">SEGURIDAD</div>
 
-                            {{-- SECCIÓN 4: PASSWORD --}}
+                            {{-- pswd --}}
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small ps-3 fw-bold">Contraseña</label>
@@ -437,7 +473,6 @@
         </div>
     </div>
 
-    {{-- SCRIPT PARA PREVISUALIZAR IMAGEN --}}
     <script>
         function previewAndLabel(input) {
             const label = document.getElementById('foto_label_text');
@@ -469,5 +504,48 @@
             }
         }
     </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap" async defer></script>
+
+        <script>
+            let map;
+            let marker;
+
+            function initMap() {
+                const initialLat = parseFloat(document.getElementById('latitud').value) || 16.9080;
+                const initialLng = parseFloat(document.getElementById('longitud').value) || -92.0946;
+
+                const myLatLng = { lat: initialLat, lng: initialLng };
+
+                map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 15,
+                    center: myLatLng,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    styles: []
+                });
+
+                marker = new google.maps.Marker({
+                    position: myLatLng,
+                    map: map,
+                    draggable: true,
+                    title: "Ubicación del Consultorio",
+                    animation: google.maps.Animation.DROP
+                });
+
+                marker.addListener("dragend", function (event) {
+                    updateInputs(event.latLng.lat(), event.latLng.lng());
+                });
+
+                map.addListener("click", function (event) {
+                    marker.setPosition(event.latLng);
+                    updateInputs(event.latLng.lat(), event.latLng.lng());
+                });
+            }
+
+            function updateInputs(lat, lng) {
+                document.getElementById('latitud').value = lat;
+                document.getElementById('longitud').value = lng;
+            }
+        </script>
 
 @endsection

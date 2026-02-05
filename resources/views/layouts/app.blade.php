@@ -143,6 +143,9 @@
                         <li class="nav-item">
                             <a class="nav-link px-3" href="{{ route('doctores.vista') }}">Doctores</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" href="">Farmacias</a>
+                        </li>
                     </ul>
 
                     <ul class="navbar-nav ms-0">

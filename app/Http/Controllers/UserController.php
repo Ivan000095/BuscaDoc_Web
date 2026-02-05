@@ -161,12 +161,11 @@ class UserController extends Controller
     
     public function show(User $user)
     {
-        if ($user->role === 'doctor') {
-            $user->load('doctor');
-        }
+        $user->role == 'doctor' ? $user->load('doctor') : ($user->role == 'farmacia' ? $user->load('farmacia') : $user->load('patient')); 
         return view('users.show', compact('user'));
 
     }
+
     public function destroy($id)
     {
         $user = User::findOrFail($id);

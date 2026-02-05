@@ -55,13 +55,15 @@ class Doctor extends Model
     public function reviews()
     {
         return $this->hasMany(Comentario::class, 'id_destinatario', 'user_id')
-                    ->where('tipo', 'resena');
+                    ->where('tipo', 'resena')
+                    ->orderBy('created_at', 'desc');
     }
 
     public function questions()
     {
         return $this->hasMany(Comentario::class, 'id_destinatario', 'user_id')
-                    ->where('tipo', 'pregunta'); 
+                    ->where('tipo', 'pregunta')
+                    ->orderBy('created_at', 'desc');
     }
     public function getPromedioCalificacionAttribute()
     {

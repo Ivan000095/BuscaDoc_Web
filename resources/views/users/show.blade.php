@@ -17,11 +17,13 @@ $isAdmin = $user->role === 'admin';
 ?>
 
 <x-layout>
+
     <head>
         <style>
-            body { background-color: #f3f4f6; }
+            body {
+                background-color: #f3f4f6;
+            }
 
-            /* Tarjetas */
             .soft-card {
                 background: white;
                 border: none;
@@ -30,8 +32,7 @@ $isAdmin = $user->role === 'admin';
                 overflow: hidden;
                 transition: transform 0.2s;
             }
-            
-            /* Foto de Perfil */
+
             .profile-photo-container {
                 border-radius: 24px;
                 overflow: hidden;
@@ -40,18 +41,31 @@ $isAdmin = $user->role === 'admin';
                 background-color: #e9ecef;
                 position: relative;
             }
+
             .profile-photo {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
             }
 
-            /* Textos */
-            .text-navy { color: #0f172a; }
-            .text-label { font-weight: 700; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-            
-            /* Íconos */
-            .info-row { display: flex; align-items: flex-start; margin-bottom: 1.2rem; }
+            .text-navy {
+                color: #0f172a;
+            }
+
+            .text-label {
+                font-weight: 700;
+                color: #64748b;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .info-row {
+                display: flex;
+                align-items: flex-start;
+                margin-bottom: 1.2rem;
+            }
+
             .info-icon {
                 font-size: 1.2rem;
                 color: #0f172a;
@@ -65,7 +79,6 @@ $isAdmin = $user->role === 'admin';
                 border-radius: 12px;
             }
 
-            /* Badges de Rol */
             .role-badge {
                 position: absolute;
                 bottom: 15px;
@@ -75,18 +88,38 @@ $isAdmin = $user->role === 'admin';
                 font-weight: bold;
                 backdrop-filter: blur(5px);
                 color: white;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             }
-            .bg-doctor { background-color: rgba(13, 110, 253, 0.9); } /* Azul */
-            .bg-patient { background-color: rgba(13, 202, 240, 0.9); } /* Cyan */
-            .bg-pharmacy { background-color: rgba(25, 135, 84, 0.9); } /* Verde */
-            .bg-admin { background-color: rgba(33, 37, 41, 0.95); }   /* Negro */
+
+            .bg-doctor {
+                background-color: rgba(13, 110, 253, 0.9);
+            }
+
+            .bg-patient {
+                background-color: rgba(13, 202, 240, 0.9);
+            }
+
+            .bg-pharmacy {
+                background-color: rgba(25, 135, 84, 0.9);
+            }
+
+            .bg-admin {
+                background-color: rgba(33, 37, 41, 0.95);
+            }
+
+            .border-navy {
+                border-color: #0d2e4e!important;
+            }
+
+            .text-navy{
+                color: #0d2e4e!important;
+            }
 
         </style>
     </head>
 
     <div class="container py-5">
-        
+
         <div class="mb-4">
             <a href="{{ url()->previous() }}" class="btn btn-light rounded-pill px-4 shadow-sm text-muted">
                 <i class="bi bi-arrow-left me-2"></i>Regresar
@@ -94,16 +127,15 @@ $isAdmin = $user->role === 'admin';
         </div>
 
         <div class="row g-5">
-            
+
             {{-- COLUMNA IZQUIERDA --}}
             <div class="col-lg-4">
-                
+
                 {{-- 1. FOTO Y BADGE DE ROL --}}
                 <div class="profile-photo-container mb-4">
-                    <img src="{{ $user->foto ? asset('storage/' . $user->foto) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random' }}" 
-                         alt="{{ $user->name }}" 
-                         class="profile-photo">
-                    
+                    <img src="{{ $user->foto ? asset('storage/' . $user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
+                        alt="{{ $user->name }}" class="profile-photo">
+
                     {{-- Lógica de Badges --}}
                     @if($isDoctor)
                         <span class="role-badge bg-doctor"><i class="bi bi-heart-pulse-fill me-2"></i>Doctor</span>
@@ -119,7 +151,7 @@ $isAdmin = $user->role === 'admin';
                 {{-- datos generales --}}
                 <div class="soft-card p-4">
                     <div class="mb-3">
-                        <span class="text-label d-block mb-1">Nombre </span> 
+                        <span class="text-label d-block mb-1">Nombre </span>
                         <span class="fs-5 fw-bold text-navy">{{ $user->name }}</span>
                     </div>
 
@@ -127,15 +159,16 @@ $isAdmin = $user->role === 'admin';
                     @if($isDoctor && $user->doctor)
                         <hr class="opacity-10">
                         <div class="mb-3">
-                            <span class="text-label d-block mb-1">Cédula Profesional</span> 
+                            <span class="text-label d-block mb-1">Cédula Profesional</span>
                             <span class="text-muted font-monospace">{{ $user->doctor->cedula }}</span>
                         </div>
                     @endif
 
                     <hr class="opacity-10">
                     <div class="mb-0">
-                        <span class="text-label d-block mb-1">Miembro desde</span> 
-                        <span class="text-muted small">{{ str::title($user->created_at->translatedFormat('F Y')) }}</span>
+                        <span class="text-label d-block mb-1">Miembro desde</span>
+                        <span
+                            class="text-muted small">{{ str::title($user->created_at->translatedFormat('F Y')) }}</span>
                     </div>
                 </div>
 
@@ -150,7 +183,7 @@ $isAdmin = $user->role === 'admin';
 
             {{-- parte derecha --}}
             <div class="col-lg-8">
-                
+
                 {{-- contacto --}}
                 <div class="soft-card p-5 mb-4">
                     <h4 class="mb-4 fw-bold text-navy">Información de Contacto</h4>
@@ -180,34 +213,137 @@ $isAdmin = $user->role === 'admin';
 
                 {{-- info de los pacientes --}}
                 @if($isPatient)
-                    <div class="soft-card p-5 mb-4 border-start border-4 border-info">
-                        <h4 class="mb-4 fw-bold text-info"><i class="bi bi-person-vcard-fill me-2"></i>Ficha Médica Básica</h4>
-                        
-                        @if($user->patient)
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <div class="info-row mb-0">
-                                        <div class="info-icon text-danger bg-danger-subtle"><i class="bi bi-droplet-fill"></i></div>
-                                        <div>
-                                            <span class="fw-bold d-block">Tipo de Sangre</span>
-                                            <span class="fs-5 fw-bold text-navy">{{ $user->patient->tipo_sangre ?? 'No especificado' }}</span>
+                    <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
+                        <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-person-vcard-fill me-2 text-navy"></i>Ficha Médica Básica
+                        </h4>
+
+                        @if($user->role == 'paciente')
+                            {{-- Verificamos la relación usando 'patient' --}}
+                            @if($user->patient)
+                                <div class="row g-3">
+                                    {{-- 1. Tipo de Sangre --}}
+                                    <div class="col-md-4">
+                                        <div class="p-3 rounded-4 bg-danger-subtle h-100 border border-danger-subtle">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="bg-white rounded-circle text-danger shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-droplet-fill fs-4"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-danger-emphasis fw-bold text-uppercase"
+                                                        style="font-size: 0.75rem;">Tipo de Sangre</small>
+                                                    {{-- Aquí usamos ->patient --}}
+                                                    <div class="fs-4 fw-bold text-dark lh-1">
+                                                        {{ $user->patient->tipo_sangre ?? '--' }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- 2. Alergias --}}
+                                    <div class="col-md-8">
+                                        <div class="p-3 rounded-4 bg-warning-subtle h-100 border border-warning-subtle">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="bg-white rounded-circle text-warning shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-warning-emphasis fw-bold text-uppercase"
+                                                        style="font-size: 0.75rem;">Alergias</small>
+                                                    <div class="fw-medium text-dark lh-sm">
+                                                        {{ $user->patient->alergias ?? 'Ninguna alergia registrada.' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- 3. Padecimientos --}}
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 bg-info-subtle h-100 border border-info-subtle">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="bg-white rounded-circle text-info shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-heart-pulse-fill fs-4"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-info-emphasis fw-bold text-uppercase"
+                                                        style="font-size: 0.75rem;">Padecimientos</small>
+                                                    <div class="text-dark small lh-sm">
+                                                        {{ $user->patient->padecimientos ?? 'Sin padecimientos registrados.' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- 4. Cirugías --}}
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 bg-primary-subtle h-100 border border-primary-subtle">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="bg-white rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-bandaid-fill fs-4"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-primary-emphasis fw-bold text-uppercase"
+                                                        style="font-size: 0.75rem;">Cirugías Previas</small>
+                                                    <div class="text-dark small lh-sm">
+                                                        {{ $user->patient->cirugias ?? 'Ninguna cirugía registrada.' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- 5. Hábitos --}}
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 bg-success-subtle h-100 border border-success-subtle">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="bg-white rounded-circle text-success shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-cup-hot-fill fs-4"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-success-emphasis fw-bold text-uppercase"
+                                                        style="font-size: 0.75rem;">Hábitos</small>
+                                                    <div class="text-dark small lh-sm">
+                                                        {{ $user->patient->habitos ?? 'No especificados.' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- 6. Contacto Emergencia --}}
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 bg-secondary-subtle h-100 border border-secondary-subtle">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="bg-white rounded-circle text-secondary shadow-sm d-flex align-items-center justify-content-center flex-shrink-0"
+                                                    style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-telephone-fill fs-4"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-secondary-emphasis fw-bold text-uppercase"
+                                                        style="font-size: 0.75rem;">Contacto Emergencia</small>
+                                                    <div class="fs-5 fw-bold text-dark font-monospace lh-1">
+                                                        {{ $user->patient->contacto_emergencia ?? '--' }}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="info-row mb-0">
-                                        <div class="info-icon text-warning bg-warning-subtle"><i class="bi bi-exclamation-triangle-fill"></i></div>
-                                        <div>
-                                            <span class="fw-bold d-block">Alergias</span>
-                                            <span class="text-muted">{{ $user->patient->alergias ?? 'Ninguna conocida' }}</span>
-                                        </div>
+                            @else
+                                <div class="alert alert-light border rounded-4 d-flex align-items-center shadow-sm" role="alert">
+                                    <i class="bi bi-info-circle-fill text-muted fs-4 me-3"></i>
+                                    <div>
+                                        <strong class="d-block">Información pendiente</strong>
+                                        <span class="small text-muted">El paciente aún no ha completado su ficha médica.</span>
                                     </div>
                                 </div>
-                            </div>
-                        @else
-                            <div class="alert alert-info bg-info-subtle border-0 rounded-4">
-                                <i class="bi bi-info-circle me-2"></i> El paciente aún no ha llenado su ficha médica.
-                            </div>
+                            @endif
                         @endif
                     </div>
                 @endif
@@ -223,10 +359,12 @@ $isAdmin = $user->role === 'admin';
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="info-row mb-0">
-                                    <div class="info-icon text-primary bg-primary-subtle"><i class="bi bi-cash-coin"></i></div>
+                                    <div class="info-icon text-primary bg-primary-subtle"><i class="bi bi-cash-coin"></i>
+                                    </div>
                                     <div>
                                         <span class="fw-bold d-block">Costo Consulta</span>
-                                        <span class="text-success fs-5 fw-bold">${{ number_format($user->doctor->costo, 2) }}</span>
+                                        <span
+                                            class="text-success fs-5 fw-bold">${{ number_format($user->doctor->costo, 2) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -236,7 +374,7 @@ $isAdmin = $user->role === 'admin';
                                     <div>
                                         <span class="fw-bold d-block">Horario</span>
                                         <span class="text-muted">
-                                            {{ \Carbon\Carbon::parse($user->doctor->horario_entrada)->format('H:i') }} - 
+                                            {{ \Carbon\Carbon::parse($user->doctor->horario_entrada)->format('H:i') }} -
                                             {{ \Carbon\Carbon::parse($user->doctor->horario_salida)->format('H:i') }}
                                         </span>
                                     </div>
@@ -247,7 +385,7 @@ $isAdmin = $user->role === 'admin';
                 @endif
 
                 {{-- mapa --}}
-                @if($hasLocation)
+                @if($isDoctor || $isPharmacy)
                     <div class="soft-card p-1">
                         <div id="map" style="height: 350px; border-radius: 24px;"></div>
                         <div class="p-3 text-center">
@@ -262,13 +400,13 @@ $isAdmin = $user->role === 'admin';
             </div>
         </div>
     </div>
-    
+
     {{-- Scripts del Mapa --}}
     @if($hasLocation)
-        <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
+        <script async src="https://maps.googleapis.com/maps/api/js?key=<?php    echo $apiKey; ?>&callback=initMap"></script>
         <script>
             function initMap() {
-                const position = { lat: <?php echo $lat; ?>, lng: <?php echo $lng; ?> };
+                const position = { lat: <?php    echo $lat; ?>, lng: <?php    echo $lng; ?> };
                 const map = new google.maps.Map(document.getElementById("map"), {
                     zoom: 15,
                     center: position,

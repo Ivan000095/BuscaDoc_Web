@@ -218,7 +218,6 @@
             })()
         </script>
 
-        {{-- 2. Google Maps --}}
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap" async defer></script>
 
         <script>

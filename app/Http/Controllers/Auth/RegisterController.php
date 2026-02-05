@@ -30,13 +30,12 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            // Datos Usuario Base
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'string', 'in:paciente,doctor,farmacia'],
             'f_nacimiento' => ['required', 'date'],
-            'foto' => ['nullable', 'image', 'max:2048'], // 2MB Max
+            'foto' => ['nullable', 'image', 'max:2048'],
 
             'cedula' => [Rule::requiredIf($data['role'] == 'doctor')],
             'costo' => [Rule::requiredIf($data['role'] == 'doctor'), 'nullable', 'numeric'],
@@ -68,8 +67,8 @@ class RegisterController extends Controller
                 'role' => $data['role'],
                 'f_nacimiento' => $data['f_nacimiento'],
                 'foto' => $rutaFoto,
-                'latitud' => 16.9080,
-                'longitud' => -92.0946,
+                'latitud' => $data['latitud'] ?? 16.91173660,
+                'longitud' => $data['longitud'] ?? -92.09460000,
             ]);
 
             // Crear Perfil según Rol
@@ -81,8 +80,8 @@ class RegisterController extends Controller
                         'costo' => $data['costo'],
                         'horario_entrada' => $data['horario_entrada'],
                         'horario_salida' => $data['horario_salida'],
-                        'idiomas' => $data['descripcion'],
-                        'descripcion' => $data['idiomas'],
+                        'idiomas' => $data['idiomas'] ?? 'Español',
+                        'descripcion' => $data['descripcion'] ?? 'Sin descripción',
                     ]);
                     if (isset($data['especialidades'])) {
                         $doctor->especialidades()->sync($data['especialidades']);
@@ -94,7 +93,10 @@ class RegisterController extends Controller
                         'user_id' => $user->id,
                         'tipo_sangre' => $data['tipo_sangre'],
                         'contacto_emergencia' => $data['contacto_emergencia'],
-                        'alergias' => $data['alergias'] ?? null,
+                        'alergias' => $data['alergias'] ?? 'Sin alergias.',
+                        'cirugias' => $data['cirugias'] ?? 'No ha tenido cirugías',
+                        'padecimientos' => $data['padecimientos'] ?? 'No hay ningún padecimiento.',
+                        'habitos' => $data['habitos'] ?? 'No hay hábitos registrados.',
                     ]);
                     break;
 

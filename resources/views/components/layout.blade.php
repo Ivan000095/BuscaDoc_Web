@@ -127,7 +127,10 @@
                             <a class="nav-link px-3" href="{{ route('home') }}">Inicio</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-3" href="{{ route('doctores.index') }}">Doctores</a>
+                            <a class="nav-link px-3" href="{{ route('doctores.vista') }}">Doctores</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" href="">Farmacias</a>
                         </li>
                     </ul>
 
