@@ -348,6 +348,117 @@ $isAdmin = $user->role === 'admin';
                     </div>
                 @endif
 
+                {{-- info de las farmacias --}}
+                @if($isPharmacy)
+                    <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
+                        <h4 class="mb-4 fw-bold text-navy">
+                            <i class="bi bi-shop-window me-2 text-navy"></i>Info básica de la farmacia
+                        </h4>
+
+                        @if($user->farmacia)
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded-4 bg-primary-subtle h-100 border border-primary-subtle">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-white rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" 
+                                                style="width: 50px; height: 50px;">
+                                                <i class="bi bi-shop fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-primary-emphasis fw-bold text-uppercase" style="font-size: 0.75rem;">Farmacia</small>
+                                                <div class="fs-4 fw-bold text-dark lh-1">{{ $user->farmacia->nom_farmacia ?? 'Sin nombre' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded-4 bg-secondary-subtle h-100 border border-secondary-subtle">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-white rounded-circle text-secondary shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" 
+                                                style="width: 50px; height: 50px;">
+                                                <i class="bi bi-card-heading fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-secondary-emphasis fw-bold text-uppercase" style="font-size: 0.75rem;">RFC</small>
+                                                <div class="fs-5 fw-bold text-dark font-monospace lh-1">{{ $user->farmacia->rfc ?? '--' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <div class="p-3 rounded-4 bg-success-subtle h-100 border border-success-subtle">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-white rounded-circle text-success shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" 
+                                                style="width: 50px; height: 50px;">
+                                                <i class="bi bi-telephone-fill fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-success-emphasis fw-bold text-uppercase" style="font-size: 0.75rem;">Teléfono</small>
+                                                <div class="fs-5 fw-bold text-dark lh-1">{{ $user->farmacia->telefono ?? '--' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-7">
+                                    <div class="p-3 rounded-4 bg-info-subtle h-100 border border-info-subtle">
+                                        <div class="d-flex align-items-center gap-3">
+                                            
+                                            <div class="bg-white rounded-circle text-info shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" 
+                                                style="width: 50px; height: 50px;">
+                                                <i class="bi bi-clock-fill fs-4"></i>
+                                            </div>
+
+                                            <div>
+                                                <small class="text-info-emphasis fw-bold text-uppercase" style="font-size: 0.75rem;">Horario de Atención</small>
+                                                
+                                                <div class="fs-5 fw-bold text-dark lh-1">
+                                                    @if($user->farmacia->horario_entrada && $user->farmacia->horario_salida)
+                                                        {{ \Carbon\Carbon::parse($user->farmacia->horario_entrada)->format('H:i') }} - 
+                                                        {{ \Carbon\Carbon::parse($user->farmacia->horario_salida)->format('H:i') }}
+                                                    @else
+                                                        <span class="text-muted small" style="font-size: 1rem;">No especificado</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="p-3 rounded-4 bg-light h-100 border">
+                                        <div class="d-flex gap-3">
+                                            <div class="bg-white rounded-circle text-dark shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" 
+                                                style="width: 50px; height: 50px;">
+                                                <i class="bi bi-file-text-fill fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Sobre Nosotros</small>
+                                                <p class="text-dark mb-0 mt-1 small lh-sm">
+                                                    {{ $user->farmacia->descripcion ?? 'Sin descripción disponible.' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        @else
+                            <div class="alert alert-light border rounded-4 d-flex align-items-center shadow-sm" role="alert">
+                                <i class="bi bi-info-circle-fill text-muted fs-4 me-3"></i>
+                                <div>
+                                    <strong class="d-block">Información pendiente</strong>
+                                    <span class="small text-muted">La farmacia aún no ha completado su perfil.</span>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 {{-- información del doctor --}}
                 @if($isDoctor && $user->doctor)
                     <div class="soft-card p-5 mb-4 border-start border-4 border-primary">

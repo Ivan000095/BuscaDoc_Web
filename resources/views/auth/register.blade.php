@@ -360,24 +360,6 @@
                                             especialidades cargadas.</small> @endif
                                         </div>
                                     </div>
-
-                                    <div class="col-12">
-                                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
-                                            <div class="card-header bg-navy text-white py-3">
-                                                <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Ubicación del Consultorio</h5>
-                                            </div>
-                                            <div class="card-body p-4 bg-white">
-                                                <p class="text-muted ms-2 mb-3"><i class="bi bi-info-circle"></i> Arrastra el marcador rojo para indicar la ubicación exacta.</p>
-                                                
-                                                <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud', $doctor->user->latitud ?? '') }}">
-                                                <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud', $doctor->user->longitud ?? '') }}">
-
-                                                <div class="shadow-sm rounded-4 overflow-hidden border border-light">
-                                                    <div id="map" style="height: 400px; width: 100%;"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -422,6 +404,10 @@
                             <div x-show="role === 'farmacia'" x-transition>
                                 <h6 class="text-success border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DEL NEGOCIO</h6>
                                 <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <input type="textarea" name="descripcion" class="form-control form-control-pill"
+                                            placeholder="Descripción de la farmacia" value="{{ old('descripcion') }}">
+                                    </div>
                                     <div class="col-12">
                                         <input type="text" name="nom_farmacia" class="form-control form-control-pill"
                                             placeholder="Nombre de la Farmacia" value="{{ old('nom_farmacia') }}">
@@ -433,6 +419,47 @@
                                     <div class="col-md-6">
                                         <input type="text" name="telefono" class="form-control form-control-pill"
                                             placeholder="Teléfono" value="{{ old('telefono') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small text-muted ms-3 fw-bold">Horario de entrada</label>
+                                        <input type="time" name="horario_entrada" class="form-control form-control-pill"
+                                            value="{{ old('horario_entrada') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small text-muted ms-3 fw-bold">Horario de salida</label>
+                                        <input type="time" name="horario_salida" class="form-control form-control-pill"
+                                            value="{{ old('horario_salida') }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- mapa, si es doc o farmacia --}}
+                            <div x-show="role === 'doctor' || role === 'farmacia'" x-transition>
+                                <div class="divider-text mt-4">UBICACIÓN</div>
+                                
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                                            <div class="card-header bg-navy text-white py-3">
+                                                {{-- Cambiamos el texto dinámicamente según el rol --}}
+                                                <h5 class="mb-0 fw-bold">
+                                                    <i class="bi bi-geo-alt-fill me-2"></i> 
+                                                    <span x-text="role === 'farmacia' ? 'Ubicación del Negocio' : 'Ubicación del Consultorio'"></span>
+                                                </h5>
+                                            </div>
+                                            <div class="card-body p-4 bg-white">
+                                                <p class="text-muted ms-2 mb-3"><i class="bi bi-info-circle"></i> Arrastra el marcador rojo para indicar la ubicación exacta.</p>
+                                                
+                                                {{-- Solo UN juego de inputs con IDs únicos --}}
+                                                <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud') }}">
+                                                <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud') }}">
+
+                                                <div class="shadow-sm rounded-4 overflow-hidden border border-light">
+                                                    {{-- Solo UN div de mapa con ID único --}}
+                                                    <div id="map" style="height: 400px; width: 100%;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -505,47 +532,59 @@
         }
     </script>
 
+
+<script>
+        let map;
+        let marker;
+
+        // Hacemos la función global
+        window.initMap = function() {
+            // Coordenadas por defecto (Chiapas o lo que tengas)
+            const defLat = 16.9080; 
+            const defLng = -92.0946;
+
+            // Intentamos obtener valores previos (old) si existen
+            const inputLatVal = document.getElementById('latitud').value;
+            const inputLngVal = document.getElementById('longitud').value;
+
+            const myLat = inputLatVal ? parseFloat(inputLatVal) : defLat;
+            const myLng = inputLngVal ? parseFloat(inputLngVal) : defLng;
+            const myLatLng = { lat: myLat, lng: myLng };
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: myLatLng,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+
+            marker = new google.maps.Marker({
+                position: myLatLng,
+                map: map,
+                draggable: true,
+                title: "Ubicación Seleccionada",
+                animation: google.maps.Animation.DROP
+            });
+
+            // Eventos
+            marker.addListener("dragend", function (event) {
+                updateInputs(event.latLng.lat(), event.latLng.lng());
+            });
+
+            map.addListener("click", function (event) {
+                marker.setPosition(event.latLng);
+                updateInputs(event.latLng.lat(), event.latLng.lng());
+            });
+            
+            // Inicializar inputs si estaban vacíos
+            if(!inputLatVal) updateInputs(myLat, myLng);
+        }
+
+        function updateInputs(lat, lng) {
+            document.getElementById('latitud').value = lat;
+            document.getElementById('longitud').value = lng;
+        }
+    </script>
+
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap" async defer></script>
-
-        <script>
-            let map;
-            let marker;
-
-            function initMap() {
-                const initialLat = parseFloat(document.getElementById('latitud').value) || 16.9080;
-                const initialLng = parseFloat(document.getElementById('longitud').value) || -92.0946;
-
-                const myLatLng = { lat: initialLat, lng: initialLng };
-
-                map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 15,
-                    center: myLatLng,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                    styles: []
-                });
-
-                marker = new google.maps.Marker({
-                    position: myLatLng,
-                    map: map,
-                    draggable: true,
-                    title: "Ubicación del Consultorio",
-                    animation: google.maps.Animation.DROP
-                });
-
-                marker.addListener("dragend", function (event) {
-                    updateInputs(event.latLng.lat(), event.latLng.lng());
-                });
-
-                map.addListener("click", function (event) {
-                    marker.setPosition(event.latLng);
-                    updateInputs(event.latLng.lat(), event.latLng.lng());
-                });
-            }
-
-            function updateInputs(lat, lng) {
-                document.getElementById('latitud').value = lat;
-                document.getElementById('longitud').value = lng;
-            }
-        </script>
 
 @endsection

@@ -223,6 +223,10 @@ $lng = $doctor->user->longitud ?? -92.0946;
                         </div>
                     </div>
                 </div>
+                <br>
+                <div class="soft-card p-1">
+                    <div id="map" style="height: 300px; border-radius: 24px;"></div>
+                </div>
             </div>
 
             <div class="col-lg-8">
@@ -370,7 +374,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                                 <div class="mb-2">
                                                     <textarea name="contenido" class="styled-textarea textarea-respuesta"
                                                         cols="1"
-                                                        placeholder="Responde a este comentario con id {{ $review->id }}"
+                                                        placeholder="Responde a este comentario"
                                                         required></textarea>
                                                 </div>
                                                 <div class="text-end">
@@ -519,11 +523,6 @@ $lng = $doctor->user->longitud ?? -92.0946;
                         </div>
                     </div>
                 </div>
-
-                <div class="soft-card p-1">
-                    <div id="map" style="height: 300px; border-radius: 24px;"></div>
-                </div>
-
             </div>
         </div>
     </div>

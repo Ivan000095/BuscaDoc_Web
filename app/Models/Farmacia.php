@@ -21,8 +21,8 @@ class Farmacia extends Model
         'rfc',
         'telefono',
         'descripcion',
-        'horario',
-        'dias_op',
+        'horario_entrada',
+        'horario_salida',
     ];
 
     /**

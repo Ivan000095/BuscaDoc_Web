@@ -106,8 +106,9 @@ class RegisterController extends Controller
                         'nom_farmacia' => $data['nom_farmacia'],
                         'rfc' => $data['rfc'],
                         'telefono' => $data['telefono'],
-                        'dias_op' => 'Lunes a Viernes', 
-                        'horario' => '09:00 - 18:00',
+                        'horario_entrada' => $data['horario_entrada'],
+                        'horario_salida' => $data['horario_salida'],
+                        'descripcion' => $data['descripcion'] ?? 'Sin descripción',
                     ]);
                     break;
             }
