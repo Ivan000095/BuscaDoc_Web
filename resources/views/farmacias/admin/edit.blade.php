@@ -133,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- Foto de Perfil -->
             <div class="col-10">
                 <label class="form-label fw-bold ms-3">Foto de Perfil del Dueño</label>
                 <div class="p-4 bg-light rounded-4 border-0 shadow-sm text-center">

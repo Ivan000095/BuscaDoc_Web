@@ -29,8 +29,6 @@ class FarmaciaController extends Controller
 
 
     //2. Dueño: Solo su farmacia
-
-
     public function miFarmacia()
     {
         $farmacia = Auth::user()->farmacia;
@@ -62,8 +60,9 @@ class FarmaciaController extends Controller
     }
 
 
-    // 3. Administrador: CRUD completo
 
+    
+    // 3. Administrador: CRUD completo
     public function adminIndex()
     {
         $this->authorizeAdmin();

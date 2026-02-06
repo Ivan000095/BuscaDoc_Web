@@ -1,6 +1,5 @@
 <x-layout>
     <div class="container pb-5">
-        {{-- Encabezado --}}
         <div class="row my-5 text-center">
             <div class="col-12">
                 <h1 class="fw-bold text-primary display-5">{{ isset($farmacia) ? 'Editar' : 'Agregar' }} Farmacia</h1>
@@ -174,7 +173,6 @@
                     </div>
                 </div>
 
-                <!-- Botones -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
                     <a href="{{ route('admin.farmacias.index') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-5">Cancelar</a>
                     <button class="btn btn-primary btn-lg rounded-pill px-5 shadow fw-bold" type="submit">
@@ -203,7 +201,6 @@
             })()
         </script>
 
-        <!-- Google Maps -->
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap" async defer></script>
 
         <script>

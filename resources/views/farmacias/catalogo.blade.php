@@ -20,11 +20,10 @@
                 @foreach($farmacias as $f)
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                            <!-- Foto del dueño (opcional) -->
                             @if($f->user?->foto)
                                 <img src="{{ asset('storage/' . $f->user->foto) }}" 
-                                     alt="Dueño: {{ $f->user->name }}"
-                                     class="card-img-top" style="height: 180px; object-fit: cover;">
+                                    alt="Dueño: {{ $f->user->name }}"
+                                    class="card-img-top" style="height: 180px; object-fit: cover;">
                             @else
                                 <div class="bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
                                     <i class="bi bi-shop fs-1 text-muted"></i>

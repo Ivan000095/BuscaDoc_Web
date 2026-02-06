@@ -1,24 +1,22 @@
 <x-layout>
     <div class="container py-5">
         <div class="row g-4">
-            <!-- Imagen grande (izquierda) -->
             <div class="col-12 col-md-4 d-flex justify-content-center">
                 <div class="position-relative" style="max-width: 300px;">
                     @if($farmacia->user?->foto)
                         <img src="{{ asset('storage/' . $farmacia->user->foto) }}"
-                             alt="Foto de {{ $farmacia->nom_farmacia }}"
-                             class="rounded-4 shadow-sm"
-                             style="width: 100%; height: auto; max-height: 350px; object-fit: cover;">
+                            alt="Foto de {{ $farmacia->nom_farmacia }}"
+                            class="rounded-4 shadow-sm"
+                            style="width: 100%; height: auto; max-height: 350px; object-fit: cover;">
                     @else
                         <div class="bg-light rounded-4 shadow-sm d-flex align-items-center justify-content-center"
-                             style="width: 100%; height: 350px; font-size: 4rem; color: #ccc;">
+                            style="width: 100%; height: 350px; font-size: 4rem; color: #ccc;">
                             <i class="bi bi-shop"></i>
                         </div>
                     @endif
                 </div>
             </div>
 
-            <!-- Información principal (derecha) -->
             <div class="col-12 col-md-8">
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body">
@@ -29,7 +27,6 @@
                             </p>
                         @endif
 
-                        <!-- Datos estructurados -->
                         <div class="row g-3">
                             <div class="col-12">
                                 <div class="d-flex align-items-start mb-3">
@@ -118,7 +115,6 @@
             </div>
         </div>
 
-        <!-- Volver -->
         <div class="text-center mt-5">
             <a href="{{ route('farmacias.catalogo') }}" class="btn btn-outline-secondary rounded-pill px-4">
                 ← Volver al catálogo
