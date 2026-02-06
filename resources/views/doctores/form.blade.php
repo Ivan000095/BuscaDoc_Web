@@ -29,7 +29,7 @@
 
             <div class="col-lg-10">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header bg-primary text-white py-3">
+                    <div class="card-header bg-custom-dark text-white py-3">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i> Datos de Cuenta</h5>
                     </div>
                     <div class="card-body p-4 bg-white">
@@ -159,7 +159,6 @@
             <div class="col-10">
                 <label class="form-label fw-bold ms-3">Foto de Perfil</label>
                 <div class="p-4 bg-light rounded-4 border-0 shadow-sm text-center">
-                    {{-- Componente Dropzone --}}
                     <x-image-dropzone 
                         name="image"
                         :current-image="(isset($doctor) && $doctor->user->foto) ? asset('storage/'.$doctor->user->foto) : null"
@@ -173,7 +172,7 @@
             </div>
             <div class="col-lg-10">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
-                    <div class="card-header bg-danger text-white py-3">
+                    <div class="card-header bg-custom-dark text-white py-3">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Ubicación del Consultorio</h5>
                     </div>
                     <div class="card-body p-4 bg-white">
@@ -191,7 +190,7 @@
                 {{-- BOTONES DE ACCIÓN --}}
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
                     <a href="{{ route('doctores.index') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-5">Cancelar</a>
-                    <button class="btn btn-primary btn-lg rounded-pill px-5 shadow fw-bold" type="submit">
+                    <button class="btn btn-navy btn-lg rounded-pill px-5 shadow fw-bold" type="submit">
                         <i class="bi bi-save me-2"></i>
                         {{ isset($doctor) ? 'Actualizar Doctor' : 'Guardar Doctor' }}
                     </button>
