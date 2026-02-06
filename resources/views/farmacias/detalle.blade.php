@@ -1,106 +1,155 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="container py-5">
-    <div class="row g-4">
-        <!-- Columna izquierda: información principal -->
-        <div class="col-lg-8">
-            <div class="d-flex align-items-center mb-4">
-                <h1 class="mb-0">{{ $farmacia->nom_farmacia }}</h1>
-                <span class="badge bg-success ms-3">Abierto hoy</span> <!-- Opcional: lógica de horario -->
-            </div>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    @if($farmacia->descripcion)
-                        <p class="lead">{{ $farmacia->descripcion }}</p>
-                    @endif
-
-                    <div class="mt-4">
-                        <h5><i class="bi bi-geo-alt-fill text-primary me-2"></i>Dirección</h5>
-                        <p class="fs-5">
-                            {{ $farmacia->direccion ?? 'Dirección no disponible' }}
-                        </p>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <h5><i class="bi bi-clock text-primary me-2"></i>Horario</h5>
-                            <p>{{ $farmacia->horario ?? 'No especificado' }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5><i class="bi bi-calendar-check text-primary me-2"></i>Días de operación</h5>
-                            <p>{{ $farmacia->dias_op ?? 'Lunes a Domingo' }}</p>
-                        </div>
-                    </div>
-
-                    @if($farmacia->telefono)
-                        <div class="mt-4">
-                            <h5><i class="bi bi-telephone text-primary me-2"></i>Contacto</h5>
-                            <p class="fs-5">
-                                <a href="tel:{{ $farmacia->telefono }}" class="text-decoration-none">
-                                    {{ $farmacia->telefono }}
-                                </a>
-                            </p>
-                        </div>
-                    @endif
-
-                    @if($farmacia->rfc)
-                        <div class="mt-4">
-                            <h5><i class="bi bi-file-earmark-text text-primary me-2"></i>RFC</h5>
-                            <p>{{ $farmacia->rfc }}</p>
+<x-layout>
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- Imagen grande (izquierda) -->
+            <div class="col-12 col-md-4 d-flex justify-content-center">
+                <div class="position-relative" style="max-width: 300px;">
+                    @if($farmacia->user?->foto)
+                        <img src="{{ asset('storage/' . $farmacia->user->foto) }}"
+                             alt="Foto de {{ $farmacia->nom_farmacia }}"
+                             class="rounded-4 shadow-sm"
+                             style="width: 100%; height: auto; max-height: 350px; object-fit: cover;">
+                    @else
+                        <div class="bg-light rounded-4 shadow-sm d-flex align-items-center justify-content-center"
+                             style="width: 100%; height: 350px; font-size: 4rem; color: #ccc;">
+                            <i class="bi bi-shop"></i>
                         </div>
                     @endif
                 </div>
             </div>
-        </div>
 
-        <!-- Columna derecha: acciones y mapa (opcional) -->
-        <div class="col-lg-4">
-            <div class="sticky-top" style="top: 20px;">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body text-center">
-                        <h5>¿Necesitas ayuda?</h5>
-                        <p class="text-muted">Contacta directamente a la farmacia</p>
-
-                        @if($farmacia->telefono)
-                            <a href="tel:{{ $farmacia->telefono }}" class="btn btn-success w-100 mb-2">
-                                <i class="bi bi-telephone me-2"></i>Llamar ahora
-                            </a>
+            <!-- Información principal (derecha) -->
+            <div class="col-12 col-md-8">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body">
+                        <h1 class="fw-bold text-primary mb-1">{{ $farmacia->nom_farmacia }}</h1>
+                        @if($farmacia->user?->name)
+                            <p class="text-muted mb-3">
+                                <i class="bi bi-person me-1"></i> Dueño: {{ $farmacia->user->name }}
+                            </p>
                         @endif
 
-                        <button class="btn btn-outline-primary w-100 mb-2" disabled>
-                            <i class="bi bi-whatsapp me-2"></i>Enviar WhatsApp
-                        </button>
+                        <!-- Datos estructurados -->
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="d-flex align-items-start mb-3">
+                                    <i class="bi bi-geo-alt text-danger fs-4 mt-1 me-3"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Ubicación de la Farmacia</h6>
+                                        <p class="text-muted mb-0">
+                                            Consultar mapa abajo ↓
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <button class="btn btn-outline-secondary w-100" disabled>
-                            <i class="bi bi-map me-2"></i>Ver en mapa
-                        </button>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-clock text-primary fs-4 mt-1 me-3"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Horarios</h6>
+                                        <p class="mb-0">
+                                            {{ $farmacia->horario ?? 'No especificado' }}
+                                            <br>
+                                            <small class="text-muted">{{ $farmacia->dias_op ?? 'Todos los días' }}</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-envelope text-success fs-4 mt-1 me-3"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Contacto (Email)</h6>
+                                        <p class="mb-0">
+                                            {{ $farmacia->user?->email ?? 'No disponible' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-telephone text-info fs-4 mt-1 me-3"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Teléfono</h6>
+                                        <p class="mb-0">
+                                            {{ $farmacia->telefono ?? 'No disponible' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if($farmacia->rfc)
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-file-earmark-text text-secondary fs-4 mt-1 me-3"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">RFC</h6>
+                                            <p class="mb-0">{{ $farmacia->rfc }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-
-                <!-- Imagen o logo (si existe) -->
-                @if($farmacia->foto)
-                    <div class="card shadow-sm border-0 mt-4">
-                        <img src="{{ asset('storage/' . $farmacia->foto) }}" 
-                            class="card-img-top" 
-                            alt="{{ $farmacia->nom_farmacia }}"
-                            style="height: 200px; object-fit: cover;">
+                
+        <!-- Mini mapa (debajo de todo) -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-light d-flex align-items-center py-3">
+                        <i class="bi bi-geo-alt me-2 text-danger"></i>
+                        <h5 class="mb-0 fw-bold">Ubicación en Mapa</h5>
                     </div>
-                @else
-                    <div class="card shadow-sm border-0 mt-4 text-center py-5 bg-light">
-                        <i class="bi bi-building fs-1 text-muted"></i>
-                        <p class="mt-2 text-muted">Imagen no disponible</p>
+                    <div class="card-body p-0">
+                        @if($farmacia->user?->latitud && $farmacia->user?->longitud)
+                            <div id="map-detail" style="height: 300px; width: 100%;"></div>
+                        @else
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-map fs-2"></i>
+                                <p class="mt-2 mb-0">Ubicación no disponible</p>
+                            </div>
+                        @endif
                     </div>
-                @endif
+                </div>
             </div>
+        </div>
+
+        <!-- Volver -->
+        <div class="text-center mt-5">
+            <a href="{{ route('farmacias.catalogo') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                ← Volver al catálogo
+            </a>
         </div>
     </div>
 
-    <div class="text-center mt-4">
-        <a href="{{ route('farmacias.catalogo') }}" class="btn btn-link">
-            ← Volver al catálogo de farmacias
-        </a>
-    </div>
-</div>
-@endsection
+    @section('js')
+        @if($farmacia->user?->latitud && $farmacia->user?->longitud)
+            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const lat = {{ $farmacia->user->latitud }};
+                    const lng = {{ $farmacia->user->longitud }};
+                    const map = new google.maps.Map(document.getElementById("map-detail"), {
+                        zoom: 15,
+                        center: { lat, lng },
+                        disableDefaultUI: true,
+                        styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
+                    });
+                    new google.maps.Marker({
+                        position: { lat, lng },
+                        map: map,
+                        title: "{{ $farmacia->nom_farmacia }}",
+                        icon: {
+                            url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='30' height='30' fill='%23d32f2f'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E",
+                            scaledSize: new google.maps.Size(30, 30)
+                        }
+                    });
+                });
+            </script>
+        @endif
+    @endsection
+</x-layout>

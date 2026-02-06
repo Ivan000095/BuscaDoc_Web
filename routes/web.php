@@ -59,14 +59,14 @@ Route::middleware(["auth", "security:auth"])->group(function () {
 
 
 
-// 👤 Dueño de farmacia (loggeado)
+//Dueño de farmacia (loggeado)
 Route::middleware(['auth'])->group(function () {
     Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
     Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
     Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
 });
 
-// 👨‍💼 Administrador
+// Administrador
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/farmacias', [FarmaciaController::class, 'adminIndex'])->name('admin.farmacias.index');
     Route::get('/farmacias/crear', [FarmaciaController::class, 'adminCreate'])->name('admin.farmacias.create');
@@ -168,7 +168,6 @@ Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->
 
 Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
 
-// 👀 Públicas: pacientes y visitantes
 Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
 
 Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
