@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GoogleController;
@@ -103,10 +104,14 @@ Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
+    Route::post('/doctores/{id}/agendar', [CitaController::class, 'store'])->name('citas.store');
+    Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');
+    Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
+    Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
 });
 
 // Route::middleware('auth:api')->group(function({
-    
+
 // }));
 
 Auth::routes();
@@ -127,8 +132,8 @@ Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback'])
 Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->name('doctores.vista');
 
 Route::post('/comentarios', [ComentarioController::class, 'store'])
-     ->middleware('auth')
-     ->name('comentarios.store');
+    ->middleware('auth')
+    ->name('comentarios.store');
 
 Route::resource('pacientes', App\Http\Controllers\PacienteController::class);
 

@@ -268,10 +268,14 @@ $lng = $doctor->user->longitud ?? -92.0946;
                     </div>
                 </div>
 
-                <div class="d-flex gap-3 mb-5">
-                    <button class="btn btn-navy px-4 flex-grow-1">Solicitar cita</button>
-                    <button class="btn btn-navy px-4 flex-grow-1">Reportar</button>
-                </div>
+                @if(Auth::user()->role == 'paciente')
+                    <div class="d-flex gap-3 mb-5">
+                        <button type="button" class="btn btn-navy px-4 flex-grow-1" data-bs-toggle="modal" data-bs-target="#agendarCitaModal">
+                            Agendar Cita
+                        </button>
+                        <button class="btn btn-navy px-4 flex-grow-1">Reportar</button>
+                    </div>
+                @endif
 
                 <!-- sección de preguntas y reeñas -->
                 <div id="seccion-comentarios" class="soft-card p-4 mb-4">
@@ -526,6 +530,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
             </div>
         </div>
     </div>
+    @include('citas.agendar')
 
     {{-- Scripts del Mapa --}}
     <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>

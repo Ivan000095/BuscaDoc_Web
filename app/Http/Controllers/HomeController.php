@@ -23,6 +23,20 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $proximaCita = null;
+
+        if ($user->role == 'paciente' && $user->patient) {
+            $proximaCita = \App\Models\Cita::where('paciente_id', $user->patient->id)
+                ->where('fecha_hora', '>=', now())
+                ->where('estado', '!=', 'cancelada')
+                ->orderBy('fecha_hora', 'asc')
+                ->first();
+
+        }
+
+
+
+        return view('home', compact('proximaCita'));
     }
 }

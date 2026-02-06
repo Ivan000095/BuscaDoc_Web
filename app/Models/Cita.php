@@ -10,39 +10,24 @@ class Cita extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+    protected $table = 'citas';
+
     protected $fillable = [
-        'doctor_id',
         'paciente_id',
+        'doctor_id',
         'fecha_hora',
         'detalles',
         'estado',
-        'user_id',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'id' => 'integer',
-            'doctor_id' => 'integer',
+            'id'          => 'integer',
+            'doctor_id'   => 'integer',
             'paciente_id' => 'integer',
-            'fecha_hora' => 'datetime',
-            'user_id' => 'integer',
+            'fecha_hora'  => 'datetime',
         ];
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     public function doctor(): BelongsTo
