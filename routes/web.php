@@ -14,6 +14,7 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\FarmaciaController;
 
 Route::get("/", function () {
     return view("welcome-simple");
@@ -55,6 +56,26 @@ Route::post("password/confirm", [ConfirmPasswordController::class, "confirm"]);
 
 Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get("/home", [HomeController::class, "index"])->name("home");
+
+
+
+// 👤 Dueño de farmacia (loggeado)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
+    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
+    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
+});
+
+// 👨‍💼 Administrador
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/farmacias', [FarmaciaController::class, 'adminIndex'])->name('admin.farmacias.index');
+    Route::get('/farmacias/crear', [FarmaciaController::class, 'adminCreate'])->name('admin.farmacias.create');
+    Route::post('/farmacias', [FarmaciaController::class, 'adminStore'])->name('admin.farmacias.store');
+    Route::get('/farmacias/{id}/editar', [FarmaciaController::class, 'adminEdit'])->name('admin.farmacias.edit');
+    Route::put('/farmacias/{id}', [FarmaciaController::class, 'adminUpdate'])->name('admin.farmacias.update');
+    Route::delete('/farmacias/{id}', [FarmaciaController::class, 'adminDestroy'])->name('admin.farmacias.destroy');
+});
+// cristian cristian
 
     // Route::resource("products", ProductController::class)->except([
     //     "show",
@@ -146,3 +167,8 @@ Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)
 Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
 
 Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+// 👀 Públicas: pacientes y visitantes
+Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
+
+Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
