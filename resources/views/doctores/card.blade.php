@@ -357,16 +357,6 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                             <p class="text-muted small mb-0">{{ $review->contenido }}</p>
                                             <br>
 
-                                            @if ($errors->any())
-                                                <div class="alert alert-danger">
-                                                    <ul>
-                                                        @foreach ($errors->all() as $error)
-                                                            <li>{{ $error }}</li>
-                                                        @endforeach
-                                                    </ul>
-                                                </div>
-                                            @endif
-
                                             <!-- FORm de respuestas -->
                                             <form action="{{ route('respuestas.store') }}" method="POST">
                                                 @csrf

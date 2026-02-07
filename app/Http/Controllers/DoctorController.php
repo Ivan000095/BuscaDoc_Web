@@ -264,12 +264,15 @@ class DoctorController extends Controller
                 "horarioentrada" => $doctor->horario_entrada,
                 "horariosalida" => $doctor->horario_salida,
                 "actions" => '
-                    <div class="d-flex gap-1 justify-content-end">
-                        <button class="btn btn-primary btn-sm" onclick="execute(\'/doctores/' . $doctor->id . '/edit\')">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteRecord(\'/doctores/' . $doctor->id . '\')">Delete</button>
-                        <button class="btn btn-success btn-sm" onclick="execute(\'/doctores/' . $doctor->id . '\')"><i class="bi bi-person"></i> <span class="d-none d-sm-inline">Ver</span></button>
-                    </div>
-                ',
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline-navy btn-sm rounded-pill" onclick="execute(\'' . route('doctores.edit', $doctor->id) . '\')" title="Editar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm rounded-pill shadow-sm" onclick="deleteRecord(\'' . route('doctores.destroy', $doctor->id) . '\')" title="Eliminar">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </div>
+            ',
             ];
         });
         return response()->json([

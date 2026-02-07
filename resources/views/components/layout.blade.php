@@ -152,6 +152,10 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(13, 46, 78, 0.4);
         }
+
+        .bg-navy-subtle {
+            background-color: #0a233a1a!important;
+        }
     </style>
 
     @yield('css')
@@ -204,7 +208,7 @@
                             <a class="nav-link px-3" href="{{ route('doctores.vista') }}">Doctores</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-3" href="">Farmacias</a>
+                            <a class="nav-link px-3" href="{{ route('farmacias.catalogo') }}">Farmacias</a>
                         </li>
                     </ul>
 

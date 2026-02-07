@@ -1,7 +1,6 @@
 <?php
 use Illuminate\Support\Str;
 
-// Helpers de Roles para lógica de formularios
 $isDoctor = $user->role === 'doctor';
 $isPharmacy = $user->role === 'farmacia';
 $isPatient = $user->role === 'paciente';
@@ -56,7 +55,6 @@ $isPatient = $user->role === 'paciente';
             @method('PUT')
 
             <div class="row g-4">
-                {{-- COLUMNA IZQUIERDA: Imagen y Cuenta --}}
                 <div class="col-lg-4">
                     <div class="soft-card p-4 text-center mb-4">
                         <span class="text-label d-block mb-3">Foto de Perfil</span>
@@ -83,10 +81,7 @@ $isPatient = $user->role === 'paciente';
                     </div>
                 </div>
 
-                {{-- COLUMNA DERECHA: Datos Detallados --}}
                 <div class="col-lg-8">
-                    
-                    {{-- Información Básica --}}
                     <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
                         <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-person-fill me-2"></i>Información General</h4>
                         <div class="row g-3">
@@ -96,7 +91,7 @@ $isPatient = $user->role === 'paciente';
                             </div>
                             <div class="col-md-5">
                                 <label class="text-label mb-2">Fecha de Nacimiento</label>
-                                <input type="date" name="f_nacimiento" class="form-control" value="{{ old('f_nacimiento', $user->f_nacimiento) }}">
+                                <input type="date" name="f_nacimiento" class="form-control" value="{{ old('f_nacimiento', $user->f_nacimiento) }}" max="{{ date('Y-m-d', strtotime('-18 years')) }}">
                             </div>
                         </div>
                     </div>

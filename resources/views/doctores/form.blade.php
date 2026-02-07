@@ -3,7 +3,7 @@
         {{-- Encabezado con estilo --}}
         <div class="row my-5 text-center">
             <div class="col-12">
-                <h1 class="fw-bold text-primary display-5">{{ isset($doctor) ? 'Editar' : 'Agregar' }} Doctor</h1>
+                <h1 class="fw-bold text-navy display-5">{{ isset($doctor) ? 'Editar' : 'Agregar' }} Doctor</h1>
                 <p class="text-muted">Complete la información profesional y de ubicación</p>
             </div>
         </div>

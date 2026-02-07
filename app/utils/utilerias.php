@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 use Carbon\Carbon;
+use DateTime;
 
 class Formato
 {
@@ -25,5 +26,10 @@ class Formato
         $fechaObj = Carbon::parse($fecha);
         $fechaformato = $fechaObj->isoFormat('D [de] MMMM [del] YYYY');
         return $fechaformato;
+    }
+
+    public static function hora($horatexto) 
+    {
+        return Carbon::parse($horatexto)->format('h:i A');
     }
 }
