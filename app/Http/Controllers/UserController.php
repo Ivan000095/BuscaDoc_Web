@@ -65,7 +65,7 @@ class UserController extends Controller
     }
     public function edit($id)
     {
-        $user = User::with(['doctor', 'paciente', 'farmacia'])->findOrFail($id);
+        $user = User::with(['doctor', 'patient', 'farmacia'])->findOrFail($id);
         
         // Verificamos que el usuario solo edite su propio perfil (Seguridad básica)
         if (auth()->id() !== $user->id && auth()->user()->role !== 'admin') {
@@ -77,87 +77,74 @@ class UserController extends Controller
     }
 
     // Guardar los cambios
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
+public function update(Request $request, $id)
+{
+    $user = User::findOrFail($id);
 
-        // 1. Validaciones Generales
-        $request->validate([
-            'foto' => 'nullable|image|max:2048',
-            'f_nacimiento' => 'required|date',
-            'genero' => 'required|string',
+    // 1. Validaciones ajustadas a lo que realmente envías en la vista
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => ['required', 'email', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
+        'foto' => 'nullable|image|max:2048',
+        'f_nacimiento' => 'nullable|date',
+        // 'genero' => 'required|string', <-- Eliminado porque no está en la vista
+    ]);
+
+    DB::transaction(function () use ($request, $user) {
+        
+        if ($request->hasFile('foto')) {
+            if ($user->foto) {
+                Storage::disk('public')->delete($user->foto);
+            }
+            $user->foto = $request->file('foto')->store('perfiles', 'public');
+        }
+
+        // AHORA SÍ: Actualizamos los campos principales incluyendo name y email
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'f_nacimiento' => $request->f_nacimiento,
         ]);
 
-        // 2. Transacción para guardar todo
-        DB::transaction(function () use ($request, $user) {
-            
-            // A. Subir Foto (si hay nueva)
-            if ($request->hasFile('foto')) {
-                // Borrar foto vieja si existe
-                if ($user->foto) {
-                    Storage::disk('public')->delete($user->foto);
-                }
-                $user->foto = $request->file('foto')->store('perfiles', 'public');
-            }
+        if ($user->role === 'doctor') {
+            $user->doctor()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'cedula' => $request->cedula,
+                    'descripcion' => $request->descripcion,
+                    'costo' => $request->costo,
+                    'horario_entrada' => $request->horario_entrada,
+                    'horario_salida' => $request->horario_salida,
+                ]
+            );
+        } elseif ($user->role === 'paciente') {
+            $user->patient()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'tipo_sangre' => $request->tipo_sangre,
+                    'alergias' => $request->alergias,
+                    'padecimientos' => $request->padecimientos,
+                    'habitos' => $request->habitos, // Añadido
+                    'contacto_emergencia' => $request->contacto_emergencia,
+                ]
+            );
+        } elseif ($user->role === 'farmacia') {
+            $user->farmacia()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'nom_farmacia' => $request->nom_farmacia,
+                    'rfc' => $request->rfc,
+                    'descripcion' => $request->descripcion, // Añadido
+                    'horario_entrada' => $request->horario_entrada, // Corregido
+                    'horario_salida' => $request->horario_salida,   // Corregido
+                ]
+            );
+        }
+    });
 
-            // B. Actualizar tabla Users
-            $user->update([
-                'f_nacimiento' => $request->f_nacimiento,
-                'genero' => $request->genero,
-            ]);
-
-            if ($user->role === 'doctor') {
-                $request->validate([
-                    'cedula' => 'required',
-                    'costo' => 'required|numeric',
-                ]);
-
-                $doctor = $user->doctor()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'cedula' => $request->cedula,
-                        'idiomas' => $request->idiomas,
-                        'descripcion' => $request->descripcion,
-                        'costo' => $request->costo,
-                        'horario_entrada' => $request->horario_entrada,
-                        'horario_salida' => $request->horario_salida,
-                    ]
-                );
-
-                if ($request->has('especialidades')) {
-                    $doctor->especialidades()->sync($request->especialidades);
-                }
-
-            } elseif ($user->role === 'paciente') {
-                
-                $user->patient()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'tipo_sangre' => $request->tipo_sangre,
-                        'alergias' => $request->alergias,
-                        'padecimientos' => $request->padecimientos,
-                        'contacto_emergencia' => $request->contacto_emergencia,
-                    ]
-                );
-
-            } elseif ($user->role === 'farmacia') {
-                
-                $user->farmacia()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'nom_farmacia' => $request->nom_farmacia,
-                        'rfc' => $request->rfc,
-                        'telefono' => $request->telefono,
-                        'horario' => $request->horario,
-                    ]
-                );
-            }
-        });
-
-        // Redirigir al perfil actualizado
-        return redirect()->route('users.show', $user->id)
-                         ->with('success', '¡Perfil actualizado correctamente!');
-    }
+    return redirect()->route('users.show', $user->id)
+                     ->with('success', '¡Perfil actualizado correctamente!');
+}
     
     public function show(User $user)
     {
