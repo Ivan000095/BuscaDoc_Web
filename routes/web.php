@@ -58,6 +58,8 @@ Route::post("password/confirm", [ConfirmPasswordController::class, "confirm"]);
 Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get("/home", [HomeController::class, "index"])->name("home");
 
+// cristian cristian
+
     // Route::resource("products", ProductController::class)->except([
     //     "show",
     //     "update",
