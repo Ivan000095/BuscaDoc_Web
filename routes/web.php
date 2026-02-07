@@ -129,6 +129,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');
     Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
     Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
+    Route::get('/buscar', [App\Http\Controllers\SearchController::class, 'search'])->name('global.search');
 });
 
 // Route::middleware('auth:api')->group(function({

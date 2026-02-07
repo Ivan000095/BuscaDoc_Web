@@ -19,10 +19,9 @@ class UserController extends Controller
         if ($request->has('search')) {
             $search = $request->get('search');
             $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                ->orWhere('email', 'like', "%{$search}%");
         }
 
-        // Paginamos de 10 en 10
         $users = $query->orderBy('id', 'desc')->paginate(10);
 
         return view('users.index', compact('users'));
@@ -66,7 +65,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::with(['doctor', 'patient', 'farmacia'])->findOrFail($id);
-        
+
         // Verificamos que el usuario solo edite su propio perfil (Seguridad básica)
         if (auth()->id() !== $user->id && auth()->user()->role !== 'admin') {
             abort(403);
@@ -77,78 +76,77 @@ class UserController extends Controller
     }
 
     // Guardar los cambios
-public function update(Request $request, $id)
-{
-    $user = User::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
 
-    // 1. Validaciones ajustadas a lo que realmente envías en la vista
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => ['required', 'email', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
-        'foto' => 'nullable|image|max:2048',
-        'f_nacimiento' => 'nullable|date',
-        // 'genero' => 'required|string', <-- Eliminado porque no está en la vista
-    ]);
-
-    DB::transaction(function () use ($request, $user) {
-        
-        if ($request->hasFile('foto')) {
-            if ($user->foto) {
-                Storage::disk('public')->delete($user->foto);
-            }
-            $user->foto = $request->file('foto')->store('perfiles', 'public');
-        }
-
-        // AHORA SÍ: Actualizamos los campos principales incluyendo name y email
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'f_nacimiento' => $request->f_nacimiento,
+        // 1. Validaciones ajustadas a lo que realmente envías en la vista
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
+            'foto' => 'nullable|image|max:2048',
+            'f_nacimiento' => 'nullable|date',
         ]);
 
-        if ($user->role === 'doctor') {
-            $user->doctor()->updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'cedula' => $request->cedula,
-                    'descripcion' => $request->descripcion,
-                    'costo' => $request->costo,
-                    'horario_entrada' => $request->horario_entrada,
-                    'horario_salida' => $request->horario_salida,
-                ]
-            );
-        } elseif ($user->role === 'paciente') {
-            $user->patient()->updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'tipo_sangre' => $request->tipo_sangre,
-                    'alergias' => $request->alergias,
-                    'padecimientos' => $request->padecimientos,
-                    'habitos' => $request->habitos, // Añadido
-                    'contacto_emergencia' => $request->contacto_emergencia,
-                ]
-            );
-        } elseif ($user->role === 'farmacia') {
-            $user->farmacia()->updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'nom_farmacia' => $request->nom_farmacia,
-                    'rfc' => $request->rfc,
-                    'descripcion' => $request->descripcion, // Añadido
-                    'horario_entrada' => $request->horario_entrada, // Corregido
-                    'horario_salida' => $request->horario_salida,   // Corregido
-                ]
-            );
-        }
-    });
+        DB::transaction(function () use ($request, $user) {
 
-    return redirect()->route('users.show', $user->id)
-                     ->with('success', '¡Perfil actualizado correctamente!');
-}
-    
+            if ($request->hasFile('foto')) {
+                if ($user->foto) {
+                    Storage::disk('public')->delete($user->foto);
+                }
+                $user->foto = $request->file('foto')->store('perfiles', 'public');
+            }
+
+            // AHORA SÍ: Actualizamos los campos principales incluyendo name y email
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'f_nacimiento' => $request->f_nacimiento,
+            ]);
+
+            if ($user->role === 'doctor') {
+                $user->doctor()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'cedula' => $request->cedula,
+                        'descripcion' => $request->descripcion,
+                        'costo' => $request->costo,
+                        'horario_entrada' => $request->horario_entrada,
+                        'horario_salida' => $request->horario_salida,
+                    ]
+                );
+            } elseif ($user->role === 'paciente') {
+                $user->patient()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'tipo_sangre' => $request->tipo_sangre,
+                        'alergias' => $request->alergias,
+                        'padecimientos' => $request->padecimientos,
+                        'habitos' => $request->habitos, // Añadido
+                        'contacto_emergencia' => $request->contacto_emergencia,
+                    ]
+                );
+            } elseif ($user->role === 'farmacia') {
+                $user->farmacia()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'nom_farmacia' => $request->nom_farmacia,
+                        'rfc' => $request->rfc,
+                        'descripcion' => $request->descripcion, // Añadido
+                        'horario_entrada' => $request->horario_entrada, // Corregido
+                        'horario_salida' => $request->horario_salida,   // Corregido
+                    ]
+                );
+            }
+        });
+
+        return redirect()->route('users.show', $user->id)
+            ->with('success', '¡Perfil actualizado correctamente!');
+    }
+
     public function show(User $user)
     {
-        $user->role == 'doctor' ? $user->load('doctor') : ($user->role == 'farmacia' ? $user->load('farmacia') : $user->load('patient')); 
+        $user->role == 'doctor' ? $user->load('doctor') : ($user->role == 'farmacia' ? $user->load('farmacia') : $user->load('patient'));
         return view('users.show', compact('user'));
 
     }

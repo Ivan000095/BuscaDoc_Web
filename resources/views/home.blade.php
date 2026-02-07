@@ -100,33 +100,30 @@
                     <h2 class="fw-bold text-navy mb-2">Bienvenido a BuscaDoc, {{ Auth::user()->name }}</h2>
                     <p class="text-muted mb-4">Encuentra lo que buscas, aquí mismo.</p>
 
-                    <form action="{{ route('users.index') }}" method="GET">
-                        <div class="input-group shadow-sm rounded-pill overflow-hidden border-0 p-1 bg-white">
-                            <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
-                            <input type="text" name="search" class="form-control border-0 shadow-none ps-2"
-                                placeholder="Buscar cardiólogo, pediatra, farmacia..." style="height: 50px;">
-                            <button class="btn btn-navy rounded-pill px-4 m-1 fw-bold" type="submit">Buscar</button>
-                        </div>
-                    </form>
+                        <form action="{{ route('global.search') }}" method="GET">
+                            <div class="input-group shadow-sm rounded-pill overflow-hidden border-0 p-1 bg-white">
+                                <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" name="search" class="form-control border-0 shadow-none ps-2"
+                                    placeholder="Buscar cardiólogo, pediatra, farmacia..." style="height: 50px;" required>
+                                <button class="btn btn-navy rounded-pill px-4 m-1 fw-bold" type="submit">Buscar</button>
+                            </div>
+                        </form>
                 </div>
             </div>
 
 
             <div class="row g-4">
                 <div class="col-lg-8">
-                    {{-- próxima cita (PENDIENTE) --}}
                     @if($proximaCita)
                         <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
                             <div class="card-body p-0">
                                 <div class="row g-0">
 
-                                    {{-- 1. Franja lateral decorativa --}}
                                     <div
                                         class="col-12 bg-navy text-white p-3 d-flex align-items-center justify-content-between d-md-none">
                                         <span class="fw-bold"><i class="bi bi-calendar-event me-2"></i>Tu próxima cita</span>
                                     </div>
 
-                                    {{-- 2. Fecha (Lado Izquierdo) --}}
                                     <div
                                         class="col-md-2 bg-light d-flex flex-column align-items-center justify-content-center py-4 border-end">
                                         <span
@@ -136,10 +133,8 @@
                                         <span class="small text-muted">{{ $proximaCita->fecha_hora->format('l') }}</span>
                                     </div>
 
-                                    {{-- 3. Info del Doctor (Centro) --}}
                                     <div class="col-md-7 p-4 d-flex align-items-center">
                                         <div class="d-flex align-items-center">
-                                            {{-- Foto del Doctor --}}
                                             <img src="{{ $proximaCita->doctor->user->foto ? asset('storage/' . $proximaCita->doctor->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCita->doctor->user->name) }}"
                                                 class="rounded-circle shadow-sm me-3" width="65" height="65"
                                                 style="object-fit: cover;">
@@ -155,17 +150,14 @@
                                                     <span
                                                         class="fw-bold text-dark">{{ $proximaCita->fecha_hora->format('h:i A') }}</span>
                                                     <span class="mx-2">•</span>
-                                                    <span>Consultorio Privado</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {{-- 4. Estado y Acción (Derecha) --}}
                                     <div
                                         class="col-md-3 bg-white p-4 d-flex flex-column justify-content-center align-items-center border-start">
 
-                                        {{-- Badge de Estado --}}
                                         @if($proximaCita->estado == 'pendiente')
                                             <span class="badge bg-warning text-dark rounded-pill px-3 mb-3">
                                                 Pendiente de confirmar
@@ -176,7 +168,6 @@
                                             </span>
                                         @endif
 
-                                        {{-- Botón para ver detalles --}}
                                         <a href="{{ route('pacientes.citas') }}" class="btn btn-outline-navy rounded-pill btn-sm px-4">
                                             Ver mis citas
                                         </a>
@@ -205,9 +196,9 @@
                     <h5 class="fw-bold text-navy mb-3">¿Qué necesitas hacer?</h5>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <a href="{{ route('users.index') }}" class="text-decoration-none">
+                            <a href="{{ route('doctores.vista') }}" class="text-decoration-none">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
-                                    <div class="bg-info-subtle text-info rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                    <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
                                         style="width: 60px; height: 60px;">
                                         <i class="bi bi-person-lines-fill fs-3"></i>
                                     </div>
@@ -218,27 +209,27 @@
                         </div>
 
                         <div class="col-md-4">
-                            <a href="#" class="text-decoration-none">
+                            <a href="{{ route('farmacias.catalogo') }}" class="text-decoration-none">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
-                                    <div class="bg-success-subtle text-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                    <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
                                         style="width: 60px; height: 60px;">
                                         <i class="bi bi-shop fs-3"></i>
                                     </div>
                                     <h6 class="fw-bold text-dark">Farmacias</h6>
-                                    <small class="text-muted">Encuentra medicamentos</small>
+                                    <small class="text-muted">Encuentra una farmacia cera de ti</small>
                                 </div>
                             </a>
                         </div>
 
                         <div class="col-md-4">
-                            <a href="#" class="text-decoration-none">
+                            <a href="{{ route('pacientes.citas') }}" class="text-decoration-none">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
-                                    <div class="bg-warning-subtle text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                    <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
                                         style="width: 60px; height: 60px;">
                                         <i class="bi bi-file-earmark-medical-fill fs-3"></i>
                                     </div>
-                                    <h6 class="fw-bold text-dark">Mis Recetas</h6>
-                                    <small class="text-muted">Historial médico</small>
+                                    <h6 class="fw-bold text-dark">Mis citas</h6>
+                                    <small class="text-muted">Ver mis citas</small>
                                 </div>
                             </a>
                         </div>

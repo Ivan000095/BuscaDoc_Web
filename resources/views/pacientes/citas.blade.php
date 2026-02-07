@@ -32,20 +32,60 @@
                             </div>
 
                             {{-- Columna Derecha: Estado --}}
-                            <div class="col-12 col-md-3 bg-white border-start d-flex align-items-center justify-content-center p-3">
+                            <div class="col-12 col-md-3 bg-white border-start d-flex flex-column align-items-center justify-content-center p-4 gap-3">
+                                
                                 @if($cita->estado == 'pendiente')
                                     <div class="text-center">
-                                        <span class="badge bg-warning text-dark rounded-pill mb-2 px-3">Pendiente</span>
-                                        <small class="d-block text-muted" style="font-size: 0.75rem;">Esperando confirmación</small>
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                            <i class="bi bi-hourglass-split me-1"></i> Pendiente
+                                        </span>
+                                        <small class="d-block text-muted mt-2" style="font-size: 0.8rem;">Esperando confirmación</small>
                                     </div>
+                                    
+                                    <form action="{{ route('citas.status', $cita->id) }}" method="POST" class="w-100"
+                                        onsubmit="return confirm('¿Deseas cancelar esta solicitud?');">
+                                        @csrf @method('PATCH')
+                                        <input type="hidden" name="estado" value="cancelada">
+                                        <button class="btn btn-outline-danger rounded-pill btn-sm w-100 border-0" style="font-size: 0.8rem;">
+                                            Cancelar solicitud
+                                        </button>
+                                    </form>
+
                                 @elseif($cita->estado == 'confirmada')
-                                    <div class="text-center">
-                                        <span class="badge bg-success rounded-pill mb-2 px-3">Confirmada</span>
-                                        <small class="d-block text-muted" style="font-size: 0.75rem;">¡No faltes!</small>
+                                    <div class="text-center w-100">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-4 py-2 d-inline-flex align-items-center">
+                                            <i class="bi bi-check-circle-fill me-2 fs-6"></i> 
+                                            <span style="font-size: 0.9rem;">Confirmada</span>
+                                        </span>
+                                        <small class="d-block text-muted mt-2 fw-medium" style="font-size: 0.85rem;">¡No faltes a tu cita!</small>
                                     </div>
+
+                                    <form action="{{ route('citas.status', $cita->id) }}" method="POST" class="w-100 px-2"
+                                        onsubmit="return confirm('¿Seguro que deseas cancelar tu asistencia? Esta acción no se puede deshacer.');">
+                                        @csrf @method('PATCH')
+                                        <input type="hidden" name="estado" value="cancelada">
+                                        <button type="submit" class="btn btn-danger rounded-pill w-100 shadow-sm hover-scale py-2 fw-bold d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-x-circle-fill me-2"></i> Cancelar Cita
+                                        </button>
+                                    </form>
+
+                                @elseif($cita->estado == 'cancelada')
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2">
+                                        <i class="bi bi-x-circle me-1"></i> Cancelada
+                                    </span>
+                                    <small class="text-muted mt-1" style="font-size: 0.8rem;">Cita anulada</small>
+                                @elseif($cita->estado == 'no asistida')
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2">
+                                        <i class="bi bi-x-circle me-1"></i> No asistida
+                                    </span>
+                                    <small class="text-muted mt-1" style="font-size: 0.8rem;">El doctor indicó que usted no asistió a la cita</small>
                                 @else
-                                    <span class="badge bg-danger rounded-pill px-3">Cancelada</span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Completada
+                                    </span>
+                                    <small class="text-muted mt-1" style="font-size: 0.8rem;">La cita fué llevada a cabo con éxito</small>
                                 @endif
+
                             </div>
                         </div>
                     </div>

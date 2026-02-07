@@ -59,15 +59,18 @@ class FarmaciaController extends Controller
         return redirect()->route('farmacias.mi')->with('success', 'Actualizada.');
     }
 
-
-
-    
     // 3. Administrador: CRUD completo
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $this->authorizeAdmin();
-        $farmacias = Farmacia::with('user')->get();
-        return view('farmacias.admin.index', compact('farmacias'));
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Acceso no autorizado');
+        }
+
+        if ($request->ajax()) {
+            return $this->dataTable($request);
+        }
+
+        return view('farmacias.admin.index');
     }
 
     public function adminCreate()
@@ -78,59 +81,59 @@ class FarmaciaController extends Controller
     }
 
     public function adminStore(Request $request)
-{
-    $this->authorizeAdmin();
+    {
+        $this->authorizeAdmin();
 
-    $validated = $request->validate([
-        //Campos del nuevo usuario
-        'name' => 'required|string|max:100',
-        'email' => 'required|email|unique:users,email',
-        'password' => 'required|min:8',
-        'fecha' => 'required|date|before:-18 years',
-        'image' => 'nullable|image|max:5120',
+        $validated = $request->validate([
+            //Campos del nuevo usuario
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8',
+            'fecha' => 'required|date|before:-18 years',
+            'image' => 'nullable|image|max:5120',
 
-        //Campos del la farmacia
-        'nom_farmacia' => 'required|string|max:255',
-        'rfc' => 'required|string|max:255|unique:farmacias,rfc',
-        'telefono' => 'required|string|max:255',
-        'descripcion' => 'nullable|string',
-        'horario' => 'required|string|max:255',
-        'dias_op' => 'required|string|max:255',
-        'latitud' => 'required|numeric|between:-90,90',
-        'longitud' => 'required|numeric|between:-180,180',
-    ]);
-
-    DB::transaction(function () use ($request, $validated) {
-        $rutaFoto = null;
-        if ($request->hasFile('image')) {
-            $rutaFoto = $request->file('image')->store('users', 'public');
-        }
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'farmacia',
-            'estado' => true,
-            'foto' => $rutaFoto,
-            'f_nacimiento' => $validated['fecha'],
-            'latitud' => $validated['latitud'],
-            'longitud' => $validated['longitud'],
+            //Campos del la farmacia
+            'nom_farmacia' => 'required|string|max:255',
+            'rfc' => 'required|string|max:255|unique:farmacias,rfc',
+            'telefono' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'horario' => 'required|string|max:255',
+            'dias_op' => 'required|string|max:255',
+            'latitud' => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
         ]);
 
-        Farmacia::create([
-            'user_id' => $user->id,
-            'nom_farmacia' => $validated['nom_farmacia'],
-            'rfc' => $validated['rfc'],
-            'telefono' => $validated['telefono'],
-            'descripcion' => $validated['descripcion'],
-            'horario' => $validated['horario'],
-            'dias_op' => $validated['dias_op'],
-        ]);
-    });
+        DB::transaction(function () use ($request, $validated) {
+            $rutaFoto = null;
+            if ($request->hasFile('image')) {
+                $rutaFoto = $request->file('image')->store('users', 'public');
+            }
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'farmacia',
+                'estado' => true,
+                'foto' => $rutaFoto,
+                'f_nacimiento' => $validated['fecha'],
+                'latitud' => $validated['latitud'],
+                'longitud' => $validated['longitud'],
+            ]);
 
-    return redirect()->route('admin.farmacias.index')
-        ->with('success', 'Farmacia registrada exitosamente.');
-}
+            Farmacia::create([
+                'user_id' => $user->id,
+                'nom_farmacia' => $validated['nom_farmacia'],
+                'rfc' => $validated['rfc'],
+                'telefono' => $validated['telefono'],
+                'descripcion' => $validated['descripcion'],
+                'horario' => $validated['horario'],
+                'dias_op' => $validated['dias_op'],
+            ]);
+        });
+
+        return redirect()->route('admin.farmacias.index')
+            ->with('success', 'Farmacia registrada exitosamente.');
+    }
 
     public function adminEdit($id)
     {
@@ -140,67 +143,67 @@ class FarmaciaController extends Controller
         return view('farmacias.admin.edit', compact('farmacia', 'usuarios'));
     }
 
-public function adminUpdate(Request $request, $id)
-{
-    $this->authorizeAdmin();
-    $farmacia = Farmacia::with('user')->findOrFail($id);
+    public function adminUpdate(Request $request, $id)
+    {
+        $this->authorizeAdmin();
+        $farmacia = Farmacia::with('user')->findOrFail($id);
 
-    $validated = $request->validate([
-        // Usuario
-        'name' => 'required|string|max:100',
-        'email' => 'required|email|unique:users,email,' . $farmacia->user->id,
-        'f_nacimiento' => 'required|date|before:-18 years',
-        'password' => 'nullable|min:8',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+        $validated = $request->validate([
+            // Usuario
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email,' . $farmacia->user->id,
+            'f_nacimiento' => 'required|date|before:-18 years',
+            'password' => 'nullable|min:8',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
 
-        // Farmacia
-        'nom_farmacia' => 'required|string|max:255',
-        'rfc' => 'nullable|string|max:13|unique:farmacias,rfc,' . $farmacia->id,
-        'telefono' => 'required|string|max:55',
-        'horario' => 'required|string|max:255',
-        'dias_op' => 'required|string|max:255',
-        'descripcion' => 'required|string',
-        'latitud' => 'required|numeric|between:-90,90',
-        'longitud' => 'required|numeric|between:-180,180',
-    ]);
-
-    DB::transaction(function () use ($request, $validated, $farmacia) {
-        // Actualizar usuario
-        $user = $farmacia->user;
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
-        $user->f_nacimiento = $validated['fecha'];
-        $user->latitud = $validated['latitud'];
-        $user->longitud = $validated['longitud'];
-
-        // Cambiar contraseña solo si se envía
-        if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
-        if ($request->hasFile('image')) {
-            if ($user->foto) {
-                \Storage::disk('public')->delete($user->foto);
-            }
-            $user->foto = $request->file('image')->store('users', 'public');
-        }
-
-        $user->save();
-
-        // Actualizar farmacia
-        $farmacia->update([
-            'nom_farmacia' => $validated['nom_farmacia'],
-            'rfc' => $validated['rfc'] ?? null,
-            'telefono' => $validated['telefono'],
-            'horario' => $validated['horario'],
-            'dias_op' => $validated['dias_op'],
-            'descripcion' => $validated['descripcion'],
+            // Farmacia
+            'nom_farmacia' => 'required|string|max:255',
+            'rfc' => 'nullable|string|max:13|unique:farmacias,rfc,' . $farmacia->id,
+            'telefono' => 'required|string|max:55',
+            'horario' => 'required|string|max:255',
+            'dias_op' => 'required|string|max:255',
+            'descripcion' => 'required|string',
+            'latitud' => 'required|numeric|between:-90,90',
+            'longitud' => 'required|numeric|between:-180,180',
         ]);
-    });
 
-    return redirect()->route('admin.farmacias.index')
-        ->with('success', 'Farmacia actualizada exitosamente.');
-}
+        DB::transaction(function () use ($request, $validated, $farmacia) {
+            // Actualizar usuario
+            $user = $farmacia->user;
+            $user->name = $validated['name'];
+            $user->email = $validated['email'];
+            $user->f_nacimiento = $validated['fecha'];
+            $user->latitud = $validated['latitud'];
+            $user->longitud = $validated['longitud'];
+
+            // Cambiar contraseña solo si se envía
+            if (!empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
+            }
+
+            if ($request->hasFile('image')) {
+                if ($user->foto) {
+                    \Storage::disk('public')->delete($user->foto);
+                }
+                $user->foto = $request->file('image')->store('users', 'public');
+            }
+
+            $user->save();
+
+            // Actualizar farmacia
+            $farmacia->update([
+                'nom_farmacia' => $validated['nom_farmacia'],
+                'rfc' => $validated['rfc'] ?? null,
+                'telefono' => $validated['telefono'],
+                'horario' => $validated['horario'],
+                'dias_op' => $validated['dias_op'],
+                'descripcion' => $validated['descripcion'],
+            ]);
+        });
+
+        return redirect()->route('admin.farmacias.index')
+            ->with('success', 'Farmacia actualizada exitosamente.');
+    }
 
     public function adminDestroy($id)
     {
@@ -209,85 +212,91 @@ public function adminUpdate(Request $request, $id)
         return redirect()->route('admin.farmacias.index')->with('success', 'Eliminada.');
     }
 
-public function dataTable(Request $request)
-{
-    $query = Farmacia::with('user');
-    $search = $request->input("search.value");
+    public function dataTable(Request $request)
+    {
+        // Cargamos la relación con 'user' (la tabla users tiene el nombre y foto)
+        $query = \App\Models\Farmacia::with('user');
+        
+        // --- LÓGICA DE BÚSQUEDA ---
+        $search = $request->input("search.value");
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($subQ) use ($search) {
+                    $subQ->where('name', 'like', "%{$search}%");
+                })
+                ->orWhere('nom_farmacia', 'like', "%{$search}%")
+                ->orWhere('rfc', 'like', "%{$search}%")
+                ->orWhere('descripcion', 'like', "%{$search}%");
+            });
+        }
 
-    if (!empty($search)) {
-        $query->where(function ($q) use ($search) {
-            $q->whereHas('user', function ($subQ) use ($search) {
-                $subQ->where('name', 'like', "%{$search}%");
-            })
-            ->orWhere('nom_farmacia', 'like', "%{$search}%")
-            ->orWhere('rfc', 'like', "%{$search}%")
-            ->orWhere('descripcion', 'like', "%{$search}%");
+        // --- PAGINACIÓN ---
+        $totalRecords = \App\Models\Farmacia::count();
+        $recordsFiltered = $query->count();
+
+        $start = $request->input("start", 0);
+        $length = $request->input("length", 10);
+
+        $farmacias = $query->skip($start)->take($length)->get();
+
+        // --- MAPEO DE DATOS ---
+        $data = $farmacias->map(function ($farmacia) {
+            
+            // 1. FOTO (Desde la relación user)
+            $imageHtml = "";
+            $fotoPath = $farmacia->user?->foto;
+            
+            if ($fotoPath && \Illuminate\Support\Facades\Storage::disk("public")->exists($fotoPath)) {
+                $url = asset("storage/" . $fotoPath);
+                $imageHtml = "<img src='{$url}' class='rounded-circle shadow-sm' style='width: 40px; height: 40px; object-fit: cover;'>";
+            } else {
+                // Avatar por defecto si no hay foto
+                $initials = substr($farmacia->user?->name ?? 'F', 0, 1);
+                $imageHtml = "<div class='bg-secondary-subtle text-navy fw-bold rounded-circle d-flex align-items-center justify-content-center' style='width: 40px; height: 40px;'>{$initials}</div>";
+            }
+
+            // 2. FECHA DE NACIMIENTO (Desde user)
+            $fechaNac = '—';
+            if ($farmacia->user?->f_nacimiento) {
+                // Usamos Carbon para formatear bonito
+                $fechaNac = \Carbon\Carbon::parse($farmacia->user->f_nacimiento)->translatedFormat('d M Y');
+            }
+
+            // 3. HORARIO (Concatenamos entrada y salida que SÍ existen en tu BD)
+            $entrada = $farmacia->horario_entrada ? \Carbon\Carbon::parse($farmacia->horario_entrada)->format('H:i') : '??';
+            $salida = $farmacia->horario_salida ? \Carbon\Carbon::parse($farmacia->horario_salida)->format('H:i') : '??';
+            $horarioTexto = "$entrada - $salida";
+
+            return [
+                "id" => $farmacia->id,
+                "nombre_dueño" => $farmacia->user?->name ?? 'Sin Asignar',
+                "nom_farmacia" => $farmacia->nom_farmacia,
+                "rfc" => $farmacia->rfc ?? '—',
+                "telefono" => $farmacia->telefono ?? '—',
+                "horario" => $horarioTexto, // Variable creada arriba
+                // ELIMINÉ 'dias_op' PORQUE NO EXISTE EN TU BD
+                "fecha_nacimiento" => $fechaNac,
+                "foto" => $imageHtml,
+                "acciones" => '
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-navy btn-sm rounded-pill" onclick="execute(\'' . route('admin.farmacias.edit', $farmacia->id) . '\')">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm rounded-pill" onclick="deleteRecord(\'' . route('admin.farmacias.destroy', $farmacia->id) . '\')">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
+                ',
+            ];
         });
+
+        return response()->json([
+            "draw" => (int) $request->input("draw"),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $recordsFiltered,
+            "data" => $data,
+        ]);
     }
-
-    $totalRecords = Farmacia::count();
-    $recordsFiltered = $query->count();
-
-    $start = $request->input("start", 0);
-    $length = $request->input("length", 10);
-
-    $farmacias = $query->skip($start)->take($length)->get();
-
-    $meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-
-    $data = $farmacias->map(function ($farmacia) use ($meses) {
-        // Foto del dueño
-        $imageHtml = "";
-        $fotoPath = $farmacia->user?->foto;
-        if ($fotoPath && Storage::disk("public")->exists($fotoPath)) {
-            $url = asset("storage/" . $fotoPath);
-            $imageHtml = "<img src='{$url}' class='img-thumbnail' style='width: 50px; height: 50px; object-fit: cover;'>";
-        } else {
-            $imageHtml = '<div class="bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 4px;">
-                <i class="bi bi-person text-muted"></i>
-            </div>';
-        }
-
-        // Fecha de nacimiento formateada
-        $fechaformato = "sin fecha";
-        if ($farmacia->user?->f_nacimiento) {
-            $fechaObj = Carbon::parse($farmacia->user->f_nacimiento);
-            $dia = $fechaObj->format('j');
-            $mes = $meses[$fechaObj->format('n') - 1];
-            $anio = $fechaObj->format('Y');
-            $fechaformato = "{$dia} de {$mes} del {$anio}";
-        }
-
-        return [
-            "id" => $farmacia->id,
-            "nombre_dueño" => $farmacia->user?->name ?? '—',
-            "nom_farmacia" => $farmacia->nom_farmacia,
-            "rfc" => $farmacia->rfc ?? '—',
-            "telefono" => $farmacia->telefono,
-            "horario" => $farmacia->horario,
-            "dias_op" => $farmacia->dias_op,
-            "fecha_nacimiento" => $fechaformato,
-            "foto" => $imageHtml,
-            "acciones" => '
-                <div class="d-flex gap-1 justify-content-end">
-                    <button class="btn btn-primary btn-sm" onclick="execute(\'' . route('admin.farmacias.edit', $farmacia->id) . '\')">Editar</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteRecord(\'' . route('admin.farmacias.destroy', $farmacia->id) . '\')">Eliminar</button>
-                </div>
-            ',
-        ];
-    });
-
-    return response()->json([
-        "draw" => (int) $request->input("draw"),
-        "recordsTotal" => $totalRecords,
-        "recordsFiltered" => $recordsFiltered,
-        "data" => $data,
-    ]);
-}
-
-    // =============================
-    // 🔒 Helper: verificar admin
-    // =============================
 
     private function authorizeAdmin()
     {

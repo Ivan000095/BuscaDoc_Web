@@ -6,19 +6,19 @@ use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\Doctor; // Importante importar el modelo Doctor
 use Illuminate\Support\Facades\Auth;
-
+use Carbon\Carbon;
 class CitaController extends Controller
 {
     public function store(Request $request, $id)
     {
         $request->validate([
-            'fecha'  => 'required|date|after:today',
-            'hora'   => 'required',
+            'fecha' => 'required|date|after_or_equal:today',
+            'hora' => 'required',
             'motivo' => 'required|string|max:255',
         ]);
 
         $doctor = Doctor::find($id);
-        
+
         if (!$doctor) {
             return back()->with('error', 'El doctor no existe.');
         }
@@ -29,27 +29,29 @@ class CitaController extends Controller
             return back()->with('error', 'Necesitas un perfil de paciente para agendar.');
         }
 
-        $fechaHoraFinal = $request->fecha . ' ' . $request->hora;
+        $fechaHoraSolicitada = Carbon::parse($request->fecha . ' ' . $request->hora);
 
         $existe = Cita::where('doctor_id', $id)
-                      ->where('fecha_hora', $fechaHoraFinal)
-                      ->where('estado', '!=', 'cancelada')
-                      ->exists();
+            ->where('estado', '=', 'confirmada')
+            ->where(function ($query) use ($fechaHoraSolicitada) {
+                $query->where('fecha_hora', '>', $fechaHoraSolicitada->copy()->subHour())
+                    ->where('fecha_hora', '<', $fechaHoraSolicitada->copy()->addHour());
+            })
+            ->exists();
 
         if ($existe) {
-            return back()->withErrors(['hora' => 'Este horario ya está ocupado.']);
+            return back()->with(['error' => 'Ya existe una cita agendada en ese rango de horario (±1 hora). Por favor elige otro.']);
         }
 
-        // 4. Crear la Cita
         Cita::create([
             'paciente_id' => $user->patient->id,
-            'doctor_id'   => $id,
-            'fecha_hora'  => $fechaHoraFinal,
-            'detalles'    => $request->motivo,
-            'estado'      => 'pendiente',
+            'doctor_id' => $id,
+            'fecha_hora' => $fechaHoraSolicitada,
+            'detalles' => $request->motivo,
+            'estado' => 'pendiente',
         ]);
 
-        return redirect()->route('users.show', $doctor->user_id)
+        return redirect()->route('doctores.show', $doctor->id)
             ->with('success', '¡Cita agendada correctamente! Espera la confirmación.');
     }
 
@@ -74,27 +76,43 @@ class CitaController extends Controller
 
         // Selección de vista
         $vista = ($user->role == 'paciente') ? 'pacientes.citas' : 'doctores.citas';
-        
+
         return view($vista, compact('citas'));
     }
 
     public function updateStatus(Request $request, $id)
     {
         $cita = Cita::findOrFail($id);
+        $user = Auth::user();
 
-        if (Auth::user()->doctor->id !== $cita->doctor_id) {
+        $esDoctorOwner = $user->doctor && $user->doctor->id === $cita->doctor_id;
+
+        $esPacienteOwner = $user->patient && $user->patient->id === $cita->paciente_id;
+
+        if (!$esDoctorOwner && !$esPacienteOwner) {
             return back()->with('error', 'No tienes permiso para gestionar esta cita.');
         }
 
-        $request->validate([
-            'estado' => 'required|in:confirmada,cancelada'
-        ]);
+        if ($esPacienteOwner && $request->estado !== 'cancelada') {
+            return back()->with('error', 'Acción no permitida. Solo puedes cancelar.');
+        }
 
-        // Actualizamos
+        if (in_array($request->estado, ['finalizada', 'no_asistida'])) {
+            if (Carbon::parse($cita->fecha_hora)->isFuture()) {
+                return back()->with('error', 'No puedes finalizar una cita que aún no ha ocurrido.');
+            }
+        }
+
         $cita->update(['estado' => $request->estado]);
 
-        $mensaje = $request->estado == 'confirmada' ? 'Cita aceptada correctamente.' : 'Cita rechazada.';
-        
-        return back()->with('success', $mensaje);
+        $mensajes = [
+            'confirmada' => 'Cita confirmada.',
+            'cancelada' => 'Cita cancelada.',
+            'finalizada' => 'Cita marcada como finalizada con éxito.',
+            'no asistida' => 'Se registró que el paciente no asistió.'
+        ];
+
+        return back()->with('success', $mensajes[$request->estado] ?? 'Estado actualizado.');
+
     }
 }

@@ -125,6 +125,10 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(13, 46, 78, 0.4);
         }
+
+        .bg-navy-subtle {
+            background-color: #0a233a1a!important;
+        }
     </style>
 
     @yield('styles')
@@ -211,11 +215,13 @@
                                         <i class="bi bi-person-circle custom-icon-color"></i>{{ __(' ver mi perfil') }}
                                     </a>
                                     @php
-                                        $cita = Auth::user()->role == 'paciente' ? '/mis-citas' : '/mis-citas-doc';
-                                    @endphp 
-                                    <a class="dropdown-item" href="{{ $cita }}">
-                                        <i class="bi bi-calendar-date custom-icon-color"></i>{{ __(' ver mis citas') }}
-                                    </a>
+                                        $cita = Auth::user()->role == 'paciente' ? '/mis-citas' : (Auth::user()->role == 'doctor' ? '/mis-citas-doc' : null);
+                                    @endphp
+                                    @if(Auth::user()->role == 'paciente' || Auth::user()->role == 'doctor')
+                                        <a class="dropdown-item" href="{{ $cita }}">
+                                            <i class="bi bi-calendar-date custom-icon-color"></i>{{ __(' ver mis citas') }}
+                                        </a>
+                                    @endif
                                     <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                              document.getElementById('logout-form').submit();">
                                         <i class="bi bi-box-arrow-left custom-icon-color"></i>{{ __(' Logout') }}

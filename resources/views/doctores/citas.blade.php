@@ -50,39 +50,79 @@
                                     <i class="bi bi-person-vcard-fill me-1"></i> Ver Ficha Médica
                                 </a>
 
+                                {{-- Lógica de Acciones del Doctor --}}
+                                @php
+                                    $esPasada = \Carbon\Carbon::parse($cita->fecha_hora)->isPast();
+                                @endphp
+
                                 @if($cita->estado == 'pendiente')
+                                    {{-- CASO 1: SOLICITUD NUEVA (Aceptar / Rechazar) --}}
                                     <div class="row g-2">
-                                        {{-- Botón ACEPTAR --}}
                                         <div class="col-6">
                                             <form action="{{ route('citas.status', $cita->id) }}" method="POST">
-                                                @csrf
-                                                @method('PATCH')
+                                                @csrf @method('PATCH')
                                                 <input type="hidden" name="estado" value="confirmada">
-                                                
-                                                <button type="submit" class="btn btn-navy rounded-pill btn-sm w-100">
-                                                    Aceptar
+                                                <button type="submit" class="btn btn-navy rounded-pill btn-sm w-100">Aceptar</button>
+                                            </form>
+                                        </div>
+                                        <div class="col-6">
+                                            <form action="{{ route('citas.status', $cita->id) }}" method="POST">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="estado" value="cancelada">
+                                                <button type="submit" class="btn btn-danger rounded-pill btn-sm w-100 text-white">Rechazar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                @elseif($cita->estado == 'confirmada' && $esPasada)
+                                    {{-- CASO 2: CITA PASADA (Finalizar / No Asistió) --}}
+                                    <div class="text-center mb-2">
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3">
+                                            <i class="bi bi-clock-history me-1"></i> Tiempo cumplido
+                                        </span>
+                                    </div>
+
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <form action="{{ route('citas.status', $cita->id) }}" method="POST">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="estado" value="finalizada">
+                                                <button class="btn btn-navy rounded-pill btn-sm w-100 shadow-sm" title="Marcar como atendida">
+                                                    <i class="bi bi-check2-all me-1"></i> Finalizar Consulta
                                                 </button>
                                             </form>
                                         </div>
-
-                                        {{-- Botón RECHAZAR --}}
-                                        <div class="col-6">
-                                            <form action="{{ route('citas.status', $cita->id) }}" method="POST">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="estado" value="cancelada">
-                                                
-                                                <button type="submit" class="btn btn-danger rounded-pill btn-sm w-100 text-white">
-                                                    Rechazar
+                                        <div class="col-12">
+                                            <form action="{{ route('citas.status', $cita->id) }}" method="POST" onsubmit="return confirm('¿Marcar inasistencia?');">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="estado" value="no asistida">
+                                                <button class="btn btn-outline-secondary rounded-pill btn-sm w-100 border-0 bg-light" title="El paciente no llegó">
+                                                    <small>El paciente no asistió</small>
                                                 </button>
                                             </form>
                                         </div>
                                     </div>
+
                                 @else
+                                    {{-- CASO 3: ESTADOS INFORMATIVOS (Confirmada futura, Cancelada, Finalizada, etc.) --}}
                                     <div class="text-center mt-2">
-                                        <span class="badge {{ $cita->estado == 'confirmada' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} rounded-pill px-3">
-                                            {{ ucfirst($cita->estado) }}
-                                        </span>
+                                        @if($cita->estado == 'confirmada')
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
+                                                <i class="bi bi-calendar-check me-1"></i> Confirmada
+                                            </span>
+                                        @elseif($cita->estado == 'finalizada')
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3">
+                                                <i class="bi bi-clipboard-check me-1"></i> Completada
+                                            </span>
+                                        @elseif($cita->estado == 'no_asistida')
+                                            <span class="badge bg-dark-subtle text-dark border border-dark-subtle rounded-pill px-3">
+                                                <i class="bi bi-person-slash me-1"></i> Inasistencia
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
+                                                {{ ucfirst($cita->estado) }}
+                                            </span>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
