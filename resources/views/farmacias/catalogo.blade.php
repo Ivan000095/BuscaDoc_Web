@@ -35,6 +35,23 @@
                                 <p class="text-muted small mb-2">
                                     <i class="bi bi-person-circle me-1"></i> {{ $f->user?->name ?? '—' }}
                                 </p>
+                            <div class="mb-3 d-flex align-items-center justify-content-center">
+                                @php $promedio = $f->promedio_calificacion; @endphp
+
+                                <div class="text-warning small me-2">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <i class="bi {{ $i <= round($promedio) ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                    @endfor
+                                </div>
+                                
+                                <span class="fw-bold text-dark small me-1">
+                                    {{ $promedio > 0 ? number_format($promedio, 1) : '-' }}
+                                </span>
+
+                                <span class="text-muted small" style="font-size: 0.8rem;">
+                                    ({{ $f->reviews->count() }})
+                                </span>
+                            </div>                                
                                 <p class="card-text">{{ Str::limit($f->descripcion, 100) }}</p>
 
                                 <div class="mt-auto">

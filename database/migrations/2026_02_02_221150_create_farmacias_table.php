@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('rfc')->nullable();
             $table->string('telefono')->nullable();
             $table->text('descripcion')->nullable();
-            $table->string('horario')->nullable();
-            $table->string('dias_op')->nullable();
+            $table->string('horario_entrada')->nullable();
+            $table->string('horario_salida')->nullable();
             $table->timestamps();
         });
 

@@ -175,7 +175,7 @@
                             <a class="nav-link px-3" href="{{ route('doctores.vista') }}">Doctores</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-3" href="">Farmacias</a>
+                            <a class="nav-link px-3" href="{{ route('farmacias.catalogo') }}">Farmacias</a>
                         </li>
                     </ul>
 

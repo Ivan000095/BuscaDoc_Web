@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('tipo', ["resena","pregunta"]);
             $table->integer('calificacion')->nullable();
             $table->text('contenido')->nullable();
-            $table->foreignId('user_id');
+           
             $table->timestamps();
         });
 
