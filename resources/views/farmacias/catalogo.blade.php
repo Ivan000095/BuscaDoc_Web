@@ -35,15 +35,8 @@ use Carbon\Carbon;
 
                             <div class="card-body d-flex flex-column">
 
-                                {{-- TÍTULO --}}
                                 <h5 class="card-title fw-bold text-center">{{ $f->nom_farmacia }}</h5>
 
-                                {{-- DUEÑO (Agregado de la rama reseñas) --}}
-                                <p class="text-muted small mb-2 text-center">
-                                    <i class="bi bi-person-circle me-1"></i> {{ $f->user?->name ?? '—' }}
-                                </p>
-
-                                {{-- ESTRELLAS / CALIFICACIÓN (Lógica dinámica de la rama reseñas) --}}
                                 <div class="mb-3 d-flex align-items-center justify-content-center">
                                     @php $promedio = $f->promedio_calificacion; @endphp
 
@@ -62,10 +55,8 @@ use Carbon\Carbon;
                                     </span>
                                 </div>
 
-                                {{-- DESCRIPCIÓN --}}
                                 <p class="card-text text-center">{{ Str::limit($f->descripcion, 100) }}</p>
-
-                                {{-- DATOS EXTRA (Horario, Teléfono, RFC) --}}
+                                
                                 <div class="mt-auto">
                                     <div class="d-flex align-items-center mb-2">
                                         <i class="bi bi-clock me-2 text-navy"></i>

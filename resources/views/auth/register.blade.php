@@ -201,6 +201,16 @@
                         <h3 class="text-center fw-bold mb-2">Crear Cuenta</h3>
                         <p class="text-center text-muted small mb-4">Completa tus datos para comenzar</p>
 
+                        @if ($errors->any())
+                            <div class="alert alert-danger rounded-4 border-0 mb-4">
+                                <ul class="mb-0 small">
+                                    @foreach ($errors->all() as $error)
+                                        <li><i class="bi bi-exclamation-circle me-2"></i>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data"
                             x-data="{ role: '{{ old('role', 'paciente') }}' }">
                             @csrf
@@ -322,23 +332,36 @@
                                         <input type="textarea" name="descripcion" class="form-control form-control-pill"
                                             placeholder="Descripción de usted y su trabajo" value="{{ old('descripcion') }}">
                                     </div>
+                                    {{-- Cédula --}}
                                     <div class="col-md-6">
-                                        <input type="text" name="cedula" class="form-control form-control-pill"
+                                        <input type="text" name="cedula" 
+                                            class="form-control form-control-pill @error('cedula') is-invalid @enderror"
                                             placeholder="Cédula Profesional" value="{{ old('cedula') }}">
+                                        @error('cedula') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
                                     </div>
+
+                                    {{-- Costo --}}
                                     <div class="col-md-6">
-                                        <input type="number" name="costo" class="form-control form-control-pill"
+                                        <input type="number" name="costo" 
+                                            class="form-control form-control-pill @error('costo') is-invalid @enderror"
                                             placeholder="Costo estimado por consulta ($)" value="{{ old('costo') }}">
+                                        @error('costo') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
                                     </div>
+
+                                    {{-- Horarios --}}
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de entrada</label>
-                                        <input type="time" name="horario_entrada" class="form-control form-control-pill"
+                                        <input type="time" name="horario_entrada_doc" 
+                                            class="form-control form-control-pill @error('horario_entrada') is-invalid @enderror"
                                             value="{{ old('horario_entrada') }}">
+                                        @error('horario_entrada') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de salida</label>
-                                        <input type="time" name="horario_salida" class="form-control form-control-pill"
+                                        <input type="time" name="horario_salida_doc" 
+                                            class="form-control form-control-pill @error('horario_salida') is-invalid @enderror"
                                             value="{{ old('horario_salida') }}">
+                                        @error('horario_salida') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="col-md-12">
                                         <label class="small text-muted ms-3 fw-bold">Escriba los idiomas que domine</label>
@@ -422,12 +445,12 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de entrada</label>
-                                        <input type="time" name="horario_entrada" class="form-control form-control-pill"
+                                        <input type="time" name="horario_entrada_f" class="form-control form-control-pill"
                                             value="{{ old('horario_entrada') }}">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de salida</label>
-                                        <input type="time" name="horario_salida" class="form-control form-control-pill"
+                                        <input type="time" name="horario_salida_f" class="form-control form-control-pill"
                                             value="{{ old('horario_salida') }}">
                                     </div>
                                 </div>

@@ -111,8 +111,6 @@ class CitaController extends Controller
             'finalizada' => 'Cita marcada como finalizada con éxito.',
             'no asistida' => 'Se registró que el paciente no asistió.'
         ];
-
         return back()->with('success', $mensajes[$request->estado] ?? 'Estado actualizado.');
-
     }
 }

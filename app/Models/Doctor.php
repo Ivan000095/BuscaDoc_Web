@@ -50,13 +50,17 @@ class Doctor extends Model
     {
         return $this->belongsToMany(Especialidad::class, 'doctor__especialidads', 'doctor_id', 'especialidad_id');
     }
-    // En app/Models/Doctor.php
 
     public function reviews()
     {
         return $this->hasMany(Comentario::class, 'id_destinatario', 'user_id')
                     ->where('tipo', 'resena')
                     ->orderBy('created_at', 'desc');
+    }
+
+    public function citas()
+    {
+        return $this->hasMany(Cita::class);
     }
 
     public function questions()
@@ -69,5 +73,9 @@ class Doctor extends Model
     {
         if ($this->reviews->isEmpty()) return 0;
         return round($this->reviews->avg('calificacion'), 1);
+    }
+    public function remitente()
+    {
+        return $this->belongsTo(User::class, 'id_remitente');
     }
 }

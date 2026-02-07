@@ -270,14 +270,29 @@ $lng = $doctor->user->longitud ?? -92.0946;
 
                 @if(Auth::user()->role == 'paciente')
                     <div class="d-flex gap-3 mb-5">
-                        <button type="button" class="btn btn-navy px-4 flex-grow-1" data-bs-toggle="modal" data-bs-target="#agendarCitaModal">
-                            Agendar Cita
+                        <button type="button" class="btn btn-navy px-4 flex-grow-1" data-bs-toggle="modal"
+                            data-bs-target="#agendarCitaModal">
+                            <i class="bi bi-calendar-event-fill"></i> Agendar Cita
                         </button>
-                        <button class="btn btn-navy px-4 flex-grow-1">Reportar</button>
+                        <a type="button" class="btn btn-navy px-4 flex-grow-1"
+                            href="{{ route('mensajes.show', $doctor->user->id) }}">
+                            <i class="bi bi-chat-dots-fill"></i> Enviar mensaje
+                            <a />
+                            <button class="btn btn-navy px-4 flex-grow-1"> <i class="bi bi-person-fill-exclamation"></i>
+                                Reportar</button>
                     </div>
                 @endif
 
-                <!-- sección de preguntas y reeñas -->
+                @php
+                    $puedoResenar = false;
+                    if (Auth::check() && Auth::user()->role == 'paciente' && Auth::user()->patient) {
+                        $puedoResenar = \App\Models\Cita::where('paciente_id', Auth::user()->patient->id)
+                            ->where('doctor_id', $doctor->id)
+                            ->where('estado', 'finalizada')
+                            ->exists();
+                    }
+                @endphp
+
                 <div id="seccion-comentarios" class="soft-card p-4 mb-4">
                     <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -294,52 +309,57 @@ $lng = $doctor->user->longitud ?? -92.0946;
                         </li>
                     </ul>
 
-                    <!-- cpomentarios -->
                     <div class="tab-content" id="pills-tabContent">
                         <div class="tab-pane fade show active" id="pills-reviews" role="tabpanel">
-                            <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
-                                <h6 class="fw-bold mb-3 text-navy">Deja tu opinión</h6>
+                            @if($puedoResenar)
+                                <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
+                                    <h6 class="fw-bold mb-3 text-navy">Deja tu opinión</h6>
 
-                                <form action="{{ route('comentarios.store') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="doctor_id" value="{{ $doctor->user->id }}">
-                                    <input type="hidden" name="tipo" value="resena">
+                                    <form action="{{ route('comentarios.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="doctor_id" value="{{ $doctor->user->id }}">
+                                        <input type="hidden" name="tipo" value="resena">
 
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted small">Califica tu experiencia:</span>
-                                        <div class="rating">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted small">Califica tu experiencia:</span>
                                             <div class="rating">
-                                                <input type="radio" name="rating" value="5" id="5"><label
-                                                    for="5"></label>
-                                                <input type="radio" name="rating" value="4" id="4"><label
-                                                    for="4"></label>
-                                                <input type="radio" name="rating" value="3" id="3"><label
-                                                    for="3"></label>
-                                                <input type="radio" name="rating" value="2" id="2"><label
-                                                    for="2"></label>
-                                                <input type="radio" name="rating" value="1" id="1"><label
-                                                    for="1"></label>
+                                                <div class="rating">
+                                                    <input type="radio" name="rating" value="5" id="5"><label
+                                                        for="5"></label>
+                                                    <input type="radio" name="rating" value="4" id="4"><label
+                                                        for="4"></label>
+                                                    <input type="radio" name="rating" value="3" id="3"><label
+                                                        for="3"></label>
+                                                    <input type="radio" name="rating" value="2" id="2"><label
+                                                        for="2"></label>
+                                                    <input type="radio" name="rating" value="1" id="1"><label
+                                                        for="1"></label>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <textarea name="contenido" class="styled-textarea"
-                                            placeholder="Cuéntanos, ¿qué tal te pareció la atención?..."
-                                            required></textarea>
-                                    </div>
+                                        <div class="mb-3">
+                                            <textarea name="contenido" class="styled-textarea"
+                                                placeholder="Cuéntanos, ¿qué tal te pareció la atención?..."
+                                                required></textarea>
+                                        </div>
 
-                                    <div class="text-end">
-                                        <button type="submit" class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
-                                            Publicar Reseña <i class="bi bi-send-fill ms-1"></i>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                Publicar Reseña <i class="bi bi-send-fill ms-1"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @elseif(Auth::check() && Auth::user()->role == 'paciente')
+                                <div class="alert alert-light border-0 shadow-sm rounded-4 mb-4 text-center">
+                                    <i class="bi bi-info-circle-fill text-muted me-2"></i>
+                                    <span class="text-muted small">Solo puedes escribir una reseña después de haber
+                                        completado una cita con este doctor.</span>
+                                </div>
+                            @endif
 
-                            <!-- lista de reseñas -->
                             <div class="reviews-list">
                                 @forelse($doctor->reviews ?? [] as $review)
-
                                     <div class="d-flex mb-4 border-bottom pb-3">
                                         <img src="{{ $review->autor->foto ? asset('storage/' . $review->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($review->autor->name) }}"
                                             class="avatar-small me-3 shadow-sm">
@@ -355,34 +375,32 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                                 @endfor
                                             </div>
                                             <p class="text-muted small mb-0">{{ $review->contenido }}</p>
-                                            <br>
 
-                                            <!-- FORm de respuestas -->
-                                            <form action="{{ route('respuestas.store') }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="comentario_id" value="{{ $review->id }}">
-                                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <span class="text-muted small">Responde a
-                                                        {{ $review->autor->name }}</span>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <textarea name="contenido" class="styled-textarea textarea-respuesta"
-                                                        cols="1"
-                                                        placeholder="Responde a este comentario"
-                                                        required></textarea>
-                                                </div>
-                                                <div class="text-end">
-                                                    <button type="submit"
-                                                        class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
-                                                        Publicar Respuesta <i class="bi bi-send-fill ms-1"></i>
-                                                    </button>
-                                                </div>
+                                            @if(Auth::check() && Auth::user()->role == 'doctor' && Auth::user()->doctor->id == $doctor->id)
                                                 <br>
-                                            </form>
+                                                <form action="{{ route('respuestas.store') }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="comentario_id" value="{{ $review->id }}">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="text-muted small">Responde a
+                                                            {{ $review->autor->name }}</span>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <textarea name="contenido" class="styled-textarea textarea-respuesta"
+                                                            cols="1" placeholder="Responde a este comentario"
+                                                            required></textarea>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <button type="submit"
+                                                            class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                            Publicar Respuesta <i class="bi bi-send-fill ms-1"></i>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            @endif
 
-                                            <!-- respuestas -->
                                             @forelse($review->respuestas as $respuesta)
-                                                <div class="d-flex mb-3 ms-5 mt-2"> {{-- ms-5: Empuja todo a la derecha --}}
+                                                <div class="d-flex mb-3 ms-5 mt-3">
                                                     <div class="flex-shrink-0">
                                                         <img src="{{ $respuesta->autor->foto ? asset('storage/' . $respuesta->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($respuesta->autor->name) }}"
                                                             class="avatar-small me-2 rounded-circle shadow-sm"
@@ -390,7 +408,6 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                                     </div>
                                                     <div class="flex-grow-1">
                                                         <div class="bg-light p-3 rounded-4">
-
                                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                                 <div>
                                                                     <span
@@ -400,9 +417,8 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                                                             style="font-size: 0.65rem;">Propietario</span>
                                                                     @endif
                                                                 </div>
-                                                                <small class="text-muted" style="font-size: 0.7rem;">
-                                                                    {{ $respuesta->created_at->diffForHumans() }}
-                                                                </small>
+                                                                <small class="text-muted"
+                                                                    style="font-size: 0.7rem;">{{ $respuesta->created_at->diffForHumans() }}</small>
                                                             </div>
                                                             <p class="text-dark small mb-0 lh-sm">{{ $respuesta->contenido }}
                                                             </p>
@@ -410,7 +426,6 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                                     </div>
                                                 </div>
                                             @empty
-                                                {{-- No mostrar nada si no hay respuestas --}}
                                             @endforelse
                                         </div>
                                     </div>
@@ -423,89 +438,107 @@ $lng = $doctor->user->longitud ?? -92.0946;
                             </div>
                         </div>
 
-                        <!-- preguntas -->
+                        {{-- preguntas --}}
                         <div class="tab-pane fade" id="pills-questions" role="tabpanel">
+
+                            {{-- NUEVO: FORMULARIO PARA AGREGAR PREGUNTA (SOLO PACIENTES) --}}
+                            @if(Auth::check() && Auth::user()->role == 'paciente')
+                                <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
+                                    <h6 class="fw-bold mb-3 text-navy">
+                                        <i class="bi bi-question-circle me-2"></i>Haz una pregunta
+                                    </h6>
+                                    <form action="{{ route('comentarios.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="doctor_id" value="{{ $doctor->user->id }}">
+                                        {{-- OJO: Cambiamos el tipo a 'pregunta' --}}
+                                        <input type="hidden" name="tipo" value="pregunta">
+
+                                        <div class="mb-3">
+                                            <textarea name="contenido" class="styled-textarea"
+                                                placeholder="Escribe tu duda o consulta aquí..." required
+                                                style="min-height: 80px;"></textarea>
+                                        </div>
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                Enviar Pregunta <i class="bi bi-send-fill ms-1"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @endif
+
                             <div class="questions-list">
                                 @forelse($doctor->questions ?? [] as $question)
-                                    <div class="mb-4 border-bottom pb-3"> {{-- 1. LA PREGUNTA ORIGINAL --}}
+                                    <div class="mb-4 border-bottom pb-3">
                                         <div class="d-flex mb-3">
                                             <img src="{{ $question->autor->foto ? asset('storage/' . $question->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($question->autor->name) }}"
                                                 class="avatar-small me-3 shadow-sm">
-
                                             <div class="flex-grow-1">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h6 class="mb-0 fw-bold">{{ $question->autor->name }}</h6>
-                                                    <small class="text-muted">{{ $question->created_at->diffForHumans() }}</small>
+                                                    <small
+                                                        class="text-muted">{{ $question->created_at->diffForHumans() }}</small>
                                                 </div>
                                                 <p class="text-muted small mb-0 mt-1">{{ $question->contenido }}</p>
                                             </div>
                                         </div>
 
-                                        {{-- 2. ÁREA DE RESPUESTAS (Indentada a la derecha) --}}
                                         <div class="ms-5">
-                                            
-                                            {{-- A. Formulario para responder ESTA pregunta --}}
-                                            <div class="card border-0 bg-light rounded-4 p-3 mb-3">
-                                                <form action="{{ route('respuestas.store') }}" method="POST">
-                                                    @csrf
-                                                    {{-- Vinculamos la respuesta al ID de la pregunta actual --}}
-                                                    <input type="hidden" name="comentario_id" value="{{ $question->id }}">
-                                                    
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <span class="text-muted small fw-bold">Responder a {{ $question->autor->name }}</span>
-                                                    </div>
-
-                                                    <div class="d-flex gap-2">
-                                                        <textarea name="contenido" class="styled-textarea textarea-respuesta" 
-                                                                rows="1"
-                                                                placeholder="Escribe una respuesta..." 
-                                                                style="min-height: 40px;"
+                                            {{-- FORMULARIO RESPUESTA PREGUNTA (SOLO DOCTOR) --}}
+                                            @if(Auth::check() && Auth::user()->role == 'doctor' && Auth::user()->doctor->id == $doctor->id)
+                                                <div class="card border-0 bg-light rounded-4 p-3 mb-3">
+                                                    <form action="{{ route('respuestas.store') }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="comentario_id" value="{{ $question->id }}">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <span class="text-muted small fw-bold">Responder a
+                                                                {{ $question->autor->name }}</span>
+                                                        </div>
+                                                        <div class="d-flex gap-2">
+                                                            <textarea name="contenido"
+                                                                class="styled-textarea textarea-respuesta" rows="1"
+                                                                placeholder="Escribe una respuesta..." style="min-height: 40px;"
                                                                 required></textarea>
-                                                        
-                                                        <button type="submit" class="btn btn-navy btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                                                            <button type="submit"
+                                                                class="btn btn-navy btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center"
                                                                 style="width: 40px; height: 40px; flex-shrink: 0;">
-                                                            <i class="bi bi-send-fill"></i>
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
+                                                                <i class="bi bi-send-fill"></i>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            @endif
 
-                                            {{-- B. Lista de Respuestas (Estilo Burbuja) --}}
+                                            {{-- RESPUESTAS DE LA PREGUNTA --}}
                                             @forelse($question->respuestas as $respuesta)
                                                 <div class="d-flex mb-3 mt-2">
-                                                    {{-- Foto del que responde --}}
                                                     <div class="flex-shrink-0">
                                                         <img src="{{ $respuesta->autor->foto ? asset('storage/' . $respuesta->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($respuesta->autor->name) }}"
                                                             class="avatar-small me-2 rounded-circle shadow-sm"
                                                             style="width: 35px; height: 35px;">
                                                     </div>
-
-                                                    {{-- Burbuja de texto --}}
                                                     <div class="flex-grow-1">
                                                         <div class="bg-light p-3 rounded-4">
                                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                                 <div>
-                                                                    <span class="fw-bold text-dark small">{{ $respuesta->autor->name }}</span>
-                                                                    {{-- Badge si es el Doctor --}}
+                                                                    <span
+                                                                        class="fw-bold text-dark small">{{ $respuesta->autor->name }}</span>
                                                                     @if($respuesta->autor->id == $doctor->user->id)
-                                                                        <span class="badge bg-primary text-white ms-1" style="font-size: 0.65rem;">Propietario</span>
+                                                                        <span class="badge bg-primary text-white ms-1"
+                                                                            style="font-size: 0.65rem;">Propietario</span>
                                                                     @endif
                                                                 </div>
-                                                                <small class="text-muted" style="font-size: 0.7rem;">
-                                                                    {{ $respuesta->created_at->diffForHumans() }}
-                                                                </small>
+                                                                <small class="text-muted"
+                                                                    style="font-size: 0.7rem;">{{ $respuesta->created_at->diffForHumans() }}</small>
                                                             </div>
-                                                            <p class="text-dark small mb-0 lh-sm">{{ $respuesta->contenido }}</p>
+                                                            <p class="text-dark small mb-0 lh-sm">{{ $respuesta->contenido }}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             @empty
-                                                {{-- No hay respuestas aún --}}
                                             @endforelse
-
-                                        </div> 
-                                        {{-- Fin del área indentada --}}
-
+                                        </div>
                                     </div>
                                 @empty
                                     <div class="text-center py-4 text-muted">

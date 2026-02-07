@@ -25,4 +25,8 @@ class Comentario extends Model
     {
         return $this->hasMany(Respuesta::class, 'comentario_id');
     }
+    public function remitente()
+    {
+        return $this->belongsTo(User::class, 'id_remitente');
+    }
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\GoogleController;
 use App\Models\Especialidad;
 use App\Http\Controllers\FarmaciaController;
+use App\Http\Controllers\MensajeController;
 
 Route::get("/", function () {
     return view("welcome-simple");
@@ -130,6 +131,9 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
     Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
     Route::get('/buscar', [App\Http\Controllers\SearchController::class, 'search'])->name('global.search');
+    Route::get('/mensajes', [MensajeController::class, 'index'])->name('mensajes.index');
+    Route::get('/mensajes/{id}', [MensajeController::class, 'show'])->name('mensajes.show');
+    Route::post('/mensajes', [MensajeController::class, 'store'])->name('mensajes.store');
 });
 
 // Route::middleware('auth:api')->group(function({

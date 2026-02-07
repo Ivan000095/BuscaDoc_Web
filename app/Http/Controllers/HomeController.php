@@ -24,7 +24,11 @@ class HomeController extends Controller
     public function index()
     {
         $user = \Illuminate\Support\Facades\Auth::user();
+
         $proximaCita = null;
+        $proximaCitaDoctor = null;
+        $ultimaReview = null;
+        $ultimaQuestion = null;
 
         if ($user->role == 'paciente' && $user->patient) {
             $proximaCita = \App\Models\Cita::where('paciente_id', $user->patient->id)
@@ -32,11 +36,23 @@ class HomeController extends Controller
                 ->where('estado', '!=', 'cancelada')
                 ->orderBy('fecha_hora', 'asc')
                 ->first();
-
         }
 
-
-
-        return view('home', compact('proximaCita'));
+        if ($user->role == 'doctor' && $user->doctor) {
+            $proximaCitaDoctor = $user->doctor->citas()
+                ->where('fecha_hora', '>=', now())
+                ->whereIn('estado', ['pendiente', 'confirmada'])
+                ->orderBy('fecha_hora', 'asc')
+                ->first();
+            $ultimaReview = $user->doctor->reviews()
+                ->with('autor')
+                ->latest()
+                ->first();
+            $ultimaQuestion = $user->doctor->questions()
+                ->with('autor')
+                ->latest()
+                ->first();
+        }
+        return view('home', compact('proximaCita', 'proximaCitaDoctor', 'ultimaReview', 'ultimaQuestion'));
     }
 }
