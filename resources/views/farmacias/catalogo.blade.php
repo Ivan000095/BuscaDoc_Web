@@ -23,6 +23,7 @@ use Carbon\Carbon;
                 @foreach($farmacias as $f)
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                            {{-- IMAGEN --}}
                             @if($f->user?->foto)
                                 <img src="{{ asset('storage/' . $f->user->foto) }}" alt="Dueño: {{ $f->user->name }}"
                                     class="card-img-top" style="height: 180px; object-fit: cover;">
@@ -34,34 +35,37 @@ use Carbon\Carbon;
 
                             <div class="card-body d-flex flex-column">
 
-                            {{-- hola cemsar, soy Ivan. En este espacio va el promedio de calificaciones, lo que está comentado es la lógica del rellenado, solo sustituye los datos de la farmacia y borra los campos estáticos --}}
+                                {{-- TÍTULO --}}
+                                <h5 class="card-title fw-bold text-center">{{ $f->nom_farmacia }}</h5>
+
+                                {{-- DUEÑO (Agregado de la rama reseñas) --}}
+                                <p class="text-muted small mb-2 text-center">
+                                    <i class="bi bi-person-circle me-1"></i> {{ $f->user?->name ?? '—' }}
+                                </p>
+
+                                {{-- ESTRELLAS / CALIFICACIÓN (Lógica dinámica de la rama reseñas) --}}
                                 <div class="mb-3 d-flex align-items-center justify-content-center">
-                                    {{-- @php $promedio = $doctor->promedio_calificacion; @endphp --}}
+                                    @php $promedio = $f->promedio_calificacion; @endphp
 
                                     <div class="text-warning small me-2">
-                                        {{-- @for ($i = 1; $i <= 5; $i++) <i
-                                            class="bi {{ $i <= round($promedio) ? 'bi-star-fill' : 'bi-star' }}"></i>
-                                            @endfor --}}
-                                            <i class="bi bi-star-fill"></i>
-                                            <i class="bi bi-star-fill"></i>
-                                            <i class="bi bi-star-fill"></i>
-                                            <i class="bi bi-star"></i>
-                                            <i class="bi bi-star"></i>
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <i class="bi {{ $i <= round($promedio) ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                        @endfor
                                     </div>
 
                                     <span class="fw-bold text-dark small me-1">
-                                        {{-- {{ $promedio > 0 ? number_format($promedio, 1) : '-' }} --}}
-                                        3
+                                        {{ $promedio > 0 ? number_format($promedio, 1) : '-' }}
                                     </span>
 
                                     <span class="text-muted small" style="font-size: 0.8rem;">
-                                        {{-- ({{ $doctor->reviews->count() }}) --}}
-                                        (2)
+                                        ({{ $f->reviews->count() }})
                                     </span>
                                 </div>
-                                <h5 class="card-title fw-bold">{{ $f->nom_farmacia }}</h5>
-                                <p class="card-text">{{ Str::limit($f->descripcion, 150) }}</p>
 
+                                {{-- DESCRIPCIÓN --}}
+                                <p class="card-text text-center">{{ Str::limit($f->descripcion, 100) }}</p>
+
+                                {{-- DATOS EXTRA (Horario, Teléfono, RFC) --}}
                                 <div class="mt-auto">
                                     <div class="d-flex align-items-center mb-2">
                                         <i class="bi bi-clock me-2 text-navy"></i>

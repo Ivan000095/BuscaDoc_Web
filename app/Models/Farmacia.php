@@ -42,4 +42,24 @@ class Farmacia extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    
+    public function reviews()
+    {
+        return $this->hasMany(Comentario::class, 'id_destinatario', 'user_id')
+                    ->where('tipo', 'resena')
+                    ->orderBy('created_at', 'desc');
+    }
+
+    public function questions()
+    {
+        return $this->hasMany(Comentario::class, 'id_destinatario', 'user_id')
+                    ->where('tipo', 'pregunta')
+                    ->orderBy('created_at', 'desc');
+    }
+    public function getPromedioCalificacionAttribute()
+    {
+        if ($this->reviews->isEmpty()) return 0;
+        return round($this->reviews->avg('calificacion'), 1);
+    }
 }
