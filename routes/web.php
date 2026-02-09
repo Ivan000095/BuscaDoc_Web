@@ -18,6 +18,7 @@ use App\Http\Controllers\GoogleController;
 use App\Models\Especialidad;
 use App\Http\Controllers\FarmaciaController;
 use App\Http\Controllers\MensajeController;
+use App\Http\Controllers\ReporteController;
 
 Route::get("/", function () {
     return view("welcome-simple");
@@ -62,6 +63,18 @@ Route::middleware(["auth", "security:auth"])->group(function () {
 
 
 
+Route::middleware('auth')->group(function () {
+    // Formulario para reportar a alguien (ej: desde perfil de doctor)
+    Route::get('/reportes/create', [ReporteController::class, 'create'])->name('reportes.user.create');
+    // Enviar un nuevo reporte
+    Route::post('/reportes', [ReporteController::class, 'store'])
+        ->name('reportes.store');
+
+    // Ver mis reportes enviados
+    Route::get('/reportes/mis-reportes', [ReporteController::class, 'misReportes'])
+        ->name('reportes.mis');
+});
+
 //Dueño de farmacia (loggeado)
 Route::middleware(['auth'])->group(function () {
     Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
@@ -77,6 +90,11 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/farmacias/{id}/editar', [FarmaciaController::class, 'adminEdit'])->name('admin.farmacias.edit');
     Route::put('/farmacias/{id}', [FarmaciaController::class, 'adminUpdate'])->name('admin.farmacias.update');
     Route::delete('/farmacias/{id}', [FarmaciaController::class, 'adminDestroy'])->name('admin.farmacias.destroy');
+//  reporte de Usuarios
+    Route::get('/reportes', [ReporteController::class, 'adminIndex'])->name('admin.reportes.index');
+    Route::get('/reportes/{id}', [ReporteController::class, 'adminShow'])->name('admin.reportes.show');
+    Route::put('/reportes/{id}', [ReporteController::class, 'adminUpdate'])->name('admin.reportes.update');
+
 });
 // cristian cristian
 

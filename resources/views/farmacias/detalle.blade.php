@@ -289,7 +289,8 @@
                 </div>
                 @if(Auth::user()->role == 'paciente')
                     <div class="d-flex gap-3 mb-5">
-                        <button class="btn btn-navy px-4 flex-grow-1">Reportar</button>
+                        <a class="btn btn-navy px-4 flex-grow-1" href="{{ route('reportes.user.create', ['reportado_id' =>  $farmacia->user->id]) }}">
+                            Reportar</a>
                     </div>
                 @endif
                 <!-- sección de preguntas y reeñas -->
