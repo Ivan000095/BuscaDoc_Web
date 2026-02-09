@@ -1,3 +1,6 @@
+
+
+
 <x-layout>
     <style>
         body {
@@ -211,12 +214,16 @@
                                 <div class="d-flex align-items-start">
                                     <i class="bi bi-clock text-primary fs-4 mt-1 me-3"></i>
                                     <div>
-                                        <h6 class="fw-bold mb-1">Horarios</h6>
+                                        <h6 class="fw-bold mb-1">Horario</h6>
                                         <p class="mb-0">
-                                            {{ $farmacia->horario ?? 'No especificado' }}
-                                            <br>
+                                            
+                                            Hora de entrada: 
                                             <small
-                                                class="text-muted">{{ $farmacia->dias_op ?? 'Todos los días' }}</small>
+                                                class="text-muted">{{ $farmacia->horario_entrada ?? 'Sin hora de entrada' }}</small>
+                                                <br>
+                                            Hora de salida:                                               
+                                            <small
+                                                class="text-muted">{{ $farmacia->horario_salida ?? 'Sin hora de salida' }}</small>
                                         </p>
                                     </div>
                                 </div>
@@ -291,6 +298,15 @@
                     <div class="d-flex gap-3 mb-5">
                         <button class="btn btn-navy px-4 flex-grow-1">Reportar</button>
                     </div>
+                @endif
+                
+
+                @if(Auth::user()->role == 'farmacia')    
+                <div class="mt-4 d-grid">
+                        <a href="{{ route('users.edit', Auth::user()->id) }}" class="btn btn-dark rounded-pill py-3">
+                            <i class="bi bi-pencil-square me-2"></i>Editar mi farmacia
+                        </a>
+                    </div> <br>
                 @endif
                 <!-- sección de preguntas y reeñas -->
                 <div id="seccion-comentarios" class="soft-card p-4 mb-4">
