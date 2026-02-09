@@ -2,53 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Reporte extends Model
 {
-    use HasFactory;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
-        'id_usr_reporte',
-        'id_usr_reportado',
-        'razon',
-        'user_id',
+        'reportador_id',
+        'reportado_id',
+        'descripcion',
+        'estado',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    // Relación: quién hizo el reporte
+    public function reportador()
     {
-        return [
-            'id' => 'integer',
-            'id_usr_reporte' => 'integer',
-            'id_usr_reportado' => 'integer',
-            'user_id' => 'integer',
-        ];
+        return $this->belongsTo(User::class, 'reportador_id');
     }
 
-    public function user(): BelongsTo
+    // Relación: a quién se reportó
+    public function reportado()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function idUsrReporte(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function idUsrReportado(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'reportado_id');
     }
 }
