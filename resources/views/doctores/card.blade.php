@@ -275,11 +275,13 @@ $lng = $doctor->user->longitud ?? -92.0946;
                             <i class="bi bi-calendar-event-fill"></i> Agendar Cita
                         </button>
                         <a type="button" class="btn btn-navy px-4 flex-grow-1"
-                            href="{{ route('mensajes.show', $doctor->user->id) }}">
+                            href="{{ route('mensajes.show', parameters: $doctor->user->id) }}">
                             <i class="bi bi-chat-dots-fill"></i> Enviar mensaje
-                            <a />
-                            <button class="btn btn-navy px-4 flex-grow-1"> <i class="bi bi-person-fill-exclamation"></i>
-                                Reportar</button>
+                        </a>
+                        <a type="button" class="btn btn-navy px-4 flex-grow-1"
+                            href="{{ route('reportes.user.create', ['reportado_id' =>  $doctor->user->id]) }}">
+                            <i class="bi bi-person-fill-exclamation"></i> Reportar
+                        </a>
                     </div>
                 @endif
 

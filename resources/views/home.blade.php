@@ -88,7 +88,20 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 border-50 shadow-sm hover-card">
+                        <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
+                            <img src="{{ asset('images/pacientes.jpg') }}" alt="Pacientes"
+                                class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
+                            <h5 class="card-title fw-bold custom-text-dark">Reportes</h5>
+                            <a class="nav-link" href="{{ route('admin.reportes.index') }}"
+                                class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
+                        </div>
+                    </div>
+                </div>
             </div>
+            </div>
+            
 
         @elseif (Auth::user()->role == 'doctor')
             <div class="row justify-content-center mb-5">

@@ -214,6 +214,12 @@
                                     <a class="dropdown-item" href="{{ route('users.show', Auth::user()->id) }}">
                                         <i class="bi bi-person-circle custom-icon-color"></i>{{ __(' ver mi perfil') }}
                                     </a>
+                                        @if(Auth::check())
+                                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('reportes.mis') }}">
+                                            <i class="bi bi-flag custom-icon-color"></i>
+                                            <span>Mis reportes</span>
+                                        </a>
+                                        @endif
                                     @php
                                         $cita = Auth::user()->role == 'paciente' ? '/mis-citas' : (Auth::user()->role == 'doctor' ? '/mis-citas-doc' : null);
                                     @endphp
