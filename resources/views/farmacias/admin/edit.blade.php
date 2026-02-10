@@ -1,4 +1,38 @@
 <x-layout>
+    <head>
+        <style>
+
+            .text-navy {
+                color: #0f172a;
+            }
+
+            .text-label {
+                font-weight: 700;
+                color: #000;
+            }
+
+            .info-row {
+                display: flex;
+                align-items: flex-start;
+                margin-bottom: 1.2rem;
+            }
+
+            .info-icon {
+                font-size: 1.3rem;
+                color: #0f172a;
+                margin-right: 15px;
+                width: 24px;
+                text-align: center;
+            }
+
+            .enc{
+                background-color: #0f172a;
+
+            }
+
+        </style>
+    </head>
+
     <div class="container pb-5">
         <div class="row my-5 text-center">
             <div class="col-12">
@@ -27,7 +61,7 @@
             <!-- Datos del Dueño (Usuario) -->
             <div class="col-lg-10">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header bg-primary text-white py-3">
+                    <div class="card-header bg-custom-dark text-white py-3">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i> Datos del Dueño</h5>
                     </div>
                     <div class="card-body p-4 bg-white">
@@ -41,11 +75,11 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="fecha" class="form-label fw-bold ms-3">Fecha de Nacimiento</label>
-                                <input name="fecha" type="date" 
+                                <label for="f_nacimiento" class="form-label fw-bold ms-3">Fecha de Nacimiento</label>
+                                <input name="f_nacimiento" type="date" 
                                     class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="fecha" 
-                                    value="{{ old('fecha', $farmacia->user->f_nacimiento ?? '') }}" 
+                                    id="f_nacimiento" 
+                                    value="{{ old('f_nacimiento', $farmacia->user->f_nacimiento ?? '') }}" 
                                     required
                                     max="{{ date('Y-m-d', strtotime('-18 years')) }}">
                                 <div class="invalid-feedback ms-3">Debe ser mayor de 18 años.</div>
@@ -100,27 +134,25 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label for="horario_entrada" class="form-label fw-bold ms-3">Horario Entrada</label>
+                                <input name="horario_entrada" type="time"
+                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4 text-center" id="horario_entrada"
+                                    value="{{ old('horario_entrada', $farmacia->horario_entrada ?? '') }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="horario_salida" class="form-label fw-bold ms-3">Horario Salida</label>
+                                <input name="horario_salida" type="time"
+                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4 text-center" id="horario_salida"
+                                    value="{{ old('horario_salida', $farmacia->horario_salida ?? '') }}" required>
+                            </div>
+
+                            <div class="col-md-6">
                                 <label for="telefono" class="form-label fw-bold ms-3">Teléfono</label>
                                 <input name="telefono" type="text" 
                                     class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
                                     id="telefono" value="{{ old('telefono', $farmacia->telefono ?? '') }}" required>
                                 <div class="invalid-feedback ms-3">Obligatorio.</div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="horario" class="form-label fw-bold ms-3">Horario de Atención</label>
-                                <input name="horario" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="horario" value="{{ old('horario', $farmacia->horario ?? '') }}" required>
-                                <div class="invalid-feedback ms-3">Ej. 08:00 - 20:00</div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="dias_op" class="form-label fw-bold ms-3">Días de Operación</label>
-                                <input name="dias_op" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="dias_op" value="{{ old('dias_op', $farmacia->dias_op ?? '') }}" required>
-                                <div class="invalid-feedback ms-3">Ej. Lun-Sáb</div>
                             </div>
 
                             <div class="col-12">
@@ -151,7 +183,7 @@
             <!-- Mapa -->
             <div class="col-lg-10">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
-                    <div class="card-header bg-danger text-white py-3">
+                    <div class="card-header bg-custom-dark text-white py-3">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Ubicación Actual</h5>
                     </div>
                     <div class="card-body p-4 bg-white">

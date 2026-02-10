@@ -24,8 +24,6 @@
                                 <th class="py-3">Farmacia</th>
                                 <th class="py-3">RFC</th>
                                 <th class="py-3">Teléfono</th>
-                                <th class="py-3">Horario</th>
-                                {{-- <th class="py-3">Días</th> SE ELIMINÓ PORQUE NO ESTÁ EN BD --}}
                                 <th class="py-3">Nacimiento</th>
                                 <th class="py-3">Foto</th>
                                 <th class="py-3 text-end pe-4">Acciones</th>
@@ -61,8 +59,7 @@
                         { data: 'nom_farmacia', name: 'nom_farmacia' },
                         { data: 'rfc', name: 'rfc' },
                         { data: 'telefono', name: 'telefono' },
-                        { data: 'horario', name: 'horario', searchable: false }, // Campo calculado, no buscable en SQL directo
-                        // { data: 'dias_op', name: 'dias_op' }, // ELIMINADO
+                        // { data: 'horario_entrada', name: 'horario_entrada', searchable: false }, // Campo calculado, no buscable en SQL directo
                         { data: 'fecha_nacimiento', name: 'users.f_nacimiento' },
                         { data: 'foto', name: 'foto', orderable: false, searchable: false },
                         { data: 'acciones', orderable: false, searchable: false, className: 'text-end pe-4' }

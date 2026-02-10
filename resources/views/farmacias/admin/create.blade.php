@@ -29,7 +29,7 @@
             <!-- Sección: Datos de Cuenta (Usuario) -->
             <div class="col-lg-10">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header bg-primary text-white py-3">
+                    <div class="card-header bg-custom-dark text-white py-3">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i> Datos del Dueño (Cuenta de Usuario)</h5>
                     </div>
                     <div class="card-body p-4 bg-white">
@@ -44,11 +44,11 @@
                             
 
                             <div class="col-md-6">
-                                <label for="fecha" class="form-label fw-bold ms-3">Fecha de Nacimiento</label>
-                                <input name="fecha" type="date" 
+                                <label for="f_nacimiento" class="form-label fw-bold ms-3">Fecha de Nacimiento</label>
+                                <input name="f_nacimiento" type="date" 
                                     class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="fecha" 
-                                    value="{{ old('fecha', $farmacia?->user->f_nacimiento ?? '') }}" 
+                                    id="f_nacimiento" 
+                                    value="{{ old('f_nacimiento', $farmacia?->user->f_nacimiento ?? '') }}" 
                                     required
                                     max="{{ date('Y-m-d', strtotime('-18 years')) }}"
                                     onchange="validarEdad(this)">
@@ -106,27 +106,25 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label for="horario_entrada" class="form-label fw-bold ms-3">Horario Entrada</label>
+                                <input name="horario_entrada" type="time"
+                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4 text-center" id="horarioentrada"
+                                    value="{{ old('horario_entrada', $farmacia->horario_entrada ?? '') }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="horario_salida" class="form-label fw-bold ms-3">Horario Salida</label>
+                                <input name="horario_salida" type="time"
+                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4 text-center" id="horario_salida"
+                                    value="{{ old('horario_salida', $farmacia->horario_salida ?? '') }}" required>
+                            </div>
+
+                            <div class="col-md-6">
                                 <label for="telefono" class="form-label fw-bold ms-3">Teléfono</label>
                                 <input name="telefono" type="text" 
                                     class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
                                     id="telefono" value="{{ old('telefono', $farmacia?->telefono ?? '') }}" required placeholder="Ej. 9671234567">
                                 <div class="invalid-feedback ms-3">El teléfono es obligatorio.</div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="horario" class="form-label fw-bold ms-3">Horario de Atención</label>
-                                <input name="horario" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="horario" value="{{ old('horario', $farmacia?->horario ?? '') }}" required placeholder="Ej. 08:00 - 20:00">
-                                <div class="invalid-feedback ms-3">Indique el horario (ej. 08:00 - 20:00).</div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="dias_op" class="form-label fw-bold ms-3">Días de Operación</label>
-                                <input name="dias_op" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="dias_op" value="{{ old('dias_op', $farmacia?->dias_op ?? '') }}" required placeholder="Ej. Lun-Sáb">
-                                <div class="invalid-feedback ms-3">Ej. “Lun-Vie”, “24/7”, etc.</div>
                             </div>
 
                             <div class="col-12">
@@ -158,7 +156,7 @@
             <!-- Mapa de Ubicación -->
             <div class="col-lg-10">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
-                    <div class="card-header bg-danger text-white py-3">
+                    <div class="card-header bg-custom-dark text-white py-3">
                         <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Ubicación de la Farmacia</h5>
                     </div>
                     <div class="card-body p-4 bg-white">

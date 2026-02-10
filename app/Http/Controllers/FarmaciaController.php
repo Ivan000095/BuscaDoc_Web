@@ -52,8 +52,8 @@ class FarmaciaController extends Controller
             'rfc' => 'nullable|string|max:255|unique:farmacias,rfc,' . $farmacia->id,
             'telefono' => 'nullable|string|max:255',
             'descripcion' => 'nullable|string',
-            'horario' => 'nullable|string|max:255',
-            'dias_op' => 'nullable|string|max:255',
+            'horario_entrada' => 'nullable|string|max:255',
+            'horario_salida' => 'nullable|string|max:255',
         ]);
         $farmacia->update($validated);
         return redirect()->route('farmacias.mi')->with('success', 'Actualizada.');
@@ -89,7 +89,7 @@ class FarmaciaController extends Controller
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
-            'fecha' => 'required|date|before:-18 years',
+            'f_nacimiento' => 'required|date|before:-18 years',
             'image' => 'nullable|image|max:5120',
 
             //Campos del la farmacia
@@ -97,8 +97,8 @@ class FarmaciaController extends Controller
             'rfc' => 'required|string|max:255|unique:farmacias,rfc',
             'telefono' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'horario' => 'required|string|max:255',
-            'dias_op' => 'required|string|max:255',
+            'horario_entrada' => 'required|string|max:255',
+            'horario_salida' => 'required|string|max:255',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
         ]);
@@ -115,7 +115,7 @@ class FarmaciaController extends Controller
                 'role' => 'farmacia',
                 'estado' => true,
                 'foto' => $rutaFoto,
-                'f_nacimiento' => $validated['fecha'],
+                'f_nacimiento' => $validated['f_nacimiento'],
                 'latitud' => $validated['latitud'],
                 'longitud' => $validated['longitud'],
             ]);
@@ -126,8 +126,8 @@ class FarmaciaController extends Controller
                 'rfc' => $validated['rfc'],
                 'telefono' => $validated['telefono'],
                 'descripcion' => $validated['descripcion'],
-                'horario' => $validated['horario'],
-                'dias_op' => $validated['dias_op'],
+                'horario_entrada' => $validated['horario_entrada'],
+                'horario_salida' => $validated['horario_salida'],
             ]);
         });
 
@@ -160,8 +160,8 @@ class FarmaciaController extends Controller
             'nom_farmacia' => 'required|string|max:255',
             'rfc' => 'nullable|string|max:13|unique:farmacias,rfc,' . $farmacia->id,
             'telefono' => 'required|string|max:55',
-            'horario' => 'required|string|max:255',
-            'dias_op' => 'required|string|max:255',
+            'horario_entrada' => 'required|string|max:255',
+            'horario_salida' => 'required|string|max:255',
             'descripcion' => 'required|string',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
@@ -172,7 +172,7 @@ class FarmaciaController extends Controller
             $user = $farmacia->user;
             $user->name = $validated['name'];
             $user->email = $validated['email'];
-            $user->f_nacimiento = $validated['fecha'];
+            $user->f_nacimiento = $validated['f_nacimiento'];
             $user->latitud = $validated['latitud'];
             $user->longitud = $validated['longitud'];
 
@@ -195,8 +195,8 @@ class FarmaciaController extends Controller
                 'nom_farmacia' => $validated['nom_farmacia'],
                 'rfc' => $validated['rfc'] ?? null,
                 'telefono' => $validated['telefono'],
-                'horario' => $validated['horario'],
-                'dias_op' => $validated['dias_op'],
+                'horario_entrada' => $validated['horario_entrada'],
+                'horario_salida' => $validated['horario_salida'],
                 'descripcion' => $validated['descripcion'],
             ]);
         });
