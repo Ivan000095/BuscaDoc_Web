@@ -91,6 +91,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/farmacias/{id}/editar', [FarmaciaController::class, 'adminEdit'])->name('admin.farmacias.edit');
     Route::put('/farmacias/{id}', [FarmaciaController::class, 'adminUpdate'])->name('admin.farmacias.update');
     Route::delete('/farmacias/{id}', [FarmaciaController::class, 'adminDestroy'])->name('admin.farmacias.destroy');
+    Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
 });
 
     Route::get("doctor/data", [DoctorController::class, "dataTable"])->name("doctor.data");
@@ -125,8 +126,6 @@ Route::post('/comentarios', [ComentarioController::class, 'store'])
 ->name('comentarios.store');
 
 Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
-
-Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
 
 Route::get('register', function () {
     $especialidades = Especialidad::all();
