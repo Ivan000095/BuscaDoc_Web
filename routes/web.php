@@ -62,26 +62,20 @@ Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get("/home", [HomeController::class, "index"])->name("home");
 
 Route::middleware('auth')->group(function () {
-    // Formulario para reportar a alguien (ej: desde perfil de doctor)
     Route::get('/reportes/create', [ReporteController::class, 'create'])->name('reportes.user.create');
-    // Enviar un nuevo reporte
     Route::post('/reportes', [ReporteController::class, 'store'])
         ->name('reportes.store');
-    // Ver mis reportes enviados
     Route::get('/reportes/mis-reportes', [ReporteController::class, 'misReportes'])
         ->name('reportes.mis');
 });
 
-//Dueño de farmacia (loggeado)
 Route::middleware(['auth'])->group(function () {
     Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
     Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
     Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
 });
 
-// Administrador
 Route::middleware(['auth'])->prefix('admin')->group(function () {
-    //  reporte de Usuarios
     Route::get('/reportes', [ReporteController::class, 'adminIndex'])->name('admin.reportes.index');
     Route::get('/reportes/{id}', [ReporteController::class, 'adminShow'])->name('admin.reportes.show');
     Route::put('/reportes/{id}', [ReporteController::class, 'adminUpdate'])->name('admin.reportes.update');
