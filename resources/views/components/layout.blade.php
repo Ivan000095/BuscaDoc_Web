@@ -217,13 +217,13 @@
                             @if (Route::has('login'))
                                 <li class="nav-item">
                                     <a class="btn btn-outline-light rounded-pill px-4 btn-sm me-2"
-                                        href="{{ route('login') }}">{{ __('Iniciar sesión') }}</a>
+                                        href="{{ route('login') }}">{{ __('Login') }}</a>
                                 </li>
                             @endif
                             @if (Route::has('register'))
                                 <li class="nav-item">
                                     <a class="btn btn-light rounded-pill px-4 btn-sm text-dark"
-                                        href="{{ route('register') }}">{{ __('Registrarse') }}</a>
+                                        href="{{ route('register') }}">{{ __('Register') }}</a>
                                 </li>
                             @endif
                         @else
@@ -243,19 +243,28 @@
                                     <a class="dropdown-item" href="{{ route('users.show', Auth::user()->id) }}">
                                         <i class="bi bi-person-circle custom-icon-color"></i>{{ __(' ver mi perfil') }}
                                     </a>
+                                        @if(Auth::check())
+                                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('reportes.mis') }}">
+                                            <i class="bi bi-flag custom-icon-color"></i>
+                                            <span>Mis reportes</span>
+                                        </a>
+                                        @endif
                                     @php
-                                        $cita = Auth::user()->role == 'paciente' ? '/mis-citas' : '/mis-citas-doc';
-                                    @endphp 
-                                    <a class="dropdown-item" href="{{ $cita }}">
-                                        <i class="bi bi-calendar-date custom-icon-color"></i>{{ __(' ver mis citas') }}
-                                    </a>
+                                        $cita = Auth::user()->role == 'paciente' ? '/mis-citas' : (Auth::user()->role == 'doctor' ? '/mis-citas-doc' : null);
+                                    @endphp
+                                    @if(Auth::user()->role == 'paciente' || Auth::user()->role == 'doctor')
+                                        <a class="dropdown-item" href="{{ $cita }}">
+                                            <i class="bi bi-calendar-date custom-icon-color"></i>{{ __(' ver mis citas') }}
+                                        </a>
+                                    @endif
                                     <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
-                                                                         document.getElementById('logout-form').submit();">
+                                                             document.getElementById('logout-form').submit();">
                                         <i class="bi bi-box-arrow-left custom-icon-color"></i>{{ __(' Cerrar sesión') }}
                                     </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
+
                                     </form>
                                 </div>
                             </li>

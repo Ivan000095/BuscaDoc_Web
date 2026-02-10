@@ -27,8 +27,6 @@ class FarmaciaController extends Controller
         return view('farmacias.detalle', compact('farmacia'));
     }
 
-
-    //2. Dueño: Solo su farmacia
     public function miFarmacia()
     {
         $farmacia = Auth::user()->farmacia;
@@ -62,9 +60,6 @@ class FarmaciaController extends Controller
     // 3. Administrador: CRUD completo
     public function adminIndex(Request $request)
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403, 'Acceso no autorizado');
-        }
 
         if ($request->ajax()) {
             return $this->dataTable($request);
@@ -85,20 +80,18 @@ class FarmaciaController extends Controller
         $this->authorizeAdmin();
 
         $validated = $request->validate([
-            //Campos del nuevo usuario
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'fecha' => 'required|date|before:-18 years',
             'image' => 'nullable|image|max:5120',
 
-            //Campos del la farmacia
             'nom_farmacia' => 'required|string|max:255',
             'rfc' => 'required|string|max:255|unique:farmacias,rfc',
             'telefono' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'horario' => 'required|string|max:255',
-            'dias_op' => 'required|string|max:255',
+            'horario_entrada' => 'required',
+            'horario_salida' => 'required',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
         ]);
@@ -126,8 +119,8 @@ class FarmaciaController extends Controller
                 'rfc' => $validated['rfc'],
                 'telefono' => $validated['telefono'],
                 'descripcion' => $validated['descripcion'],
-                'horario' => $validated['horario'],
-                'dias_op' => $validated['dias_op'],
+                'horario_entrada' => $validated['horario_entrada'],
+                'horario_salida' => $validated['horario_salida'],
             ]);
         });
 
@@ -138,9 +131,8 @@ class FarmaciaController extends Controller
     public function adminEdit($id)
     {
         $this->authorizeAdmin();
-        $farmacia = Farmacia::findOrFail($id);
-        $usuarios = User::all(); // o filtrar por rol si prefieres
-        return view('farmacias.admin.edit', compact('farmacia', 'usuarios'));
+        $farmacia = Farmacia::with('user')->findOrFail($id);
+        return view('farmacias.admin.edit', compact('farmacia'));
     }
 
     public function adminUpdate(Request $request, $id)
@@ -149,34 +141,30 @@ class FarmaciaController extends Controller
         $farmacia = Farmacia::with('user')->findOrFail($id);
 
         $validated = $request->validate([
-            // Usuario
             'name' => 'required|string|max:100',
             'email' => 'required|email|unique:users,email,' . $farmacia->user->id,
             'f_nacimiento' => 'required|date|before:-18 years',
             'password' => 'nullable|min:8',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
 
-            // Farmacia
             'nom_farmacia' => 'required|string|max:255',
             'rfc' => 'nullable|string|max:13|unique:farmacias,rfc,' . $farmacia->id,
             'telefono' => 'required|string|max:55',
-            'horario' => 'required|string|max:255',
-            'dias_op' => 'required|string|max:255',
+            'horario_entrada' => 'required',
+            'horario_salida' => 'required',
             'descripcion' => 'required|string',
             'latitud' => 'required|numeric|between:-90,90',
             'longitud' => 'required|numeric|between:-180,180',
         ]);
 
         DB::transaction(function () use ($request, $validated, $farmacia) {
-            // Actualizar usuario
             $user = $farmacia->user;
             $user->name = $validated['name'];
             $user->email = $validated['email'];
-            $user->f_nacimiento = $validated['fecha'];
+            $user->f_nacimiento = $validated['f_nacimiento'];
             $user->latitud = $validated['latitud'];
             $user->longitud = $validated['longitud'];
 
-            // Cambiar contraseña solo si se envía
             if (!empty($validated['password'])) {
                 $user->password = Hash::make($validated['password']);
             }
@@ -190,13 +178,12 @@ class FarmaciaController extends Controller
 
             $user->save();
 
-            // Actualizar farmacia
             $farmacia->update([
                 'nom_farmacia' => $validated['nom_farmacia'],
                 'rfc' => $validated['rfc'] ?? null,
                 'telefono' => $validated['telefono'],
-                'horario' => $validated['horario'],
-                'dias_op' => $validated['dias_op'],
+                'horario_entrada' => $validated['horario_entrada'],
+                'horario_salida' => $validated['horario_salida'],
                 'descripcion' => $validated['descripcion'],
             ]);
         });
@@ -214,23 +201,20 @@ class FarmaciaController extends Controller
 
     public function dataTable(Request $request)
     {
-        // Cargamos la relación con 'user' (la tabla users tiene el nombre y foto)
         $query = \App\Models\Farmacia::with('user');
-        
-        // --- LÓGICA DE BÚSQUEDA ---
+
         $search = $request->input("search.value");
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->whereHas('user', function ($subQ) use ($search) {
                     $subQ->where('name', 'like', "%{$search}%");
                 })
-                ->orWhere('nom_farmacia', 'like', "%{$search}%")
-                ->orWhere('rfc', 'like', "%{$search}%")
-                ->orWhere('descripcion', 'like', "%{$search}%");
+                    ->orWhere('nom_farmacia', 'like', "%{$search}%")
+                    ->orWhere('rfc', 'like', "%{$search}%")
+                    ->orWhere('descripcion', 'like', "%{$search}%");
             });
         }
 
-        // --- PAGINACIÓN ---
         $totalRecords = \App\Models\Farmacia::count();
         $recordsFiltered = $query->count();
 
@@ -239,30 +223,24 @@ class FarmaciaController extends Controller
 
         $farmacias = $query->skip($start)->take($length)->get();
 
-        // --- MAPEO DE DATOS ---
         $data = $farmacias->map(function ($farmacia) {
-            
-            // 1. FOTO (Desde la relación user)
+
             $imageHtml = "";
             $fotoPath = $farmacia->user?->foto;
-            
+
             if ($fotoPath && \Illuminate\Support\Facades\Storage::disk("public")->exists($fotoPath)) {
                 $url = asset("storage/" . $fotoPath);
                 $imageHtml = "<img src='{$url}' class='rounded-circle shadow-sm' style='width: 40px; height: 40px; object-fit: cover;'>";
             } else {
-                // Avatar por defecto si no hay foto
                 $initials = substr($farmacia->user?->name ?? 'F', 0, 1);
                 $imageHtml = "<div class='bg-secondary-subtle text-navy fw-bold rounded-circle d-flex align-items-center justify-content-center' style='width: 40px; height: 40px;'>{$initials}</div>";
             }
 
-            // 2. FECHA DE NACIMIENTO (Desde user)
             $fechaNac = '—';
             if ($farmacia->user?->f_nacimiento) {
-                // Usamos Carbon para formatear bonito
                 $fechaNac = \Carbon\Carbon::parse($farmacia->user->f_nacimiento)->translatedFormat('d M Y');
             }
 
-            // 3. HORARIO (Concatenamos entrada y salida que SÍ existen en tu BD)
             $entrada = $farmacia->horario_entrada ? \Carbon\Carbon::parse($farmacia->horario_entrada)->format('H:i') : '??';
             $salida = $farmacia->horario_salida ? \Carbon\Carbon::parse($farmacia->horario_salida)->format('H:i') : '??';
             $horarioTexto = "$entrada - $salida";
@@ -273,8 +251,7 @@ class FarmaciaController extends Controller
                 "nom_farmacia" => $farmacia->nom_farmacia,
                 "rfc" => $farmacia->rfc ?? '—',
                 "telefono" => $farmacia->telefono ?? '—',
-                "horario" => $horarioTexto, // Variable creada arriba
-                // ELIMINÉ 'dias_op' PORQUE NO EXISTE EN TU BD
+                "horario" => $horarioTexto,
                 "fecha_nacimiento" => $fechaNac,
                 "foto" => $imageHtml,
                 "acciones" => '

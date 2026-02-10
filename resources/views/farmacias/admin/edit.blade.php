@@ -1,242 +1,306 @@
 <x-layout>
-    <div class="container pb-5">
-        <div class="row my-5 text-center">
-            <div class="col-12">
-                <h1 class="fw-bold text-primary display-5">Editar Farmacia</h1>
-                <p class="text-muted">Actualice los datos del dueño y del negocio</p>
+    @push('styles')
+    <style>
+        .bg-navy { background-color: #0d2e4e !important; }
+        .text-navy { color: #0d2e4e !important; }
+        .form-control:focus, .form-select:focus {
+            border-color: #0d2e4e;
+            box-shadow: 0 0 0 0.25rem rgba(13, 46, 78, 0.15);
+        }
+        .input-group-text { background-color: #f8f9fa; border-right: 0; color: #6c757d; }
+        .form-control, .form-select { border-left: 0; }
+        .input-group .form-control:focus { z-index: 3; }
+        .card-header-icon {
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; background-color: rgba(255,255,255,0.2);
+        }
+        .profile-upload:hover { transform: scale(1.1); cursor: pointer; }
+        .object-fit-cover { object-fit: cover; }
+    </style>
+    @endpush
+
+    <div class="container py-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold text-navy mb-0">{{ isset($farmacia) ? 'Editar Farmacia' : 'Nueva Farmacia' }}</h1>
+                <p class="text-muted small mb-0">Gestión de sucursales / {{ isset($farmacia) ? $farmacia->nom_farmacia : 'Registro' }}</p>
             </div>
+            <a href="{{ route('admin.farmacias.index') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
         </div>
 
         @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <div class="alert alert-danger shadow-sm border-0 rounded-4 mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-octagon-fill fs-3 me-3 text-danger"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Por favor corrige los siguientes errores:</h6>
+                        <ul class="mb-0 small text-muted">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
             </div>
         @endif
 
         <form method="POST"
-            action="{{ route('admin.farmacias.update', $farmacia->id) }}"
-            class="row g-4 needs-validation justify-content-center" novalidate enctype="multipart/form-data">
+            action="{{ isset($farmacia) ? route('admin.farmacias.update', $farmacia->id) : route('admin.farmacias.store') }}"
+            class="needs-validation" novalidate enctype="multipart/form-data">
 
             @csrf
-            @method('PUT')
+            @if(isset($farmacia))
+                @method('PUT')
+            @endif
 
-            <!-- Datos del Dueño (Usuario) -->
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i> Datos del Dueño</h5>
-                    </div>
-                    <div class="card-body p-4 bg-white">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <label for="name" class="form-label fw-bold ms-3">Nombre Completo</label>
-                                <input name="name" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="name" value="{{ old('name', $farmacia->user->name ?? '') }}" required maxlength="100">
-                                <div class="invalid-feedback ms-3">El nombre es obligatorio.</div>
+            <div class="row g-4">
+                
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-5 h-100">
+                        <div class="card-header bg-navy text-white p-4 border-0 rounded-top-5">
+                            <div class="d-flex align-items-center">
+                                <div class="card-header-icon me-3">
+                                    <i class="bi bi-person-badge-fill fs-5"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0 fw-bold">Dueño</h5>
+                                    <small class="opacity-75">Cuenta de usuario</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            
+                            <div class="text-center mb-4">
+                                <div class="position-relative d-inline-block">
+                                    <div class="rounded-circle overflow-hidden shadow-sm border border-4 border-white bg-light d-flex align-items-center justify-content-center" 
+                                         style="width: 130px; height: 130px;">
+                                        <img id="profilePreview"
+                                             src="{{ isset($farmacia) && $farmacia->user->foto ? asset('storage/' . $farmacia->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($farmacia->user->name ?? 'Nuevo Dueño') . '&background=E6F0FF&color=0D2E4E' }}"
+                                             class="w-100 h-100 object-fit-cover"
+                                             alt="Foto de perfil">
+                                    </div>
+                                    
+                                    <label for="fotoInput" class="position-absolute bottom-0 end-0 bg-navy text-white rounded-circle p-2 shadow-sm profile-upload" 
+                                           style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                        <i class="bi bi-camera-fill"></i>
+                                    </label>
+                                </div>
+                                
+                                <input type="file" name="image" id="fotoInput" class="d-none" accept="image/jpeg,image/png,image/jpg">
+                                
+                                <div class="form-text small mt-2">Haga clic en la cámara para cambiar la foto.</div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="fecha" class="form-label fw-bold ms-3">Fecha de Nacimiento</label>
-                                <input name="fecha" type="date" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="fecha" 
-                                    value="{{ old('fecha', $farmacia->user->f_nacimiento ?? '') }}" 
-                                    required
-                                    max="{{ date('Y-m-d', strtotime('-18 years')) }}">
-                                <div class="invalid-feedback ms-3">Debe ser mayor de 18 años.</div>
-                            </div>
+                            <hr class="text-muted opacity-25">
 
-                            <div class="col-md-6">
-                                <label for="email" class="form-label fw-bold ms-3">Correo Electrónico</label>
-                                <input name="email" type="email" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="email" value="{{ old('email', $farmacia->user->email ?? '') }}" required>
-                                <div class="invalid-feedback ms-3">
-                                    {{ $errors->first('email') ?: 'El correo es obligatorio.' }}
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Nombre Completo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text rounded-start-pill"><i class="bi bi-person"></i></span>
+                                    <input type="text" name="name" class="form-control rounded-end-pill" 
+                                        value="{{ old('name', $farmacia->user->name ?? '') }}" required placeholder="Ej. Ana López">
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="password" class="form-label fw-bold ms-3">
-                                    Contraseña (opcional)
-                                    <span class="text-muted small fw-normal">(Déjela vacía para no cambiarla)</span>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Fecha de Nacimiento</label>
+                                <div class="input-group">
+                                    <span class="input-group-text rounded-start-pill"><i class="bi bi-calendar-date"></i></span>
+                                    <input type="date" name="f_nacimiento" class="form-control rounded-end-pill" 
+                                        value="{{ old('fecha', isset($farmacia->user->f_nacimiento) ? \Carbon\Carbon::parse($farmacia->user->f_nacimiento)->format('Y-m-d') : '') }}" 
+                                        required max="{{ date('Y-m-d', strtotime('-18 years')) }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Correo Electrónico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text rounded-start-pill"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" name="email" class="form-control rounded-end-pill" 
+                                        value="{{ old('email', $farmacia->user->email ?? '') }}" required placeholder="correo@ejemplo.com">
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-muted text-uppercase">
+                                    Contraseña
+                                    @if(isset($farmacia)) <span class="fw-normal text-lowercase">(opcional)</span> @endif
                                 </label>
-                                <input name="password" type="password"
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4" 
-                                    id="password" minlength="8" placeholder="••••••••">
-                                <div class="invalid-feedback ms-3">Mínimo 8 caracteres si desea cambiarla.</div>
+                                <div class="input-group">
+                                    <span class="input-group-text rounded-start-pill"><i class="bi bi-key"></i></span>
+                                    <input type="password" name="password" class="form-control rounded-end-pill" 
+                                        {{ isset($farmacia) ? '' : 'required' }} minlength="8" placeholder="••••••••">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Datos del Negocio -->
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header bg-custom-dark text-white py-3">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-shop me-2"></i> Datos del Negocio</h5>
-                    </div>
-                    <div class="card-body p-4 bg-white">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <label for="nom_farmacia" class="form-label fw-bold ms-3">Nombre de la Farmacia</label>
-                                <input name="nom_farmacia" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="nom_farmacia" value="{{ old('nom_farmacia', $farmacia->nom_farmacia ?? '') }}" required>
-                                <div class="invalid-feedback ms-3">Obligatorio.</div>
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-5 h-100">
+                        <div class="card-header bg-white p-4 border-bottom rounded-top-5">
+                            <div class="d-flex align-items-center text-navy">
+                                <i class="bi bi-shop fs-3 me-3"></i>
+                                <h5 class="mb-0 fw-bold">Perfil del Negocio</h5>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-bold text-muted">Nombre de la Farmacia</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-building"></i></span>
+                                        <input type="text" name="nom_farmacia" class="form-control fw-bold text-navy rounded-end-pill" 
+                                            value="{{ old('nom_farmacia', $farmacia->nom_farmacia ?? '') }}" required placeholder="Ej. Farmacia San José">
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="rfc" class="form-label fw-bold ms-3">RFC</label>
-                                <input name="rfc" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="rfc" value="{{ old('rfc', $farmacia->rfc ?? '') }}" maxlength="13">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">RFC</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-card-heading"></i></span>
+                                        <input type="text" name="rfc" class="form-control rounded-end-pill" 
+                                            value="{{ old('rfc', $farmacia->rfc ?? '') }}" maxlength="13" placeholder="XAXX010101000">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Teléfono</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-telephone"></i></span>
+                                        <input type="text" name="telefono" class="form-control rounded-end-pill" 
+                                            value="{{ old('telefono', $farmacia->telefono ?? '') }}" required placeholder="Ej. 9671234567">
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="telefono" class="form-label fw-bold ms-3">Teléfono</label>
-                                <input name="telefono" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="telefono" value="{{ old('telefono', $farmacia->telefono ?? '') }}" required>
-                                <div class="invalid-feedback ms-3">Obligatorio.</div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Horario de Entrada</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-clock"></i></span>
+                                        <input type="time" name="horario_entrada" class="form-control rounded-end-pill" 
+                                            value="{{ old('horario_entrada', $farmacia->horario_entrada ?? '') }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">Horario de Salida</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-clock-fill"></i></span>
+                                        <input type="time" name="horario_salida" class="form-control rounded-end-pill" 
+                                            value="{{ old('horario_salida', $farmacia->horario_salida ?? '') }}" required>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="horario" class="form-label fw-bold ms-3">Horario de Atención</label>
-                                <input name="horario" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="horario" value="{{ old('horario', $farmacia->horario ?? '') }}" required>
-                                <div class="invalid-feedback ms-3">Ej. 08:00 - 20:00</div>
+                            <div class="mb-4">
+                                <div class="p-3 bg-light rounded-4 border">
+                                    <label class="form-label fw-bold text-navy"><i class="bi bi-file-text me-2"></i>Descripción</label>
+                                    <textarea name="descripcion" class="form-control bg-white border-0 shadow-sm rounded-3" rows="3" 
+                                        required placeholder="Breve descripción de la farmacia...">{{ old('descripcion', $farmacia->descripcion ?? '') }}</textarea>
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="dias_op" class="form-label fw-bold ms-3">Días de Operación</label>
-                                <input name="dias_op" type="text" 
-                                    class="form-control form-control-lg rounded-pill bg-light border-0 shadow-sm ps-4"
-                                    id="dias_op" value="{{ old('dias_op', $farmacia->dias_op ?? '') }}" required>
-                                <div class="invalid-feedback ms-3">Ej. Lun-Sáb</div>
+                            <hr class="text-muted opacity-25 mb-4">
+
+                            <div class="mb-2">
+                                <label class="form-label fw-bold text-navy mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Ubicación</label>
+                                <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud', $farmacia->user->latitud ?? '') }}">
+                                <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud', $farmacia->user->longitud ?? '') }}">
+                                
+                                <div class="shadow-sm rounded-4 overflow-hidden border border-light">
+                                    <div id="map" style="height: 300px; width: 100%;"></div>
+                                </div>
+                                <div class="form-text small mt-2"><i class="bi bi-info-circle me-1"></i> Arrastra el marcador rojo para indicar la ubicación exacta.</div>
                             </div>
 
-                            <div class="col-12">
-                                <label for="descripcion" class="form-label fw-bold ms-3">Descripción</label>
-                                <textarea class="form-control form-control-lg rounded-4 bg-light border-0 shadow-sm p-4" name="descripcion"
-                                    id="descripcion" rows="3" required>{{ old('descripcion', $farmacia->descripcion ?? '') }}</textarea>
+                        </div>
+                        
+                        <div class="card-footer bg-white p-4 border-top rounded-bottom-5">
+                            <div class="d-flex justify-content-end gap-3">
+                                <button type="submit" class="btn btn-navy px-5 py-2 rounded-pill fw-bold shadow">
+                                    <i class="bi bi-check-lg me-2"></i>
+                                    {{ isset($farmacia) ? 'Actualizar Farmacia' : 'Guardar Farmacia' }}
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-10">
-                <label class="form-label fw-bold ms-3">Foto de Perfil del Dueño</label>
-                <div class="p-4 bg-light rounded-4 border-0 shadow-sm text-center">
-                    <x-image-dropzone 
-                        name="image"
-                        :current-image="$farmacia->user->foto ? asset('storage/'.$farmacia->user->foto) : null"
-                        :current-image-alt="$farmacia->user->name"
-                        :error="$errors->first('image')"
-                        title="Arrastra una nueva foto aquí (opcional)"
-                        subtitle="Formatos: JPG, PNG, WEBP (Máx 5MB)"
-                        :show-current-image="true"
-                    />
-                </div>
-            </div>
-
-            <!-- Mapa -->
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
-                    <div class="card-header bg-danger text-white py-3">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Ubicación Actual</h5>
-                    </div>
-                    <div class="card-body p-4 bg-white">
-                        <p class="text-muted ms-2 mb-3"><i class="bi bi-info-circle"></i> Arrastre el marcador para actualizar la ubicación.</p>
-
-                        <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud', $farmacia->user->latitud ?? '17.0834') }}">
-                        <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud', $farmacia->user->longitud ?? '-92.5236') }}">
-
-                        <div class="shadow-sm rounded-4 overflow-hidden border border-light">
-                            <div id="map" style="height: 400px; width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botones -->
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
-                    <a href="{{ route('admin.farmacias.index') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-5">Cancelar</a>
-                    <button class="btn btn-primary btn-lg rounded-pill px-5 shadow fw-bold" type="submit">
-                        <i class="bi bi-save me-2"></i> Actualizar Farmacia
-                    </button>
                 </div>
             </div>
         </form>
     </div>
 
-    @section('js')
-        <script>
-            (function () {
-                'use strict';
-                var forms = document.querySelectorAll('.needs-validation');
-                Array.prototype.slice.call(forms).forEach(function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (!form.checkValidity()) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                        form.classList.add('was-validated')
-                    }, false)
-                })
-            })()
-        </script>
-
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap" async defer></script>
-
-        <script>
-            let map;
-            let marker;
-
-            function initMap() {
-                const lat = parseFloat(document.getElementById('latitud').value) || 17.0834;
-                const lng = parseFloat(document.getElementById('longitud').value) || -92.5236;
-
-                document.getElementById('latitud').value = lat;
-                document.getElementById('longitud').value = lng;
-
-                const myLatLng = { lat, lng };
-
-                map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 15,
-                    center: myLatLng,
-                    mapTypeId: google.maps.MapTypeId.ROADMAP,
-                });
-
-                marker = new google.maps.Marker({
-                    position: myLatLng,
-                    map: map,
-                    draggable: true,
-                    title: "Ubicación de la Farmacia",
-                    animation: google.maps.Animation.DROP
-                });
-
-                marker.addListener("dragend", function (event) {
-                    updateCoordinates(event.latLng.lat(), event.latLng.lng());
-                });
-
-                map.addListener("click", function (event) {
-                    marker.setPosition(event.latLng);
-                    updateCoordinates(event.latLng.lat(), event.latLng.lng());
-                });
+    @push('scripts')
+    <script>
+        document.getElementById('fotoInput').onchange = evt => {
+            const [file] = fotoInput.files
+            if (file) {
+                document.getElementById('profilePreview').src = URL.createObjectURL(file)
             }
+        }
 
-            function updateCoordinates(lat, lng) {
-                document.getElementById('latitud').value = lat;
-                document.getElementById('longitud').value = lng;
-            }
-        </script>
-    @endsection
+        (function () {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap" async defer></script>
+
+    <script>
+        let map;
+        let marker;
+
+        function initMap() {
+            const initialLat = parseFloat(document.getElementById('latitud').value) || 16.9080;
+            const initialLng = parseFloat(document.getElementById('longitud').value) || -92.0946;
+            const myLatLng = { lat: initialLat, lng: initialLng };
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: myLatLng,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+
+            marker = new google.maps.Marker({
+                position: myLatLng,
+                map: map,
+                draggable: true,
+                title: "Ubicación de la Farmacia",
+                animation: google.maps.Animation.DROP
+            });
+
+            marker.addListener("dragend", function (event) {
+                updateInputs(event.latLng.lat(), event.latLng.lng());
+            });
+
+            map.addListener("click", function (event) {
+                marker.setPosition(event.latLng);
+                updateInputs(event.latLng.lat(), event.latLng.lng());
+            });
+        }
+
+        function updateInputs(lat, lng) {
+            document.getElementById('latitud').value = lat;
+            document.getElementById('longitud').value = lng;
+        }
+    </script>
+    @endpush
 </x-layout>

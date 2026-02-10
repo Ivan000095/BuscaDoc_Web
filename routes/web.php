@@ -22,7 +22,7 @@ use App\Http\Controllers\ReporteController;
 
 Route::get("/", function () {
     return view("welcome-simple");
-});
+})->name('welcome');
 
 // Custom auth routes with better control
 Route::get("login", [LoginController::class, "showLoginForm"])->name("login");
@@ -61,15 +61,12 @@ Route::post("password/confirm", [ConfirmPasswordController::class, "confirm"]);
 Route::middleware(["auth", "security:auth"])->group(function () {
     Route::get("/home", [HomeController::class, "index"])->name("home");
 
-
-
 Route::middleware('auth')->group(function () {
     // Formulario para reportar a alguien (ej: desde perfil de doctor)
     Route::get('/reportes/create', [ReporteController::class, 'create'])->name('reportes.user.create');
     // Enviar un nuevo reporte
     Route::post('/reportes', [ReporteController::class, 'store'])
         ->name('reportes.store');
-
     // Ver mis reportes enviados
     Route::get('/reportes/mis-reportes', [ReporteController::class, 'misReportes'])
         ->name('reportes.mis');
@@ -84,57 +81,17 @@ Route::middleware(['auth'])->group(function () {
 
 // Administrador
 Route::middleware(['auth'])->prefix('admin')->group(function () {
+    //  reporte de Usuarios
+    Route::get('/reportes', [ReporteController::class, 'adminIndex'])->name('admin.reportes.index');
+    Route::get('/reportes/{id}', [ReporteController::class, 'adminShow'])->name('admin.reportes.show');
+    Route::put('/reportes/{id}', [ReporteController::class, 'adminUpdate'])->name('admin.reportes.update');
     Route::get('/farmacias', [FarmaciaController::class, 'adminIndex'])->name('admin.farmacias.index');
     Route::get('/farmacias/crear', [FarmaciaController::class, 'adminCreate'])->name('admin.farmacias.create');
     Route::post('/farmacias', [FarmaciaController::class, 'adminStore'])->name('admin.farmacias.store');
     Route::get('/farmacias/{id}/editar', [FarmaciaController::class, 'adminEdit'])->name('admin.farmacias.edit');
     Route::put('/farmacias/{id}', [FarmaciaController::class, 'adminUpdate'])->name('admin.farmacias.update');
     Route::delete('/farmacias/{id}', [FarmaciaController::class, 'adminDestroy'])->name('admin.farmacias.destroy');
-//  reporte de Usuarios
-    Route::get('/reportes', [ReporteController::class, 'adminIndex'])->name('admin.reportes.index');
-    Route::get('/reportes/{id}', [ReporteController::class, 'adminShow'])->name('admin.reportes.show');
-    Route::put('/reportes/{id}', [ReporteController::class, 'adminUpdate'])->name('admin.reportes.update');
-
 });
-// cristian cristian
-
-    // Route::resource("products", ProductController::class)->except([
-    //     "show",
-    //     "update",
-    // ]);
-    // Route::get("productos", [ProductController::class, "index"])->name(
-    //     "products.index",
-    // );
-    // Route::get("productos/agregar", [ProductController::class, "create"])->name(
-    //     "products.create",
-    // );
-    // Route::get("products/data", [ProductController::class, "dataTable"])->name(
-    //     "products.data",
-    // );
-    // Route::get("products/{product}/download-image", [
-    //     ProductController::class,
-    //     "downloadImage",
-    // ])->name("products.download-image");
-
-    // Route::resource("doctores", DoctorController::class)->except([
-    //     "show",
-    //     // "update"
-
-    // ]);
-    // Route::get("doctores", [DoctorController::class, "index"])->name(
-    //     "doctores.index"
-    // );
-    // Route::get("doctores/{doctor}", [DoctorController::class, "show"])->name("doctores.show");
-    // Route::get("doctores/agregar", [DoctorController::class, "create"])->name(
-    //     "doctores.create",
-    // );
-    // Route::get("doctor/data", [DoctorController::class, "dataTable"])->name(
-    //     "doctor.data",
-    // );
-    // Route::get("doctores/{doctor}/download-image", [
-    //     DoctorController::class,
-    //     "downloadImage",
-    // ])->name("doctor.download-image");
 
     Route::get("doctor/data", [DoctorController::class, "dataTable"])->name("doctor.data");
     Route::get("doctores/agregar", [DoctorController::class, "create"])->name("doctores.agregar");
@@ -154,19 +111,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/mensajes', [MensajeController::class, 'store'])->name('mensajes.store');
 });
 
-// Route::middleware('auth:api')->group(function({
-
-// }));
-
 Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
-
-Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
-
-Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
 
 Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
 
@@ -176,26 +121,8 @@ Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback'])
 Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->name('doctores.vista');
 
 Route::post('/comentarios', [ComentarioController::class, 'store'])
-    ->middleware('auth')
-    ->name('comentarios.store');
-
-Route::resource('pacientes', App\Http\Controllers\PacienteController::class);
-
-Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
-
-Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
-
-Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
-
-Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
-
-Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
-
-Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
-
-Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
-
-Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+->middleware('auth')
+->name('comentarios.store');
 
 Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
 
@@ -207,3 +134,68 @@ Route::get('register', function () {
 })->middleware('guest')->name('register');
 
 Route::post('register', [RegisterController::class, 'register']);
+
+Route::resource('pacientes', App\Http\Controllers\PacienteController::class);
+
+// Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+// Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+// Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+// Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+// Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+// Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+    
+// Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+// Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+// Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+// Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+// cristian cristian
+
+// Route::resource("products", ProductController::class)->except([
+//     "show",
+//     "update",
+// ]);
+// Route::get("productos", [ProductController::class, "index"])->name(
+//     "products.index",
+// );
+// Route::get("productos/agregar", [ProductController::class, "create"])->name(
+//     "products.create",
+// );
+// Route::get("products/data", [ProductController::class, "dataTable"])->name(
+//     "products.data",
+// );
+// Route::get("products/{product}/download-image", [
+//     ProductController::class,
+//     "downloadImage",
+// ])->name("products.download-image");
+
+// Route::resource("doctores", DoctorController::class)->except([
+//     "show",
+//     // "update"
+
+// ]);
+// Route::get("doctores", [DoctorController::class, "index"])->name(
+//     "doctores.index"
+// );
+// Route::get("doctores/{doctor}", [DoctorController::class, "show"])->name("doctores.show");
+// Route::get("doctores/agregar", [DoctorController::class, "create"])->name(
+//     "doctores.create",
+// );
+// Route::get("doctor/data", [DoctorController::class, "dataTable"])->name(
+//     "doctor.data",
+// );
+// Route::get("doctores/{doctor}/download-image", [
+//     DoctorController::class,
+//     "downloadImage",
+// ])->name("doctor.download-image");

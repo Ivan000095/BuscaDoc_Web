@@ -62,7 +62,7 @@
                                 class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
                             <h5 class="card-title fw-bold custom-text-dark">Doctores</h5>
                             <a href="{{ route('doctores.index') }}"
-                                class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
+                                class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                         </div>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                                 class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
                             <h5 class="card-title fw-bold custom-text-dark">Farmacias</h5>
                             <a href="{{ route('admin.farmacias.index') }}"
-                                class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
+                                class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                         </div>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
                                 class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
                             <h5 class="card-title fw-bold custom-text-dark">Pacientes</h5>
                             <a href="{{ route('pacientes.index') }}"
-                                class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
+                                class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                         </div>
                     </div>
                 </div>
@@ -94,14 +94,13 @@
                             <img src="{{ asset('images/pacientes.jpg') }}" alt="Pacientes"
                                 class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
                             <h5 class="card-title fw-bold custom-text-dark">Reportes</h5>
-                            <a class="nav-link" href="{{ route('admin.reportes.index') }}"
-                                class="btn btn-custom btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
+                            <a href="{{ route('admin.reportes.index') }}"
+                                class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                         </div>
                     </div>
                 </div>
             </div>
-            </div>
-            
+        </div>
 
         @elseif (Auth::user()->role == 'doctor')
             <div class="row justify-content-center mb-5">
