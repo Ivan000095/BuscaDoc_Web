@@ -32,13 +32,6 @@ class HomeController extends Controller
         $ultimaQuestion = null;
         $rutas = [];
 
-        if ($user->role == 'admin') {
-            $rutas = User::whereNotNull('latitud')
-                        ->whereNotNull('longitud')
-                        ->whereIn('role', ['doctor', 'farmacia']) 
-                        ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
-                        ->get();
-        }
 
         if ($user->role == 'paciente' && $user->patient) {
             $proximaCita = \App\Models\Cita::where('paciente_id', $user->patient->id)
@@ -46,6 +39,11 @@ class HomeController extends Controller
                 ->where('estado', '!=', 'cancelada')
                 ->orderBy('fecha_hora', 'asc')
                 ->first();
+            $rutas = User::whereNotNull('latitud')
+                ->whereNotNull('longitud')
+                ->whereIn('role', ['doctor', 'farmacia']) 
+                ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
+                ->get();
         }
 
         if ($user->role == 'doctor' && $user->doctor) {

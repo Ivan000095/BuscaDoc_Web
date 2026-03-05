@@ -90,63 +90,6 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
-
-                {{-- COLUMNA DEL MAPA --}}
-                <div class="col-lg-7">
-                    <div id="map" class="shadow-sm border"></div>
-                </div>
-
-                {{-- COLUMNA DE LA LISTA --}}
-                <div class="col-lg-5 d-flex flex-column" style="height: 450px;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-navy mb-0">
-                            <i class="bi bi-geo-alt-fill me-2"></i>Lugares cercanos
-                        </h5>
-                        <span class="badge bg-navy-subtle text-navy rounded-pill">{{ count($rutas ?? []) }}
-                            resultados</span>
-                    </div>
-
-                    <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
-                        @forelse ($rutas as $usuario)
-                            <div class="card border-0 shadow-sm rounded-4 mb-3 hover-scale overflow-hidden"
-                                style="cursor: pointer;"
-                                onclick="centrar('{{ $usuario->latitud }}', '{{ $usuario->longitud }}')">
-                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
-                                    <div class="d-flex align-items-center">
-                                        @if($usuario->foto)
-                                            <img src="{{ asset('storage/' . $usuario->foto) }}" alt="{{ $usuario->name }}"
-                                                class="rounded-circle shadow-sm me-3 border border-2 border-white" width="55"
-                                                height="55" style="object-fit: cover;">
-                                        @else
-                                            <div class="bg-navy-subtle text-navy rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3 border border-2 border-white"
-                                                style="width: 55px; height: 55px;">
-                                                <i
-                                                    class="bi {{ $usuario->role == 'doctor' ? 'bi-person-fill' : 'bi-shop' }} fs-4"></i>
-                                            </div>
-                                        @endif
-                                        <div>
-                                            <h6 class="fw-bold text-dark mb-0">{{ $usuario->name }}</h6>
-                                            <small class="text-muted d-block text-capitalize">{{ $usuario->role }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <button class="btn btn-light rounded-circle text-navy shadow-sm btn-geo">
-                                            <i class="bi bi-geo-alt icon-normal"></i>
-                                            <i class="bi bi-geo-alt-fill icon-hover d-none"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="alert alert-info border-0 shadow-sm rounded-4 text-center p-4">
-                                <i class="bi bi-geo-alt fs-1 d-block mb-2"></i>
-                                No hay ubicaciones registradas aún.
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
             <div class="row mb-5">
                 <div class="col-12 col-md-6 col-lg-3 mb-4">
                     <div class="card h-100 border-50 shadow-sm hover-card">
@@ -762,6 +705,70 @@
                     </div>
                 </div>
             </div>
+            
+            <br>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="fw-bold custom-text-dark">Matriz de ubicaciones</h2>
+                </div>
+            </div>
+            <div class="row g-4 mb-4">
+
+                {{-- COLUMNA DEL MAPA --}}
+                <div class="col-lg-7">
+                    <div id="map" class="shadow-sm border"></div>
+                </div>
+
+                {{-- COLUMNA DE LA LISTA --}}
+                <div class="col-lg-5 d-flex flex-column" style="height: 450px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-navy mb-0">
+                            <i class="bi bi-geo-alt-fill me-2"></i>Lugares cercanos
+                        </h5>
+                        <span class="badge bg-navy-subtle text-navy rounded-pill">{{ count($rutas ?? []) }}
+                            resultados</span>
+                    </div>
+
+                    <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
+                        @forelse ($rutas as $usuario)
+                            <div class="card border-0 shadow-sm rounded-4 mb-3 hover-scale overflow-hidden"
+                                style="cursor: pointer;"
+                                onclick="centrar('{{ $usuario->latitud }}', '{{ $usuario->longitud }}')">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        @if($usuario->foto)
+                                            <img src="{{ asset('storage/' . $usuario->foto) }}" alt="{{ $usuario->name }}"
+                                                class="rounded-circle shadow-sm me-3 border border-2 border-white" width="55"
+                                                height="55" style="object-fit: cover;">
+                                        @else
+                                            <div class="bg-navy-subtle text-navy rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3 border border-2 border-white"
+                                                style="width: 55px; height: 55px;">
+                                                <i
+                                                    class="bi {{ $usuario->role == 'doctor' ? 'bi-person-fill' : 'bi-shop' }} fs-4"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">{{ $usuario->name }}</h6>
+                                            <small class="text-muted d-block text-capitalize">{{ $usuario->role }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button class="btn btn-light rounded-circle text-navy shadow-sm btn-geo">
+                                            <i class="bi bi-geo-alt icon-normal"></i>
+                                            <i class="bi bi-geo-alt-fill icon-hover d-none"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="alert alert-info border-0 shadow-sm rounded-4 text-center p-4">
+                                <i class="bi bi-geo-alt fs-1 d-block mb-2"></i>
+                                No hay ubicaciones registradas aún.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
         @endif
     </div>
 
@@ -946,15 +953,12 @@
                                     </div>
                                 `;
 
-                            // 3. Le metemos el contenido a la ventana y la abrimos anclada a este marcador
                             infoWindow.setContent(contentString);
                             infoWindow.open({
                                 anchor: marker,
                                 map: map
                             });
                         });
-                        // --------------------------------------------------
-
                         markers.push(marker);
                     }
                 });
