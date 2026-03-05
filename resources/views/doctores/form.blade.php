@@ -62,7 +62,6 @@
 
                 <div class="row g-4">
                     
-                    {{-- COLUMNA IZQUIERDA: CUENTA DE USUARIO --}}
                     <div class="col-lg-4">
                         <div class="card border-0 shadow-sm rounded-5 h-100">
                             <div class="card-header bg-navy text-white p-4 border-0 rounded-top-5">

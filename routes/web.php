@@ -19,6 +19,7 @@ use App\Models\Especialidad;
 use App\Http\Controllers\FarmaciaController;
 use App\Http\Controllers\MensajeController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\ChatbotController;
 
 Route::get("/", function () {
     return view("welcome-simple");
@@ -109,6 +110,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/mensajes', [MensajeController::class, 'index'])->name('mensajes.index');
     Route::get('/mensajes/{id}', [MensajeController::class, 'show'])->name('mensajes.show');
     Route::post('/mensajes', [MensajeController::class, 'store'])->name('mensajes.store');
+    Route::get('/directorio-mapa', [App\Http\Controllers\HomeController::class, 'mostrarMapa'])->name('mapa.directorio');
 });
 
 Auth::routes();
@@ -136,6 +138,8 @@ Route::get('register', function () {
 Route::post('register', [RegisterController::class, 'register']);
 
 Route::resource('pacientes', App\Http\Controllers\PacienteController::class);
+
+Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
 
 // Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
 

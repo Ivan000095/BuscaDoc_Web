@@ -18,7 +18,6 @@ class LoginController extends Controller
         $this->middleware('auth')->only('logout');
     }
 
-    // --- AGREGA ESTA FUNCIÓN AL FINAL ---
     /**
      * El usuario ha sido autenticado.
      *

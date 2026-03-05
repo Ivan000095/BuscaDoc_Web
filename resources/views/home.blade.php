@@ -1,32 +1,71 @@
-@extends('layouts.app')
+<x-layout>
+    @push('styles')
+        <style>
+            .hover-scale {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
 
-<style>
-    .hover-scale {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+            .hover-scale:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+            }
 
-    .hover-scale:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-    }
+            .btn-custom {
+                background-color: #00213D;
+                border-color: #00213D;
+                color: white;
+            }
 
-    .btn-custom {
-        background-color: #00213D;
-        border-color: #00213D;
-        color: white;
-    }
+            .btn-custom:hover {
+                background-color: #003366;
+                color: white;
+            }
 
-    .btn-custom:hover {
-        background-color: #003366;
-        color: white;
-    }
+            .custom-text-dark {
+                color: #00213D;
+            }
 
-    .custom-text-dark {
-        color: #00213D;
-    }
-</style>
+            .custom-map-control-button {
+                background-color: #fff;
+                border: 0;
+                border-radius: 2px;
+                box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+                margin: 10px;
+                padding: 0 0.5em;
+                font: 400 18px Roboto, Arial, sans-serif;
+                overflow: hidden;
+                height: 40px;
+                cursor: pointer;
+            }
 
-@section('content')
+            .custom-map-control-button:hover {
+                background: rgb(235, 235, 235);
+            }
+
+            .btn-geo:hover .icon-normal {
+                display: none;
+            }
+
+            .btn-geo:hover .icon-hover {
+                display: inline-block !important;
+            }
+
+            .btn-geo:hover {
+                background-color: #0d2e4e !important;
+                color: white !important;
+                transform: scale(1.1);
+                transition: all 0.2s ease-in-out;
+            }
+
+            #map {
+                min-height: 450px;
+                width: 100%;
+                border-radius: 15px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+        </style>
+    @endpush
+
     <div class="container">
         {{-- Notificaciones --}}
         @if(session('success'))
@@ -43,9 +82,6 @@
             </div>
         @endif
 
-        {{-- ========================================== --}}
-        {{-- PANEL ADMINISTRADOR --}}
-        {{-- ========================================== --}}
         @if (Auth::user()->role == 'admin')
             <div class="row mb-4">
                 <div class="col-12">
@@ -54,12 +90,69 @@
                 </div>
             </div>
 
-            <div class="row justify-content-center">
+            <div class="row g-4 mb-4">
+
+                {{-- COLUMNA DEL MAPA --}}
+                <div class="col-lg-7">
+                    <div id="map" class="shadow-sm border"></div>
+                </div>
+
+                {{-- COLUMNA DE LA LISTA --}}
+                <div class="col-lg-5 d-flex flex-column" style="height: 450px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-navy mb-0">
+                            <i class="bi bi-geo-alt-fill me-2"></i>Lugares cercanos
+                        </h5>
+                        <span class="badge bg-navy-subtle text-navy rounded-pill">{{ count($rutas ?? []) }}
+                            resultados</span>
+                    </div>
+
+                    <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
+                        @forelse ($rutas as $usuario)
+                            <div class="card border-0 shadow-sm rounded-4 mb-3 hover-scale overflow-hidden"
+                                style="cursor: pointer;"
+                                onclick="centrar('{{ $usuario->latitud }}', '{{ $usuario->longitud }}')">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        @if($usuario->foto)
+                                            <img src="{{ asset('storage/' . $usuario->foto) }}" alt="{{ $usuario->name }}"
+                                                class="rounded-circle shadow-sm me-3 border border-2 border-white" width="55"
+                                                height="55" style="object-fit: cover;">
+                                        @else
+                                            <div class="bg-navy-subtle text-navy rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3 border border-2 border-white"
+                                                style="width: 55px; height: 55px;">
+                                                <i
+                                                    class="bi {{ $usuario->role == 'doctor' ? 'bi-person-fill' : 'bi-shop' }} fs-4"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">{{ $usuario->name }}</h6>
+                                            <small class="text-muted d-block text-capitalize">{{ $usuario->role }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button class="btn btn-light rounded-circle text-navy shadow-sm btn-geo">
+                                            <i class="bi bi-geo-alt icon-normal"></i>
+                                            <i class="bi bi-geo-alt-fill icon-hover d-none"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="alert alert-info border-0 shadow-sm rounded-4 text-center p-4">
+                                <i class="bi bi-geo-alt fs-1 d-block mb-2"></i>
+                                No hay ubicaciones registradas aún.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-5">
                 <div class="col-12 col-md-6 col-lg-3 mb-4">
                     <div class="card h-100 border-50 shadow-sm hover-card">
                         <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
                             <img src="{{ asset('images/doctores.jpg') }}" alt="Doctores"
-                                class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
+                                class="rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
                             <h5 class="card-title fw-bold custom-text-dark">Doctores</h5>
                             <a href="{{ route('doctores.index') }}"
                                 class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
@@ -70,7 +163,7 @@
                     <div class="card h-100 border-50 shadow-sm hover-card">
                         <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
                             <img src="{{ asset('images/farmacias.jpeg') }}" alt="Farmacias"
-                                class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
+                                class="rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
                             <h5 class="card-title fw-bold custom-text-dark">Farmacias</h5>
                             <a href="{{ route('admin.farmacias.index') }}"
                                 class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
@@ -81,7 +174,7 @@
                     <div class="card h-100 border-50 shadow-sm hover-card">
                         <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
                             <img src="{{ asset('images/pacientes.jpg') }}" alt="Pacientes"
-                                class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
+                                class="rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
                             <h5 class="card-title fw-bold custom-text-dark">Pacientes</h5>
                             <a href="{{ route('pacientes.index') }}"
                                 class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
@@ -91,8 +184,8 @@
                 <div class="col-12 col-md-6 col-lg-3 mb-4">
                     <div class="card h-100 border-50 shadow-sm hover-card">
                         <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
-                            <img src="{{ asset('images/pacientes.jpg') }}" alt="Pacientes"
-                                class="rounded-circle mb-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
+                            <img src="{{ asset('images/pacientes.jpg') }}" alt="Reportes"
+                                class="rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
                             <h5 class="card-title fw-bold custom-text-dark">Reportes</h5>
                             <a href="{{ route('admin.reportes.index') }}"
                                 class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
@@ -100,7 +193,58 @@
                     </div>
                 </div>
             </div>
-        </div>
+
+            {{-- CHATBOT WIDGET --}}
+            <button id="chatToggleBtn"
+                class="btn bg-navy text-white rounded-circle shadow-lg position-fixed d-flex align-items-center justify-content-center hover-scale"
+                style="bottom: 30px; right: 30px; width: 65px; height: 65px; z-index: 1050; transition: transform 0.2s;">
+                <i class="bi bi-robot fs-3"></i>
+            </button>
+
+            <div id="chatWidget" class="card shadow-lg position-fixed d-none flex-column fade-in"
+                style="bottom: 110px; right: 30px; width: 380px; border-radius: 20px; z-index: 1050; overflow: hidden; border: 1px solid rgba(0,0,0,0.1);">
+
+                <div class="card-header d-flex justify-content-between align-items-center p-3 text-white border-bottom-0"
+                    style="background-color: #0d2e4e;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-stars fs-4 me-2 text-warning"></i>
+                        <div class="d-flex flex-column">
+                            <span class="fw-bold mb-0 lh-1">Gemini AI</span>
+                            <small class="opacity-75" style="font-size: 0.75rem;">Asistente BuscaDoc</small>
+                        </div>
+                    </div>
+                    <button id="closeChatBtn" class="btn text-white p-0 m-0 border-0 opacity-75 hover-opacity-100">
+                        <i class="bi bi-x-lg fs-5"></i>
+                    </button>
+                </div>
+
+                <div class="card-body p-0 bg-light">
+                    <div id="chat-messages" class="p-3" style="height: 400px; overflow-y: auto; overflow-x: hidden;">
+                        <div class="d-flex flex-row justify-content-start mb-4">
+                            <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm"
+                                style="width: 40px; height: 40px; object-fit: cover;">
+                            <div class="p-3 ms-3 bg-white shadow-sm"
+                                style="border-radius: 15px; border-top-left-radius: 0;">
+                                <p class="small mb-0 text-dark">¡Hola, {{ Auth::user()->name }}! Soy Gemini, listo para
+                                    integrarme a BuscaDoc. ¿Qué datos de la clínica necesitas consultar hoy?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-top-0 p-3">
+                    <div class="input-group">
+                        <input type="text"
+                            class="form-control rounded-pill border-secondary border-opacity-25 shadow-none bg-light ps-4"
+                            id="chatInput" placeholder="Pregúntale a Gemini..." autocomplete="off">
+                        <button id="btnSend"
+                            class="btn bg-navy text-white rounded-circle ms-2 shadow-sm d-flex align-items-center justify-content-center"
+                            style="width: 45px; height: 45px;">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
         @elseif (Auth::user()->role == 'doctor')
             <div class="row justify-content-center mb-5">
@@ -198,11 +342,13 @@
 
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-scale">
-                                <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-reviews" 
-                                class="text-decoration-none stretched-link"></a>
-                                <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                                <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-reviews"
+                                    class="text-decoration-none stretched-link"></a>
+                                <div
+                                    class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <div class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center me-3"
+                                            style="width: 40px; height: 40px;">
                                             <i class="bi bi-star-fill"></i>
                                         </div>
                                         <h6 class="fw-bold text-dark mb-0">Última Opinión</h6>
@@ -216,19 +362,22 @@
                                             <p class="text-muted fst-italic mb-3 small pe-3">
                                                 "{{ Str::limit($ultimaReview->contenido, 80) }}"
                                             </p>
-                                            
+
                                             <div class="d-flex align-items-center justify-content-between border-top pt-3">
                                                 <div class="d-flex align-items-center">
                                                     {{-- FOTO --}}
-                                                    <img src="{{ $ultimaReview->autor?->foto ? asset('storage/' . $ultimaReview->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ultimaReview->autor?->name ?? 'Anónimo') }}" 
-                                                        class="rounded-circle me-2 shadow-sm" width="30" height="30" style="object-fit: cover;">
-                                                    
+                                                    <img src="{{ $ultimaReview->autor?->foto ? asset('storage/' . $ultimaReview->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ultimaReview->autor?->name ?? 'Anónimo') }}"
+                                                        class="rounded-circle me-2 shadow-sm" width="30" height="30"
+                                                        style="object-fit: cover;">
+
                                                     {{-- NOMBRE --}}
-                                                    <small class="fw-bold text-dark">{{ $ultimaReview->autor?->name ?? 'Anónimo' }}</small>
+                                                    <small
+                                                        class="fw-bold text-dark">{{ $ultimaReview->autor?->name ?? 'Anónimo' }}</small>
                                                 </div>
-                                                
+
                                                 <div class="text-warning small bg-light px-2 py-1 rounded-pill border">
-                                                    <span class="fw-bold text-dark me-1">{{ number_format($ultimaReview->calificacion, 1) }}</span>
+                                                    <span
+                                                        class="fw-bold text-dark me-1">{{ number_format($ultimaReview->calificacion, 1) }}</span>
                                                     <i class="bi bi-star-fill text-warning"></i>
                                                 </div>
                                             </div>
@@ -242,18 +391,21 @@
                                         </div>
                                     @endif
                                 </div>
-                                
+
                             </div>
                         </div>
 
                         <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-scale position-relative">
-                                <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-questions" 
-                                class="text-decoration-none stretched-link"></a>
+                            <div
+                                class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-scale position-relative">
+                                <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-questions"
+                                    class="text-decoration-none stretched-link"></a>
 
-                                <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div
+                                    class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <div class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center me-3"
+                                            style="width: 40px; height: 40px;">
                                             <i class="bi bi-question-lg"></i>
                                         </div>
                                         <h6 class="fw-bold text-dark mb-0">Última pregunta</h6>
@@ -269,9 +421,11 @@
                                             <div class="d-flex align-items-center justify-content-between border-top pt-3">
                                                 <div class="d-flex align-items-center">
                                                     {{-- CORREGIDO: Usamos $ultimaQuestion en lugar de $ultimaReview --}}
-                                                    <img src="{{ $ultimaQuestion->autor?->foto ? asset('storage/' . $ultimaQuestion->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ultimaQuestion->autor?->name ?? 'Anónimo') }}" 
-                                                        class="rounded-circle me-2 shadow-sm" width="30" height="30" style="object-fit: cover;">
-                                                    <small class="fw-bold text-dark">{{ $ultimaQuestion->autor?->name ?? 'Anónimo' }}</small>
+                                                    <img src="{{ $ultimaQuestion->autor?->foto ? asset('storage/' . $ultimaQuestion->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ultimaQuestion->autor?->name ?? 'Anónimo') }}"
+                                                        class="rounded-circle me-2 shadow-sm" width="30" height="30"
+                                                        style="object-fit: cover;">
+                                                    <small
+                                                        class="fw-bold text-dark">{{ $ultimaQuestion->autor?->name ?? 'Anónimo' }}</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -365,7 +519,8 @@
                     <div class="row g-3">
                         {{-- Tarjeta 1: Ver Perfil --}}
                         <div class="col-md-6">
-                            <a href="{{ route('farmacias.detalle', Auth::user()->farmacia->id) }}" class="text-decoration-none">
+                            <a href="{{ route('farmacias.detalle', Auth::user()->farmacia->id) }}"
+                                class="text-decoration-none">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-center">
                                     <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
                                         style="width: 70px; height: 70px;">
@@ -440,7 +595,8 @@
 
                     <form action="{{ route('global.search') }}" method="GET">
                         <div class="input-group shadow-sm rounded-pill overflow-hidden border-0 p-1 bg-white">
-                            <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
+                            <span class="input-group-text bg-white border-0 ps-4"><i
+                                    class="bi bi-search text-muted"></i></span>
                             <input type="text" name="search" class="form-control border-0 shadow-none ps-2"
                                 placeholder="Buscar cardiólogo, pediatra, farmacia..." style="height: 50px;" required>
                             <button class="btn btn-navy rounded-pill px-4 m-1 fw-bold" type="submit">Buscar</button>
@@ -479,7 +635,8 @@
                                                     style="font-size: 0.7rem; letter-spacing: 1px;">
                                                     Próxima Consulta
                                                 </small>
-                                                <h4 class="fw-bold text-navy mb-1">Dr. {{ $proximaCita->doctor->user->name }}</h4>
+                                                <h4 class="fw-bold text-navy mb-1">Dr. {{ $proximaCita->doctor->user->name }}
+                                                </h4>
                                                 <div class="d-flex align-items-center text-muted">
                                                     <i class="bi bi-clock-fill me-2 text-warning"></i>
                                                     <span
@@ -607,4 +764,249 @@
             </div>
         @endif
     </div>
-@endsection
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const chatToggleBtn = document.getElementById('chatToggleBtn');
+                const closeChatBtn = document.getElementById('closeChatBtn');
+                const chatWidget = document.getElementById('chatWidget');
+
+                if (!chatWidget) return;
+
+                function toggleChat() {
+                    if (chatWidget.classList.contains('d-none')) {
+                        chatWidget.classList.remove('d-none');
+                        chatWidget.classList.add('d-flex');
+                        setTimeout(() => document.getElementById('chatInput').focus(), 100);
+                    } else {
+                        chatWidget.classList.add('d-none');
+                        chatWidget.classList.remove('d-flex');
+                    }
+                }
+
+                chatToggleBtn.addEventListener('click', toggleChat);
+                closeChatBtn.addEventListener('click', toggleChat);
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === "Escape" && !chatWidget.classList.contains('d-none')) {
+                        toggleChat();
+                    }
+                });
+
+                const btnSend = document.getElementById('btnSend');
+                const inputArea = document.getElementById('chatInput');
+                const chatMessages = document.getElementById('chat-messages');
+
+                inputArea.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        btnSend.click();
+                    }
+                });
+
+                btnSend.addEventListener('click', async function () {
+                    const message = inputArea.value.trim();
+                    if (!message) return;
+
+                    inputArea.value = '';
+                    appendUserMessage(message);
+
+                    try {
+                        btnSend.disabled = true;
+                        btnSend.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                        const loadingId = appendLoadingIndicator();
+
+                        const response = await fetch('/chatbot/send', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({ message: message })
+                        });
+
+                        removeLoadingIndicator(loadingId);
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            appendBotMessage(data.reply);
+                        } else {
+                            appendBotMessage("Hubo un error de conexión con el servidor.");
+                        }
+
+                    } catch (error) {
+                        console.error("Error:", error);
+                        const loader = document.querySelector('.typing-indicator-container');
+                        if (loader) loader.remove();
+                        appendBotMessage("No se pudo contactar al servidor.");
+                    } finally {
+                        btnSend.disabled = false;
+                        btnSend.innerHTML = '<i class="bi bi-send-fill"></i>';
+                        inputArea.focus();
+                    }
+                });
+
+                function appendUserMessage(text) {
+                    const html = `
+                            <div class="d-flex flex-row justify-content-end mb-4 fade-in">
+                                <div class="p-3 me-3 bg-navy text-white shadow-sm" style="border-radius: 15px; border-top-right-radius: 0;">
+                                    <p class="small mb-0">${text}</p>
+                                </div>
+                                <img src="{{ Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                    alt="user avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                            </div>
+                        `;
+                    chatMessages.insertAdjacentHTML('beforeend', html);
+                    scrollToBottom();
+                }
+
+                function appendBotMessage(text) {
+                    const html = `
+                            <div class="d-flex flex-row justify-content-start mb-4 fade-in">
+                                <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div class="p-3 ms-3 bg-white border border-light shadow-sm" style="border-radius: 15px; border-top-left-radius: 0;">
+                                    <div class="small mb-0 text-dark chatbot-reply">${text}</div>
+                                </div>
+                            </div>
+                        `;
+                    chatMessages.insertAdjacentHTML('beforeend', html);
+                    scrollToBottom();
+                }
+
+                function appendLoadingIndicator() {
+                    const id = 'loader-' + Date.now();
+                    const html = `
+                            <div id="${id}" class="d-flex flex-row justify-content-start mb-4 fade-in typing-indicator-container">
+                                <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm opacity-75" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div class="p-3 ms-3 bg-white border border-light shadow-sm d-flex align-items-center" style="border-radius: 15px; border-top-left-radius: 0; min-height: 40px;">
+                                    <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem;"></div>
+                                    <div class="spinner-grow spinner-grow-sm text-secondary mx-1" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.2s"></div>
+                                    <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.4s"></div>
+                                </div>
+                            </div>
+                        `;
+                    chatMessages.insertAdjacentHTML('beforeend', html);
+                    scrollToBottom();
+                    return id;
+                }
+
+                function removeLoadingIndicator(id) {
+                    const element = document.getElementById(id);
+                    if (element) element.remove();
+                }
+
+                function scrollToBottom() {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+
+            const ubicaciones = @json($rutas ?? []);
+
+            let map, infoWindow;
+            let markers = [];
+
+            async function initMap() {
+                if (!document.getElementById("map")) return;
+
+                const { Map } = await google.maps.importLibrary("maps");
+                const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+                map = new Map(document.getElementById("map"), {
+                    center: { lat: 16.9084, lng: -92.0977 },
+                    zoom: 13,
+                    mapId: "MAPA_BUSCADOC_ID"
+                });
+
+                infoWindow = new google.maps.InfoWindow();
+
+                ubicaciones.forEach(usuario => {
+                    const lat = parseFloat(usuario.latitud);
+                    const lng = parseFloat(usuario.longitud);
+
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        const marker = new AdvancedMarkerElement({
+                            map: map,
+                            position: { lat: lat, lng: lng },
+                            title: usuario.name
+                        });
+
+                        marker.addListener('click', () => {
+                            const photoUrl = usuario.foto
+                                ? '/storage/' + usuario.foto
+                                : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(usuario.name);
+
+                            const contentString = `
+                                    <div style="text-align: center; padding: 5px; min-width: 120px;">
+                                        <img src="${photoUrl}" alt="${usuario.name}" 
+                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 8px;">
+                                        <h6 style="margin: 0; color: #0d2e4e; font-weight: bold; font-family: sans-serif;">${usuario.name}</h6>
+                                        <small style="color: #6c757d; text-transform: capitalize; font-family: sans-serif;">${usuario.role}</small>
+                                    </div>
+                                `;
+
+                            // 3. Le metemos el contenido a la ventana y la abrimos anclada a este marcador
+                            infoWindow.setContent(contentString);
+                            infoWindow.open({
+                                anchor: marker,
+                                map: map
+                            });
+                        });
+                        // --------------------------------------------------
+
+                        markers.push(marker);
+                    }
+                });
+
+                const locationButton = document.createElement("button");
+                locationButton.textContent = "Ir a mi ubicación actual";
+                locationButton.classList.add("custom-map-control-button");
+                map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
+
+                locationButton.addEventListener("click", () => {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                const pos = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude,
+                                };
+                                infoWindow.setPosition(pos);
+                                infoWindow.setContent("Estás aquí.");
+                                infoWindow.open(map);
+                                map.setCenter(pos);
+                            },
+                            () => {
+                                handleLocationError(true, infoWindow, map.getCenter());
+                            }
+                        );
+                    } else {
+                        handleLocationError(false, infoWindow, map.getCenter());
+                    }
+                });
+            }
+
+            function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+                infoWindow.setPosition(pos);
+                infoWindow.setContent(
+                    browserHasGeolocation
+                        ? "Error: El servicio de ubicación falló o fue denegado."
+                        : "Error: Tu navegador no soporta geolocalización."
+                );
+                infoWindow.open(map);
+            }
+
+            function centrar(latitud, longitud) {
+                if (map) {
+                    map.setCenter({ lat: parseFloat(latitud), lng: parseFloat(longitud) });
+                    map.setZoom(15);
+                }
+            }
+            window.initMap = initMap;
+        </script>
+
+        <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key={{ env('API_KEY') }}&callback=initMap&v=beta"></script>
+    @endpush
+</x-layout>

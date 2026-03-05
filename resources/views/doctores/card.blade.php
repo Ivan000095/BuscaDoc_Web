@@ -1,5 +1,5 @@
 <?php
-$apiKey = "AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ";
+$apiKey = env('API_KEY');
 // Coordenadas para el mapa
 $lat = $doctor->user->latitud ?? 16.9080;
 $lng = $doctor->user->longitud ?? -92.0946;
@@ -440,10 +440,8 @@ $lng = $doctor->user->longitud ?? -92.0946;
                             </div>
                         </div>
 
-                        {{-- preguntas --}}
                         <div class="tab-pane fade" id="pills-questions" role="tabpanel">
 
-                            {{-- NUEVO: FORMULARIO PARA AGREGAR PREGUNTA (SOLO PACIENTES) --}}
                             @if(Auth::check() && Auth::user()->role == 'paciente')
                                 <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
                                     <h6 class="fw-bold mb-3 text-navy">
@@ -557,7 +555,6 @@ $lng = $doctor->user->longitud ?? -92.0946;
     </div>
     @include('citas.agendar')
 
-    {{-- Scripts del Mapa --}}
     <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
     <script>
         function initMap() {
@@ -565,7 +562,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 16,
                 center: position,
-                disableDefaultUI: true, // Mapa limpio sin botones
+                disableDefaultUI: true,
             });
             new google.maps.Marker({
                 position: position,

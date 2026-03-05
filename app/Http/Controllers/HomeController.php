@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class HomeController extends Controller
 {
@@ -29,6 +30,15 @@ class HomeController extends Controller
         $proximaCitaDoctor = null;
         $ultimaReview = null;
         $ultimaQuestion = null;
+        $rutas = [];
+
+        if ($user->role == 'admin') {
+            $rutas = User::whereNotNull('latitud')
+                        ->whereNotNull('longitud')
+                        ->whereIn('role', ['doctor', 'farmacia']) 
+                        ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
+                        ->get();
+        }
 
         if ($user->role == 'paciente' && $user->patient) {
             $proximaCita = \App\Models\Cita::where('paciente_id', $user->patient->id)
@@ -53,6 +63,17 @@ class HomeController extends Controller
                 ->latest()
                 ->first();
         }
-        return view('home', compact('proximaCita', 'proximaCitaDoctor', 'ultimaReview', 'ultimaQuestion'));
+
+        return view('home', compact('proximaCita', 'proximaCitaDoctor', 'ultimaReview', 'ultimaQuestion', 'rutas'));
     }
+
+    public function mostrarMapa()
+        {
+            $rutas = User::whereNotNull('latitud')
+                        ->whereNotNull('longitud')
+                        ->whereIn('role', ['doctor', 'farmacia']) 
+                        ->select('id', 'name', 'role', 'latitud', 'longitud') 
+                        ->get();
+            return view('mapa.index', compact('rutas'));
+        }
 }

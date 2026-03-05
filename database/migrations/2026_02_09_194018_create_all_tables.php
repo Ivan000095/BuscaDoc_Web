@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -83,13 +82,13 @@ return new class extends Migration
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->string('cedula')->nullable();
             $table->string('idiomas')->nullable();
             $table->text('descripcion')->nullable();
-            $table->decimal('costo', 8, 2);
+            $table->decimal('costo', 6, 2);
             $table->time('horario_entrada')->nullable();
             $table->time('horario_salida')->nullable();
             $table->timestamps();
@@ -98,9 +97,9 @@ return new class extends Migration
         Schema::create('pacientes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->string('tipo_sangre')->nullable();
             $table->text('alergias')->nullable();
             $table->text('cirugias')->nullable();
@@ -113,9 +112,9 @@ return new class extends Migration
         Schema::create('farmacias', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->restrictOnDelete()
+                ->restrictOnDelete();
             $table->string('nom_farmacia', 50);
             $table->string('rfc', 15)->nullable();
             $table->string('telefono', 14)->nullable();
@@ -129,42 +128,42 @@ return new class extends Migration
         Schema::create('doctor__especialidads', function (Blueprint $table) {
             $table->id();
             $table->foreignId('doctor_id')
-                  ->constrained('doctors')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('doctors')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->foreignId('especialidad_id')
-                  ->constrained('especialidads')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('especialidads')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->timestamps();
         });
 
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('doctor_id')
-                  ->constrained('doctors')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('doctors')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->foreignId('paciente_id')
-                  ->constrained('pacientes')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('pacientes')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->timestamp('fecha_hora');
             $table->text('detalles')->nullable();
-            $table->string('estado')->default('pendiente'); 
+            $table->string('estado')->default('pendiente');
             $table->timestamps();
         });
 
         Schema::create('comentarios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_autor')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->foreignId('id_destinatario')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->string('tipo', 10);
             $table->integer('calificacion')->nullable();
             $table->text('contenido')->nullable();
@@ -174,13 +173,13 @@ return new class extends Migration
         Schema::create('respuestas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('comentario_id')
-                  ->constrained('comentarios')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('comentarios')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->foreignId('id_respondedor')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->text('contenido');
             $table->timestamps();
         });
@@ -188,13 +187,13 @@ return new class extends Migration
         Schema::create('mensajes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_remitente')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->foreignId('id_destinatario')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->text('contenido');
             $table->boolean('leido')->default(false);
             $table->timestamps();
@@ -203,15 +202,14 @@ return new class extends Migration
         Schema::create('reportes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_usr_reporte')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->foreignId('id_usr_reportado')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->restrictOnDelete();
             $table->text('razon');
-            $table->bigInteger('user_id'); 
             $table->timestamps();
         });
     }
@@ -237,7 +235,8 @@ return new class extends Migration
         Schema::dropIfExists('cache');
         Schema::dropIfExists('especialidads');
         Schema::dropIfExists('users');
-        
+        Schema::dropIfExists('chat_messages');
+
         DB::statement("DROP TYPE IF EXISTS estado_cita");
     }
 };
