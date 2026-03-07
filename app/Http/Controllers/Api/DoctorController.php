@@ -57,7 +57,7 @@ class DoctorController extends Controller
                     "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 30),
                     "fecha" => $doctor->user->f_nacimiento,
                     // Puse el host compartido para el emulador de flutter, pero después debería de tener el host de la página
-                    "image" => "10.0.2.2:8000/storage/" . $doctor->user->foto,
+                    "image" => "http://localhost:8000/storage/" . $doctor->user->foto,
                     "promedio" => $promedio,
                     "cedula" => $doctor->cedula,
                     "costos" => '$' . number_format($doctor->costo, 2),

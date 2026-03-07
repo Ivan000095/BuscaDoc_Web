@@ -963,32 +963,32 @@
                     }
                 });
 
-                const locationButton = document.createElement("button");
-                locationButton.textContent = "Ir a mi ubicación actual";
-                locationButton.classList.add("custom-map-control-button");
-                map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
+                // const locationButton = document.createElement("button");
+                // locationButton.textContent = "Ir a mi ubicación actual";
+                // locationButton.classList.add("custom-map-control-button");
+                // map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
 
-                locationButton.addEventListener("click", () => {
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                                const pos = {
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude,
-                                };
-                                infoWindow.setPosition(pos);
-                                infoWindow.setContent("Estás aquí.");
-                                infoWindow.open(map);
-                                map.setCenter(pos);
-                            },
-                            () => {
-                                handleLocationError(true, infoWindow, map.getCenter());
-                            }
-                        );
-                    } else {
-                        handleLocationError(false, infoWindow, map.getCenter());
-                    }
-                });
+                // locationButton.addEventListener("click", () => {
+                //     if (navigator.geolocation) {
+                //         navigator.geolocation.getCurrentPosition(
+                //             (position) => {
+                //                 const pos = {
+                //                     lat: position.coords.latitude,
+                //                     lng: position.coords.longitude,
+                //                 };
+                //                 infoWindow.setPosition(pos);
+                //                 infoWindow.setContent("Estás aquí.");
+                //                 infoWindow.open(map);
+                //                 map.setCenter(pos);
+                //             },
+                //             () => {
+                //                 handleLocationError(true, infoWindow, map.getCenter());
+                //             }
+                //         );
+                //     } else {
+                //         handleLocationError(false, infoWindow, map.getCenter());
+                //     }
+                // });
             }
 
             function handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -1004,7 +1004,7 @@
             function centrar(latitud, longitud) {
                 if (map) {
                     map.setCenter({ lat: parseFloat(latitud), lng: parseFloat(longitud) });
-                    map.setZoom(15);
+                    map.setZoom(18);
                 }
             }
             window.initMap = initMap;
