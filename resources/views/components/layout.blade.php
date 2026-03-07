@@ -40,7 +40,6 @@
             width: auto;
         }
 
-        /* Utilidades de Hover */
         .hover-navy:hover {
             color: #0d2e4e !important;
             font-weight: 600;
@@ -51,7 +50,6 @@
         .hover-white:hover { color: white !important; }
         .hover-scale:hover { transform: scale(1.1); }
 
-        /* Botones personalizados */
         .btn-outline-navy {
             color: #0d2e4e;
             border: 2px solid #0d2e4e;
@@ -84,7 +82,6 @@
             box-shadow: 0 4px 12px rgba(13, 46, 78, 0.4);
         }
 
-        /* Notificaciones (Píldora) */
         .pill-notification {
             position: fixed;
             top: -100px;
@@ -126,7 +123,6 @@
             background: #dc3545;
         }
 
-        /* Menú y Footer */
         .dropdown-menu {
             border-radius: 15px;
             margin-top: 10px !important;
@@ -145,6 +141,57 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 768px) {
+            .custom-navbar {
+                border-radius: 50rem !important;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .custom-navbar {
+                border-radius: 20px !important;
+                padding: 15px 10px !important;
+            }
+
+            .navbar-collapse {
+                margin-top: 15px;
+            }
+
+            .nav-item {
+                margin-bottom: 10px;
+            }
+
+            .navbar-nav .btn, .navbar-nav .dropdown-toggle {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .dropdown-menu {
+                background-color: var(--custom-dark-blue);
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                text-align: center;
+                padding: 10px;
+                margin-top: 5px !important;
+            }
+
+            .dropdown-item {
+                color: white !important;
+            }
+
+            .dropdown-item i {
+                color: white !important;
+            }
+
+            .dropdown-item:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+            }
+            
+            .dropdown-divider {
+                border-color: rgba(255, 255, 255, 0.1);
+            }
         }
     </style>
 
@@ -167,7 +214,7 @@
         </div>
     @endif
 
-    <nav class="navbar navbar-expand-md navbar-dark bg-custom-dark shadow-lg rounded-pill mt-4 mx-auto" style="width: 95%; z-index: 1000;">
+    <nav class="navbar navbar-expand-md navbar-dark bg-custom-dark shadow-lg custom-navbar mt-4 mx-auto" style="width: 95%; z-index: 1000;">
         <div class="container px-4">
             <a class="navbar-brand d-flex align-items-center" href="{{ url('/home') }}">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo" class="me-2">
