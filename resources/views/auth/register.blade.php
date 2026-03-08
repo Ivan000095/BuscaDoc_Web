@@ -1,7 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
-    {{-- Alpine.js --}}
+<x-layout>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -25,9 +22,11 @@
         input[type=file].form-control-pill {
             padding: 9px 25px;
         }
+
         .text-navy {
-            color: #0d2e4e!important;
+            color: #0d2e4e !important;
         }
+
         .form-control-pill:focus,
         .form-select-pill:focus {
             background-color: #fff;
@@ -138,18 +137,21 @@
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            background-color: #f1f5f9; /* Mismo color que tus inputs */
+            background-color: #f1f5f9;
+            /* Mismo color que tus inputs */
         }
 
         .custom-options {
             position: absolute;
-            top: 110%; /* Aparece justo debajo del botón */
+            top: 110%;
+            /* Aparece justo debajo del botón */
             left: 0;
             width: 100%;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            z-index: 100; /* IMPORTANTE: Para que flote sobre los campos de abajo */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            /* IMPORTANTE: Para que flote sobre los campos de abajo */
             overflow: hidden;
             border: 1px solid #e2e8f0;
         }
@@ -160,14 +162,16 @@
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 10px; /* Espacio entre icono y texto */
+            gap: 10px;
+            /* Espacio entre icono y texto */
             color: #475569;
             font-weight: 500;
         }
 
         .custom-option:hover {
             background-color: #f1f5f9;
-            color: #0d2e4e; /* Tu color Navy */
+            color: #0d2e4e;
+            /* Tu color Navy */
         }
 
         .custom-option.selected {
@@ -177,7 +181,7 @@
         }
 
         .bg-navy {
-            background-color: #0d2e4e!important;
+            background-color: #0d2e4e !important;
         }
     </style>
 
@@ -253,7 +257,8 @@
                                     {{-- Previsualización de la foto --}}
                                     <div class="d-flex align-items-center gap-3 mb-2">
                                         {{-- Imagen real (oculta al inicio) --}}
-                                        <img id="imagePreview" src="#" alt="Tu foto" class="rounded-circle border shadow-sm"
+                                        <img id="imagePreview" src="#" alt="Tu foto"
+                                            class="rounded-circle border shadow-sm"
                                             style="width: 60px; height: 60px; object-fit: cover; display: none;">
 
                                         {{-- input oculto de lafoto --}}
@@ -274,14 +279,15 @@
                             </div>
 
                             <div class="divider-text">TIPO DE PERFIL</div>
-                            
+
                             {{-- seletsion de rol --}}
                             <div class="mb-4 position-relative" x-data="{ open: false }">
-                                <label class="form-label text-muted small fw-bold mb-1">¿Cómo usarás la plataforma?</label>
+                                <label class="form-label text-muted small fw-bold mb-1">¿Cómo usarás la
+                                    plataforma?</label>
                                 <input type="hidden" name="role" x-model="role">
-                                <div @click="open = !open" @click.outside="open = false" 
+                                <div @click="open = !open" @click.outside="open = false"
                                     class="form-select-pill custom-select-btn border-0 shadow-sm fw-bold text-dark">
-                                    
+
                                     {{-- Texto dinámico según la selección --}}
                                     <span x-text="role === 'paciente' ? 'Paciente (Busco atención)' : 
                                                 (role === 'doctor' ? 'Doctor (Ofrezco servicios)' : 
@@ -289,35 +295,34 @@
                                     </span>
 
                                     {{-- Flechita hacia abajo --}}
-                                    <i class="bi bi-chevron-down small text-muted" :class="open ? 'rotate-180' : ''"></i>
+                                    <i class="bi bi-chevron-down small text-muted"
+                                        :class="open ? 'rotate-180' : ''"></i>
                                 </div>
 
                                 {{-- opciones --}}
-                                <div x-show="open" x-transition 
-                                    class="custom-options" 
-                                    style="display: none;">
-                                    
+                                <div x-show="open" x-transition class="custom-options" style="display: none;">
+
                                     {{-- paciente --}}
-                                    <div class="custom-option" 
-                                        :class="role === 'paciente' ? 'selected' : ''"
+                                    <div class="custom-option" :class="role === 'paciente' ? 'selected' : ''"
                                         @click="role = 'paciente'; open = false">
-                                        <x-icons.patient class="text-primary" style="width: 24px; height: 24px;" class="text-navy"/>
+                                        <x-icons.patient class="text-primary" style="width: 24px; height: 24px;"
+                                            class="text-navy" />
                                         <span>Paciente (Busco atención de hombres)</span>
                                     </div>
 
                                     {{-- doc --}}
-                                    <div class="custom-option" 
-                                        :class="role === 'doctor' ? 'selected' : ''"
-                                        @click="role = 'doctor'; open = false"> 
-                                        <x-icons.doctor class="text-info" style="width: 24px; height: 24px;" class="text-navy"/>
+                                    <div class="custom-option" :class="role === 'doctor' ? 'selected' : ''"
+                                        @click="role = 'doctor'; open = false">
+                                        <x-icons.doctor class="text-info" style="width: 24px; height: 24px;"
+                                            class="text-navy" />
                                         <span>Doctor (Ofrezco servicios)</span>
                                     </div>
 
                                     {{-- farmacia --}}
-                                    <div class="custom-option" 
-                                        :class="role === 'farmacia' ? 'selected' : ''"
+                                    <div class="custom-option" :class="role === 'farmacia' ? 'selected' : ''"
                                         @click="role = 'farmacia'; open = false">
-                                        <x-icons.pharmacy class="text-success" style="width: 24px; height: 24px;" class="text-navy"/>
+                                        <x-icons.pharmacy class="text-success" style="width: 24px; height: 24px;"
+                                            class="text-navy" />
                                         <span>Farmacia (Vendo productos)</span>
                                     </div>
 
@@ -326,45 +331,52 @@
 
                             {{-- si es doc --}}
                             <div x-show="role === 'doctor'" x-transition>
-                                <h6 class="text-primary border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DE TRABAJO</h6>
+                                <h6 class="text-primary border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DE
+                                    TRABAJO</h6>
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <input type="textarea" name="descripcion" class="form-control form-control-pill"
-                                            placeholder="Descripción de usted y su trabajo" value="{{ old('descripcion') }}">
+                                            placeholder="Descripción de usted y su trabajo"
+                                            value="{{ old('descripcion') }}">
                                     </div>
                                     {{-- Cédula --}}
                                     <div class="col-md-6">
-                                        <input type="text" name="cedula" 
+                                        <input type="text" name="cedula"
                                             class="form-control form-control-pill @error('cedula') is-invalid @enderror"
                                             placeholder="Cédula Profesional" value="{{ old('cedula') }}">
-                                        @error('cedula') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
+                                        @error('cedula') <span class="invalid-feedback ps-3">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     {{-- Costo --}}
                                     <div class="col-md-6">
-                                        <input type="number" name="costo" 
+                                        <input type="number" name="costo"
                                             class="form-control form-control-pill @error('costo') is-invalid @enderror"
                                             placeholder="Costo estimado por consulta ($)" value="{{ old('costo') }}">
-                                        @error('costo') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
+                                        @error('costo') <span class="invalid-feedback ps-3">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     {{-- Horarios --}}
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de entrada</label>
-                                        <input type="time" name="horario_entrada_doc" 
+                                        <input type="time" name="horario_entrada_doc"
                                             class="form-control form-control-pill @error('horario_entrada') is-invalid @enderror"
                                             value="{{ old('horario_entrada') }}">
-                                        @error('horario_entrada') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
+                                        @error('horario_entrada') <span
+                                        class="invalid-feedback ps-3">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de salida</label>
-                                        <input type="time" name="horario_salida_doc" 
+                                        <input type="time" name="horario_salida_doc"
                                             class="form-control form-control-pill @error('horario_salida') is-invalid @enderror"
                                             value="{{ old('horario_salida') }}">
-                                        @error('horario_salida') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
+                                        @error('horario_salida') <span
+                                        class="invalid-feedback ps-3">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="col-md-12">
-                                        <label class="small text-muted ms-3 fw-bold">Escriba los idiomas que domine</label>
+                                        <label class="small text-muted ms-3 fw-bold">Escriba los idiomas que
+                                            domine</label>
                                         <input type="text" name="idiomas" class="form-control form-control-pill"
                                             value="{{ old('idiomas') }}">
                                     </div>
@@ -388,20 +400,23 @@
 
                             {{-- si es paciente --}}
                             <div x-show="role === 'paciente'" x-transition>
-                                <h6 class="text-info border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS MÉDICOS BÁSICOS</h6>
+                                <h6 class="text-info border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS MÉDICOS
+                                    BÁSICOS</h6>
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <select name="tipo_sangre" class="form-select form-select-pill">
                                             <option value="" disabled selected>Tipo de Sangre</option>
                                             @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $ts)
                                                 <option value="{{ $ts }}" {{ old('tipo_sangre') == $ts ? 'selected' : '' }}>
-                                                    {{ $ts }}</option>
+                                                    {{ $ts }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <input type="text" name="contacto_emergencia" class="form-control form-control-pill"
-                                            placeholder="Contacto Emergencia" value="{{ old('contacto_emergencia') }}">
+                                        <input type="text" name="contacto_emergencia"
+                                            class="form-control form-control-pill" placeholder="Contacto Emergencia"
+                                            value="{{ old('contacto_emergencia') }}">
                                     </div>
                                     <div class="col-12">
                                         <textarea name="alergias" class="form-control form-control-pill" rows="2"
@@ -414,18 +429,20 @@
                                     </div>
                                     <div class="col-md-12">
                                         <input type="text" name="padecimientos" class="form-control form-control-pill"
-                                            placeholder="Describa que padecimientos tiene (diabetes, depresión, gastritis, etc..)" value="{{ old('padecimientos') }}">
+                                            placeholder="Describa que padecimientos tiene (diabetes, depresión, gastritis, etc..)"
+                                            value="{{ old('padecimientos') }}">
                                     </div>
                                     <div class="col-md-12">
                                         <input type="text" name="habitos" class="form-control form-control-pill"
-                                            placeholder="Describa los hábitos que tiene (si fuma, o toma, o hace deporte, etc...)" value="{{ old('padecimientos') }}">
+                                            placeholder="Describa los hábitos que tiene (si fuma, o toma, o hace deporte, etc...)"
+                                            value="{{ old('padecimientos') }}">
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- si es farm --}}
                             <div x-show="role === 'farmacia'" x-transition>
-                                <h6 class="text-success border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DEL NEGOCIO</h6>
+                                <h6 class="text-success border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DEL
+                                    NEGOCIO</h6>
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <input type="textarea" name="descripcion" class="form-control form-control-pill"
@@ -445,40 +462,39 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de entrada</label>
-                                        <input type="time" name="horario_entrada_f" class="form-control form-control-pill"
-                                            value="{{ old('horario_entrada') }}">
+                                        <input type="time" name="horario_entrada_f"
+                                            class="form-control form-control-pill" value="{{ old('horario_entrada') }}">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="small text-muted ms-3 fw-bold">Horario de salida</label>
-                                        <input type="time" name="horario_salida_f" class="form-control form-control-pill"
-                                            value="{{ old('horario_salida') }}">
+                                        <input type="time" name="horario_salida_f"
+                                            class="form-control form-control-pill" value="{{ old('horario_salida') }}">
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- mapa, si es doc o farmacia --}}
                             <div x-show="role === 'doctor' || role === 'farmacia'" x-transition>
                                 <div class="divider-text mt-4">UBICACIÓN</div>
-                                
+
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
                                             <div class="card-header bg-navy text-white py-3">
-                                                {{-- Cambiamos el texto dinámicamente según el rol --}}
                                                 <h5 class="mb-0 fw-bold">
-                                                    <i class="bi bi-geo-alt-fill me-2"></i> 
-                                                    <span x-text="role === 'farmacia' ? 'Ubicación del Negocio' : 'Ubicación del Consultorio'"></span>
+                                                    <i class="bi bi-geo-alt-fill me-2"></i>
+                                                    <span
+                                                        x-text="role === 'farmacia' ? 'Ubicación del Negocio' : 'Ubicación del Consultorio'"></span>
                                                 </h5>
                                             </div>
                                             <div class="card-body p-4 bg-white">
-                                                <p class="text-muted ms-2 mb-3"><i class="bi bi-info-circle"></i> Arrastra el marcador rojo para indicar la ubicación exacta.</p>
-                                                
-                                                {{-- Solo UN juego de inputs con IDs únicos --}}
-                                                <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud') }}">
-                                                <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud') }}">
+                                                <p class="text-muted ms-2 mb-3"><i class="bi bi-info-circle"></i>
+                                                    Arrastra el marcador rojo para indicar la ubicación exacta.</p>
+                                                <input type="hidden" name="latitud" id="latitud"
+                                                    value="{{ old('latitud') }}">
+                                                <input type="hidden" name="longitud" id="longitud"
+                                                    value="{{ old('longitud') }}">
 
                                                 <div class="shadow-sm rounded-4 overflow-hidden border border-light">
-                                                    {{-- Solo UN div de mapa con ID único --}}
                                                     <div id="map" style="height: 400px; width: 100%;"></div>
                                                 </div>
                                             </div>
@@ -488,15 +504,14 @@
                             </div>
 
                             <div class="divider-text mt-4">SEGURIDAD</div>
-
-                            {{-- pswd --}}
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small ps-3 fw-bold">Contraseña</label>
                                     <input type="password" name="password"
                                         class="form-control form-control-pill @error('password') is-invalid @enderror"
                                         required placeholder="••••••••">
-                                    @error('password') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
+                                    @error('password') <span class="invalid-feedback ps-3">{{ $message }}</span>
+                                    @enderror
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small ps-3 fw-bold">Confirmar</label>
@@ -531,22 +546,19 @@
             const preview = document.getElementById('imagePreview');
 
             if (input.files && input.files[0]) {
-                // 1. Cambiar texto del botón
                 let fileName = input.files[0].name;
                 if (fileName.length > 15) fileName = fileName.substring(0, 12) + '...';
                 labelTextSpan.textContent = fileName;
                 label.classList.add('has-file');
 
-                // 2. Mostrar previsualización
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     preview.src = e.target.result;
-                    preview.style.display = 'block'; // Mostrar imagen
-                    placeholder.style.display = 'none'; // Ocultar icono gris
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
                 }
                 reader.readAsDataURL(input.files[0]);
             } else {
-                // Resetear si cancela
                 labelTextSpan.textContent = 'Seleccionar...';
                 label.classList.remove('has-file');
                 preview.style.display = 'none';
@@ -556,17 +568,14 @@
     </script>
 
 
-<script>
+    <script>
         let map;
         let marker;
 
-        // Hacemos la función global
-        window.initMap = function() {
-            // Coordenadas por defecto (Chiapas o lo que tengas)
-            const defLat = 16.9080; 
+        window.initMap = function () {
+            const defLat = 16.9080;
             const defLng = -92.0946;
 
-            // Intentamos obtener valores previos (old) si existen
             const inputLatVal = document.getElementById('latitud').value;
             const inputLngVal = document.getElementById('longitud').value;
 
@@ -588,7 +597,6 @@
                 animation: google.maps.Animation.DROP
             });
 
-            // Eventos
             marker.addListener("dragend", function (event) {
                 updateInputs(event.latLng.lat(), event.latLng.lng());
             });
@@ -597,9 +605,8 @@
                 marker.setPosition(event.latLng);
                 updateInputs(event.latLng.lat(), event.latLng.lng());
             });
-            
-            // Inicializar inputs si estaban vacíos
-            if(!inputLatVal) updateInputs(myLat, myLng);
+
+            if (!inputLatVal) updateInputs(myLat, myLng);
         }
 
         function updateInputs(lat, lng) {
@@ -608,6 +615,6 @@
         }
     </script>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap" async defer></script>
-
-@endsection
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ&callback=initMap"
+        async defer></script>
+</x-layout>

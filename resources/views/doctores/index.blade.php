@@ -1,21 +1,17 @@
 <x-layout>
-    {{-- Verificación de Rol --}}
     @if (Auth::user()->role == 'admin')
         <div class="container py-5">
-            
-            {{-- Encabezado --}}
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="fw-bold text-navy mb-0">Gestión de Doctores</h2>
                     <p class="text-muted small mb-0">Directorio de especialistas médicos</p>
                 </div>
-                <button class="btn btn-navy rounded-pill px-4 shadow-sm" onclick="execute('{{ route('doctores.create') }}')">
+                <button class="btn btn-navy rounded-pill px-4 shadow-sm" onclick="execute('{{ route('doctores.agregar') }}')">
                     <i class="bi bi-plus-lg me-1"></i> 
                     <span class="d-none d-sm-inline">Agregar Nuevo</span>
                 </button>
             </div>
 
-            {{-- Tarjeta de la Tabla --}}
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -41,7 +37,6 @@
             </div>
         </div>
     @else
-        {{-- Pantalla de Acceso Denegado Estilizada --}}
         <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100" style="margin-top: -50px;">
             <div class="card shadow-lg border-0 rounded-4 p-5 text-center" style="max-width: 500px;">
                 <div class="mb-3">
@@ -62,8 +57,7 @@
         </div>
     @endif
 
-    @section('js')
-        {{-- Scripts DataTables --}}
+    @push('scripts')
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
         <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
@@ -142,5 +136,5 @@
             // NOTA: Se eliminaron las alertas session() porque el Layout principal
             // ya maneja las notificaciones flotantes (pill-notification).
         </script>
-    @endsection
+    @endpush
 </x-layout>

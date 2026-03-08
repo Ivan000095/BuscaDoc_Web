@@ -187,8 +187,6 @@ class DoctorController extends Controller
 
         try {
             DB::transaction(function () use ($doctor, $user) {
-
-                // 1. Desvincular Especialidades (Tabla Pivote)
                 $doctor->especialidades()->detach();
 
                 if ($user) {
