@@ -20,17 +20,19 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         try {
-            $validated = $request->validate([
-                "name" => "required|string|max:255",
-                "email" => "required|email|unique:users,email",
-                "password" => "required|string|min:8|confirmed",
-            ]);
+                $validated = $request->validate([
+                    "name" => "required|string|max:255",
+                    "email" => "required|email|unique:users,email",
+                    "password" => "required|string|min:8|confirmed",
+                    "role" => "required|string", 
+                ]);
 
-            $user = User::create([
-                "name" => $validated["name"],
-                "email" => $validated["email"],
-                "password" => Hash::make($validated["password"]),
-            ]);
+                $user = User::create([
+                    "name" => $validated["name"],
+                    "email" => $validated["email"],
+                    "password" => Hash::make($validated["password"]),
+                    "role" => $validated["role"], 
+                ]);
 
             $token = $user->createToken("mobile-app")->plainTextToken;
 
