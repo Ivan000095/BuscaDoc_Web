@@ -131,7 +131,7 @@
 
     @section('js')
         @if($farmacia->user?->latitud && $farmacia->user?->longitud)
-            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ"></script>
+            <script src="https://maps.googleapis.com/maps/api/js?key={{ env('API_KEY') }}"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     const lat = {{ $farmacia->user->latitud }};
