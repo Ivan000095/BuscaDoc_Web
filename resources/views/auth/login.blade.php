@@ -78,7 +78,6 @@
 
     <div class="container py-5">
         <div class="row align-items-center justify-content-center" style="min-height: 80vh;">
-            }
             <div class="col-md-6 text-center text-md-start mb-5 mb-md-0">
                 <div class="mb-4">
                     <img src="{{ asset('images/logo_negro.png') }}" alt="">

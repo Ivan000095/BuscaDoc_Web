@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\DB;
+use App\Models\Doctor;
+use App\Models\Paciente;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -19,60 +23,117 @@ class AuthController extends Controller
      */
     public function register(Request $request): JsonResponse
     {
+        $rutaFoto = null;
+
         try {
-                $validated = $request->validate([
-                    "name" => "required|string|max:255",
-                    "email" => "required|email|unique:users,email",
-                    "password" => "required|string|min:8|confirmed",
-                    "role" => "required|string", 
-                ]);
+            $validated = $request->validate([
+                "name" => "required|string|max:255",
+                "email" => "required|email|unique:users,email",
+                "password" => "required|string|min:8|confirmed",
+                "role" => "required|in:doctor,paciente,farmacia",
+                "f_nacimiento" => "required|date",
+                "foto" => "nullable|image|max:2048",
+                "latitud" => "nullable|numeric",
+                "longitud" => "nullable|numeric",
+                
+                "cedula" => "required_if:role,doctor|string",
+                "costo" => "required_if:role,doctor|numeric",
+                "horario_entrada_doc" => "required_if:role,doctor",
+                "horario_salida_doc" => "required_if:role,doctor",
+                "especialidades" => "nullable|array",
+                
+                "tipo_sangre" => "required_if:role,paciente|string",
+                "contacto_emergencia" => "required_if:role,paciente|string",
+                
+            ]);
+
+            $user = DB::transaction(function () use ($request, $validated, &$rutaFoto) {
+                if ($request->hasFile('foto')) {
+                    $rutaFoto = $request->file('foto')->store('perfiles', 'public');
+                }
 
                 $user = User::create([
                     "name" => $validated["name"],
                     "email" => $validated["email"],
                     "password" => Hash::make($validated["password"]),
-                    "role" => $validated["role"], 
+                    "role" => $validated["role"],
+                    "f_nacimiento" => $validated["f_nacimiento"],
+                    "foto" => $rutaFoto,
+                    "latitud" => $validated["latitud"] ?? 16.91173660,
+                    "longitud" => $validated["longitud"] ?? -92.09460000,
                 ]);
+
+                switch ($validated['role']) {
+                    case 'doctor':
+                        $doctor = Doctor::create([
+                            'user_id' => $user->id,
+                            'cedula' => $validated['cedula'],
+                            'costo' => $validated['costo'],
+                            'horario_entrada' => $validated['horario_entrada_doc'],
+                            'horario_salida' => $validated['horario_salida_doc'],
+                            'idiomas' => $request->input('idiomas', 'Español'),
+                            'descripcion' => $request->input('descripcion', 'Sin descripción'),
+                        ]);
+
+                        if ($request->has('especialidades')) {
+                            $doctor->especialidades()->sync($validated['especialidades']);
+                        }
+                    break;
+
+                    case 'paciente':
+                        Paciente::create([
+                            'user_id' => $user->id,
+                            'tipo_sangre' => $validated['tipo_sangre'],
+                            'contacto_emergencia' => $validated['contacto_emergencia'],
+                            'alergias' => $request->input('alergias', 'Sin alergias.'),
+                            'cirugias' => $request->input('cirugias', 'No ha tenido cirugías'),
+                            'padecimientos' => $request->input('padecimientos', 'No hay ningún padecimiento.'),
+                            'habitos' => $request->input('habitos', 'No hay hábitos registrados.'),
+                        ]);
+                    break;
+                }
+
+                return $user;
+            });
 
             $token = $user->createToken("mobile-app")->plainTextToken;
 
-            return response()->json(
-                [
-                    "success" => true,
-                    "message" => "Usuario registrado exitosamente",
-                    "data" => [
-                        "user" => [
-                            "id" => $user->id,
-                            "name" => $user->name,
-                            "email" => $user->email,
-                            "created_at" => $user->created_at,
-                        ],
-                        "token" => $token,
+            return response()->json([
+                "success" => true,
+                "message" => "Usuario registrado exitosamente",
+                "data" => [
+                    "user" => [
+                        "id" => $user->id,
+                        "name" => $user->name,
+                        "email" => $user->email,
+                        "role" => $user->role,
+                        "foto" => $user->foto ? url('storage/' . $user->foto) : null,
                     ],
+                    "token" => $token,
                 ],
-                201,
-            );
+            ], 201);
+
         } catch (ValidationException $e) {
-            return response()->json(
-                [
-                    "success" => false,
-                    "message" => "Error de validación",
-                    "errors" => $e->errors(),
-                ],
-                422,
-            );
+            return response()->json([
+                "success" => false,
+                "message" => "Error de validación",
+                "errors" => $e->errors(),
+            ], 422);
+            
         } catch (\Exception $e) {
-            return response()->json(
-                [
-                    "success" => false,
-                    "message" => "Error interno del servidor",
-                    "error" => $e->getMessage(),
-                ],
-                500,
-            );
+            if ($rutaFoto && Storage::disk('public')->exists($rutaFoto)) {
+                Storage::disk('public')->delete($rutaFoto);
+            }
+            
+            Log::error('Error en registro API: ' . $e->getMessage());
+
+            return response()->json([
+                "success" => false,
+                "message" => "Error interno del servidor",
+                "error" => $e->getMessage(),
+            ], 500);
         }
     }
-
     /**
      * Login de usuario
      */

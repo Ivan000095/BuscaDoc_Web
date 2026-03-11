@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-layout>
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -50,13 +48,11 @@
                                     <i class="bi bi-person-vcard-fill me-1"></i> Ver Ficha Médica
                                 </a>
 
-                                {{-- Lógica de Acciones del Doctor --}}
                                 @php
                                     $esPasada = \Carbon\Carbon::parse($cita->fecha_hora)->isPast();
                                 @endphp
 
                                 @if($cita->estado == 'pendiente')
-                                    {{-- CASO 1: SOLICITUD NUEVA (Aceptar / Rechazar) --}}
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <form action="{{ route('citas.status', $cita->id) }}" method="POST">
@@ -149,4 +145,4 @@
             transform: translateY(-5px);
         }
     </style>
-@endsection
+</x-layout>

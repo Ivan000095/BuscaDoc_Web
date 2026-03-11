@@ -61,8 +61,6 @@ class RegisterController extends Controller
             return DB::transaction(function () use ($data) {
 
                 $rutaFoto = null;
-
-                // Intentar subir la foto si existe
                 if (request()->hasFile('foto')) {
                     try {
                         $rutaFoto = request()->file('foto')->store('perfiles', 'public');
@@ -70,8 +68,6 @@ class RegisterController extends Controller
                         throw new \Exception("Error al subir la imagen: " . $e->getMessage());
                     }
                 }
-
-                // Crear Usuario Base
                 $user = User::create([
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -83,7 +79,6 @@ class RegisterController extends Controller
                     'longitud' => $data['longitud'] ?? -92.09460000,
                 ]);
 
-                // Crear Perfil según Rol
                 switch ($data['role']) {
                     case 'doctor':
                         $doctor = Doctor::create([
@@ -126,7 +121,6 @@ class RegisterController extends Controller
                         break;
 
                     default:
-                        // Si el rol no es válido, lanzamos una excepción para revertir todo
                         throw new \Exception("El rol seleccionado no es válido.");
                 }
 
@@ -134,16 +128,10 @@ class RegisterController extends Controller
             });
 
         } catch (\Throwable $e) {
-            // 1. Registramos el error completo en el archivo laravel.log para que tú (el desarrollador) lo veas
             Log::error('Error en registro de usuario: ' . $e->getMessage());
-
-            // 2. Si se subió una foto pero falló la DB, intentamos borrarla para no dejar basura
             if (isset($rutaFoto) && \Storage::disk('public')->exists($rutaFoto)) {
                 \Storage::disk('public')->delete($rutaFoto);
             }
-
-            // 3. Enviamos el error al usuario en el formulario
-            // Usamos la clave 'email' o una general para mostrar el mensaje
             throw ValidationException::withMessages([
                 'email' => 'Ocurrió un error inesperado al registrar: ' . $e->getMessage(),
             ]);

@@ -56,7 +56,7 @@ class DoctorController extends Controller
                     "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
                     "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 30),
                     "fecha" => $doctor->user->f_nacimiento,
-                    // Puse el host compartido para el emulador de flutter, pero después debería de tener el host de la página
+                    // Puse localhost, porque ando compartiendo el puerto a mi teléfono físico, pero después debería de tener el host de la página
                     "image" => "http://localhost:8000/storage/" . $doctor->user->foto,
                     "promedio" => $promedio,
                     "cedula" => $doctor->cedula,
@@ -70,6 +70,7 @@ class DoctorController extends Controller
                         return [
                             "id" => $review->id,
                             "autor" => $review->autor ? $review->autor->name : 'Usuario Anónimo',
+                            "foto_autor" => 'http://localhost:8000/storage/' . $review->autor->foto ?? null,
                             "contenido" => $review->contenido,
                             "calificacion" => $review->calificacion,
                             "fecha" => $review->created_at->format('d/m/Y'),
@@ -81,6 +82,7 @@ class DoctorController extends Controller
                         return [
                             "id" => $question->id,
                             "autor" => $question->autor ? $question->autor->name : 'Usuario Anónimo',
+                            "foto_autor" => 'http://localhost:8000/storage/' . $question->autor->foto ?? null,
                             "contenido" => $question->contenido,
                             "fecha" => $question->created_at->format('d/m/Y'),
                             "respuestas" => $question->respuestas
