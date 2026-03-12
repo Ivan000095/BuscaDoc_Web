@@ -174,6 +174,8 @@ class AuthController extends Controller
                             "id" => $user->id,
                             "name" => $user->name,
                             "email" => $user->email,
+                            "role" => $user->role,
+                            "foto" => "http://127.0.0.1:8000/storage/" . $user->foto,
                             "email_verified_at" => $user->email_verified_at,
                         ],
                         "token" => $token,
