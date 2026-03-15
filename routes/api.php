@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\API\DoctorController;
+use App\Http\Controllers\api\EspecialidadController;
 use App\Http\Controllers\API\FarmaciaController;
+use App\Http\Controllers\api\HomeController;
+use App\Http\Controllers\api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -19,9 +22,10 @@ Route::prefix("auth")->group(function () {
     // /api/auth/register
     Route::post("/register", [AuthController::class, "register"]);
     Route::post("/login", [AuthController::class, "login"]);
+    Route::get("/me", [AuthController::class, "me"]);
 });
 
-// Ruta para verificar el estado de la API
+
 Route::get("/status", function () {
     return response()->json([
         "success" => true,
@@ -31,12 +35,8 @@ Route::get("/status", function () {
     ]);
 });
 
-// RUTAS PROTEGIDAS (requieren autenticación)
-// -----------------------------------------------------------------
 Route::middleware("auth:sanctum")->group(function () {
     Route::prefix("auth")->group(function () {
-        // Rutas de autenticación para usuarios autenticados
-        // por ejemplo: POST /api/auth/logout
         Route::post("/logout", [AuthController::class, "logout"]);
         Route::post("/logout-all", [AuthController::class, "logoutAll"]);
         Route::get("/me", [AuthController::class, "me"]);
@@ -44,6 +44,8 @@ Route::middleware("auth:sanctum")->group(function () {
         Route::get("/tokens", [AuthController::class, "tokens"]);
         Route::delete("/tokens", [AuthController::class, "revokeToken"]);
     });
+
+    Route::get('/home-dashboard', [HomeController::class, 'getHomeData']);
 
     // Rutas de productos (CRUD completo)
     // Route::name('api.products.')->prefix('products')->group(function () {
@@ -72,6 +74,7 @@ Route::middleware("auth:sanctum")->group(function () {
 
     Route::get("/statistics", [DoctorController::class, "stats"])->name('stats'); 
     Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
+    Route::put('/user/{id}', [UserController::class, 'update']);
 });
 
 // Manejo de rutas no encontradas
@@ -95,6 +98,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
     Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
 });
+
+Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
+Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('specs.index');
 
 
 

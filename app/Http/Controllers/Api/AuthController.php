@@ -147,7 +147,6 @@ class AuthController extends Controller
             ]);
 
             $user = User::where("email", $validated["email"])->first();
-
             if (
                 !$user ||
                 !Hash::check($validated["password"], $user->password)
@@ -204,9 +203,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Logout de usuario
-     */
+
     public function logout(Request $request): JsonResponse
     {
         try {
