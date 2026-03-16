@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\DoctorController;
+use App\Http\Controllers\API\FarmaciaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -84,7 +85,16 @@ Route::fallback(function () {
         404,
     );
 });
+// Publico Faracias
+Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
+Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
 
+// Para dueños
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
+    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
+    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
+});
 
 
 

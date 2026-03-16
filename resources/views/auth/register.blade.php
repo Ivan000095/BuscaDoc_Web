@@ -665,6 +665,6 @@
         }
     </script>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn7gLzJKm_T2WZzLbuQ6DRNjxnMYGgoBE&callback=initMap"
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ env('API_KEY') }}&callback=initMap"
         async defer></script>
 </x-layout>
