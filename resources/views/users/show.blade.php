@@ -2,7 +2,7 @@
 use Illuminate\Support\Str;
 use app\Utils;
 
-$apiKey = "AIzaSyDzSz-VqueMjM2OEaddCFuNLSl7LsCpqzQ";
+$apiKey = env('API_KEY');
 
 // Coordenadas
 $lat = $user->latitud;
@@ -512,23 +512,20 @@ $isAdmin = $user->role === 'admin';
         </div>
     </div>
 
-    {{-- Scripts del Mapa --}}
-    @if($hasLocation)
-        <script async src="https://maps.googleapis.com/maps/api/js?key=<?php    echo $apiKey; ?>&callback=initMap"></script>
-        <script>
-            function initMap() {
-                const position = { lat: <?php    echo $lat; ?>, lng: <?php    echo $lng; ?> };
-                const map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 15,
-                    center: position,
-                    disableDefaultUI: true
-                });
-                new google.maps.Marker({
-                    position: position,
-                    map: map,
-                    title: "{{ $user->name }}"
-                });
-            }
-        </script>
-    @endif
+    <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
+    <script>
+        function initMap() {
+            const position = { lat: <?php echo $lat; ?>, lng: <?php echo $lng; ?> };
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 16,
+                center: position,
+                disableDefaultUI: true,
+            });
+            new google.maps.Marker({
+                position: position,
+                map: map,
+                title: "{{ $user->name }}"
+            });
+        }
+    </script>
 </x-layout>

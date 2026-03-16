@@ -86,7 +86,6 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/farmacias/{id}/editar', [FarmaciaController::class, 'adminEdit'])->name('admin.farmacias.edit');
     Route::put('/farmacias/{id}', [FarmaciaController::class, 'adminUpdate'])->name('admin.farmacias.update');
     Route::delete('/farmacias/{id}', [FarmaciaController::class, 'adminDestroy'])->name('admin.farmacias.destroy');
-    Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
 });
 
     Route::get("doctor/data", [DoctorController::class, "dataTable"])->name("doctor.data");
@@ -110,6 +109,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
 Auth::routes();
 
+    Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
 Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
 
 Route::get('google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
