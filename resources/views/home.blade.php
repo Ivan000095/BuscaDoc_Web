@@ -204,6 +204,7 @@
                     {{-- 1. TARJETAS DE ACCIÓN RÁPIDA (BOTONES) --}}
                     <h5 class="fw-bold text-navy mb-3">Accos Rápidos</h5>
                     <div class="row g-3 mb-4">
+                        @if(Auth::user()->doctor->citas == true)
                         <div class="col-md-6">
                             <a href="{{ route('doctores.citas', Auth::user()->doctor->id) }}" class="text-decoration-none">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-center">
@@ -215,7 +216,7 @@
                                 </div>
                             </a>
                         </div>
-
+                        @endif
                         <div class="col-md-6">
                             <a href="{{ route('mensajes.index') }}" class="text-decoration-none">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-center">
@@ -231,8 +232,10 @@
 
                     <h5 class="fw-bold text-navy mb-3">Resumen</h5>
                     <div class="row g-4">
+                        @if(Auth::user()->doctor->citas == true)
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                                
                                 <div
                                     class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
@@ -243,7 +246,7 @@
                                         <h6 class="fw-bold text-dark mb-0">Siguiente Paciente</h6>
                                     </div>
                                 </div>
-
+                                
                                 <div class="card-body px-4 pb-4 pt-3">
                                     @if($proximaCitaDoctor)
                                         <div class="p-3 bg-light rounded-3 border-start border-4 border-success">
@@ -282,7 +285,7 @@
                                 </div>
                             </div>
                         </div>
-
+                        @endif
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-scale">
                                 <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-reviews"

@@ -63,6 +63,7 @@ class DoctorController extends Controller
                     "costos" => '$' . number_format($doctor->costo, 2),
                     "horarioentrada" => $doctor->horario_entrada,
                     "horariosalida" => $doctor->horario_salida,
+                    'citas' => $doctor->citas ? true : false,
                     "latitud" => $doctor->user->latitud,
                     "longitud" => $doctor->user->longitud,
 
@@ -149,6 +150,7 @@ class DoctorController extends Controller
                 "costos" => '$' . number_format($doctor->costo, 2),
                 "horarioentrada" => $doctor->horario_entrada,
                 "horariosalida" => $doctor->horario_salida,
+                'citas' => $doctor->citas ? true : false,
                 "latitud" => $doctor->user->latitud,
                 "longitud" => $doctor->user->longitud,
 
@@ -237,6 +239,7 @@ class DoctorController extends Controller
                     'idiomas' => $request->idioma,
                     'horario_entrada' => $request->horarioentrada,
                     'horario_salida' => $request->horariosalida,
+                    'citas' => $request->has('citas') ? true : false,
                 ]);
 
                 $doctor->especialidades()->attach($request->especialidad_id);

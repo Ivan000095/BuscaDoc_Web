@@ -270,10 +270,12 @@ $lng = $doctor->user->longitud ?? -92.0946;
 
                 @if(Auth::user()->role == 'paciente')
                     <div class="d-flex gap-3 mb-5">
+                        @if($doctor->citas)
                         <button type="button" class="btn btn-navy px-4 flex-grow-1" data-bs-toggle="modal"
                             data-bs-target="#agendarCitaModal">
                             <i class="bi bi-calendar-event-fill"></i> Agendar Cita
                         </button>
+                        @endif
                         <a type="button" class="btn btn-navy px-4 flex-grow-1"
                             href="{{ route('mensajes.show', parameters: $doctor->user->id) }}">
                             <i class="bi bi-chat-dots-fill"></i> Enviar mensaje

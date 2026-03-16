@@ -25,6 +25,7 @@ class Doctor extends Model
         'especialidad',
         'horario_entrada',
         'horario_salida',
+        'citas',
     ];
 
     /**

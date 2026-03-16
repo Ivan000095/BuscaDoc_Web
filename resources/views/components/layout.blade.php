@@ -279,7 +279,7 @@
                                     $cita = Auth::user()->role == 'paciente' ? '/mis-citas' : (Auth::user()->role == 'doctor' ? '/mis-citas-doc' : null);
                                 @endphp
                                 
-                                @if(Auth::user()->role == 'paciente' || Auth::user()->role == 'doctor')
+                                @if(Auth::user()->role == 'paciente' || Auth::user()->role == 'doctor' && Auth::user()->doctor->citas == true)
                                     <a class="dropdown-item py-2" href="{{ $cita }}">
                                         <i class="bi bi-calendar-date text-navy me-2"></i>{{ __('Mis citas') }}
                                     </a>
