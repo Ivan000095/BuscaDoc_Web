@@ -39,6 +39,7 @@ class Doctor extends Model
             'id' => 'integer',
             'user_id' => 'integer',
             'costo' => 'decimal:2',
+            'citas' => 'boolean',
         ];
     }
 

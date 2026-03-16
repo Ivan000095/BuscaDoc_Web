@@ -387,7 +387,7 @@
                                         <div class="bg-light p-3 rounded-pill border d-flex align-items-center justify-content-between px-4">
                                             <span class="small fw-bold text-navy">¿Desea habilitar la recepción de citas?</span>
                                             <div class="form-check form-switch mb-0">
-                                                <input class="form-check-input" type="checkbox" name="citas" id="citasSwitch" value="1" {{ old('citas') ? 'checked' : '' }}>
+                                                <input class="form-check-input" type="checkbox" name="citas" id="citasSwitch" value= "1" {{ old('citas') ? 'checked' : '' }}>
                                                 <label class="form-check-label small text-muted" for="citasSwitch">Activar</label>
                                             </div>
                                         </div>
