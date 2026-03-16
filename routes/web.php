@@ -98,7 +98,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
     Route::post('/doctores/{id}/agendar', [CitaController::class, 'store'])->name('citas.store');
     Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');
-    Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
+    // Solo doctores con la opción "citas" activa podrán entrar aquí
+    Route::middleware(['auth', 'can.citas'])->group(function () {
+        Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
+        // ... otras rutas de citas
+    });
+    
     Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
     Route::get('/buscar', [App\Http\Controllers\SearchController::class, 'search'])->name('global.search');
     Route::get('/mensajes', [MensajeController::class, 'index'])->name('mensajes.index');

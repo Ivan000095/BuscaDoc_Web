@@ -58,6 +58,8 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         try {
+            
+
             return DB::transaction(function () use ($data) {
 
                 $rutaFoto = null;
@@ -88,7 +90,8 @@ class RegisterController extends Controller
                             'horario_entrada' => $data['horario_entrada_doc'],
                             'horario_salida' => $data['horario_salida_doc'],
                             'idiomas' => $data['idiomas'] ?? 'Español',
-                            'descripcion' => $data['descripcion'] ?? 'Sin descripción',
+                            'descripcion' => $data['descripcion_doc'] ?? 'Sin descripción',
+                            'citas' => !empty($data['citas']) && $data['citas'] !== '0',
                         ]);
 
                         if (isset($data['especialidades'])) {

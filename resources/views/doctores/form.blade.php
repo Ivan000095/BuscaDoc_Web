@@ -228,6 +228,23 @@
                                         </div>
                                     </div>
                                 </div>
+                                {{-- TRABAJA CON CITAS --}}
+                                <div class="col-md-12">
+                                    <div class="p-3 bg-light rounded-4 border d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <label class="form-label fw-bold text-navy mb-0">
+                                                <i class="bi bi-calendar-check me-2"></i>¿Trabaja con citas?
+                                            </label>
+                                            <div class="form-text mt-0">Indique si el doctor requiere agenda previa.</div>
+                                        </div>
+                                        <div class="form-check form-switch form-switch-lg">
+                                            <input type="hidden" name="citas" value="0"> {{-- Asegura que se envíe 0 si no está marcado --}}
+                                            <input class="form-check-input" type="checkbox" role="switch" id="citas" name="citas" value="1" 
+                                                {{ old('citas', $doctor->citas ?? '') == '1' ? 'checked' : '' }} 
+                                                style="width: 3em; height: 1.5em; cursor: pointer;">
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {{-- IDIOMAS --}}
                                 <div class="mb-4">

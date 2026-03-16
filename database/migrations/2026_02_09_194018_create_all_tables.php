@@ -11,10 +11,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        try {
-            DB::statement("CREATE TYPE estado_cita AS ENUM ('pendiente', 'confirmada', 'cancelada', 'completada')");
-        } catch (\Exception $e) {
-        }
+// Verifica si el tipo ya existe antes de crearlo
+    DB::statement("DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_cita') THEN
+            CREATE TYPE estado_cita AS ENUM ('pendiente', 'confirmada', 'cancelada', 'completada');
+        END IF;
+    END $$;");
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
@@ -91,6 +93,7 @@ return new class extends Migration {
             $table->decimal('costo', 6, 2);
             $table->time('horario_entrada')->nullable();
             $table->time('horario_salida')->nullable();
+            $table->boolean('citas')->default(false);
             $table->timestamps();
         });
 

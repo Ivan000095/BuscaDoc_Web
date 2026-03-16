@@ -11,6 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . "/../routes/console.php",
         health: "/up",
     )
+
+    ->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'can.citas' => \App\Http\Middleware\CheckCitasEnabled::class,
+    ]);
+    })
+
+
+
     ->withMiddleware(function (Middleware $middleware): void {
         // Registrar TODOS los middleware aliases en una sola llamada
         $middleware->alias([

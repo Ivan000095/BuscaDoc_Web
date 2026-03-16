@@ -241,13 +241,20 @@
                                 {{-- fecha --}}
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small ps-3 fw-bold">Fecha de Nacimiento</label>
-                                    <input type="date" name="f_nacimiento"
+                                    <input type="date" name="f_nacimiento" id="f_nacimiento"
                                         class="form-control form-control-pill @error('f_nacimiento') is-invalid @enderror"
-                                        value="{{ old('f_nacimiento') }}" required
-                                        max="{{ date('Y-m-d', strtotime('-18 years')) }}" onchange="validarEdad(this)">
-                                    <div class="invalid-feedback ms-3">Debe ser mayor de 18 años.</div>
-                                    @error('f_nacimiento') <span class="invalid-feedback ps-3">{{ $message }}</span>
-                                    @enderror
+                                        value="{{ old('f_nacimiento') }}" 
+                                        required
+                                        :max="role === 'doctor' ? '{{ date('Y-m-d', strtotime('-24 years')) }}' : (role === 'farmacia' ? '{{ date('Y-m-d', strtotime('-21 years')) }}' : '{{ date('Y-m-d', strtotime('-18 years')) }}')"
+                                        onchange="validarEdadDinamica(this)">
+                                    
+                                    <div id="age-error" class="invalid-feedback ms-3">
+                                        @if(old('role') == 'doctor') Debe ser mayor de 24 años.
+                                        @elseif(old('role') == 'farmacia') Debe ser mayor de 21 años.
+                                        @else Debe ser mayor de 18 años.
+                                        @endif
+                                    </div>
+                                    @error('f_nacimiento') <span class="invalid-feedback ps-3">{{ $message }}</span> @enderror
                                 </div>
 
                                 {{-- foto --}}
@@ -304,7 +311,7 @@
 
                                     {{-- paciente --}}
                                     <div class="custom-option" :class="role === 'paciente' ? 'selected' : ''"
-                                        @click="role = 'paciente'; open = false">
+                                        @click="role = 'paciente'; open = false; setTimeout(() => validarEdadDinamica(document.getElementById('f_nacimiento')), 100)">
                                         <x-icons.patient class="text-primary" style="width: 24px; height: 24px;"
                                             class="text-navy" />
                                         <span>Paciente (Busco atención de hombres)</span>
@@ -312,7 +319,7 @@
 
                                     {{-- doc --}}
                                     <div class="custom-option" :class="role === 'doctor' ? 'selected' : ''"
-                                        @click="role = 'doctor'; open = false">
+                                    @click="role = 'doctor'; open = false; setTimeout(() => validarEdadDinamica(document.getElementById('f_nacimiento')), 100)">
                                         <x-icons.doctor class="text-info" style="width: 24px; height: 24px;"
                                             class="text-navy" />
                                         <span>Doctor (Ofrezco servicios)</span>
@@ -320,7 +327,8 @@
 
                                     {{-- farmacia --}}
                                     <div class="custom-option" :class="role === 'farmacia' ? 'selected' : ''"
-                                        @click="role = 'farmacia'; open = false">
+                                        @click="role = 'farmacia'; open = false; setTimeout(() => validarEdadDinamica(document.getElementById('f_nacimiento')), 100)">
+
                                         <x-icons.pharmacy class="text-success" style="width: 24px; height: 24px;"
                                             class="text-navy" />
                                         <span>Farmacia (Vendo productos)</span>
@@ -335,7 +343,7 @@
                                     TRABAJO</h6>
                                 <div class="row g-3">
                                     <div class="col-md-12">
-                                        <input type="textarea" name="descripcion" class="form-control form-control-pill"
+                                        <input type="textarea" name="descripcion_doc" class="form-control form-control-pill"
                                             placeholder="Descripción de usted y su trabajo"
                                             value="{{ old('descripcion') }}">
                                     </div>
@@ -373,6 +381,16 @@
                                             value="{{ old('horario_salida') }}">
                                         @error('horario_salida') <span
                                         class="invalid-feedback ps-3">{{ $message }}</span> @enderror
+                                    </div>
+                                    {{-- NUEVO CAMPO: CITAS (Booleano) --}}
+                                    <div class="col-12">
+                                        <div class="bg-light p-3 rounded-pill border d-flex align-items-center justify-content-between px-4">
+                                            <span class="small fw-bold text-navy">¿Desea habilitar la recepción de citas?</span>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" name="citas" id="citasSwitch" value= "1" {{ old('citas') ? 'checked' : '' }}>
+                                                <label class="form-check-label small text-muted" for="citasSwitch">Activar</label>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="col-md-12">
                                         <label class="small text-muted ms-3 fw-bold">Escriba los idiomas que
@@ -563,6 +581,38 @@
                 label.classList.remove('has-file');
                 preview.style.display = 'none';
                 placeholder.style.display = 'flex';
+            }
+        }
+
+                function validarEdadDinamica(input) {
+            if (!input.value) return;
+
+            // Obtener el rol actual desde Alpine.js
+            const role = document.querySelector('[x-data]').__x.$data.role;
+            const fechaNacimiento = new Date(input.value);
+            const hoy = new Date();
+            
+            let edadMinima = 18;
+            if (role === 'doctor') edadMinima = 24;
+            if (role === 'farmacia') edadMinima = 21;
+
+            let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+            const m = hoy.getMonth() - fechaNacimiento.getMonth();
+            
+            if (m < 0 || (m === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
+                edad--;
+            }
+
+            const errorDiv = document.getElementById('age-error');
+            if (edad < edadMinima) {
+                input.setCustomValidity("Edad insuficiente");
+                input.classList.add('is-invalid');
+                errorDiv.textContent = `Para el perfil de ${role}, debe ser mayor de ${edadMinima} años.`;
+                errorDiv.style.display = 'block';
+            } else {
+                input.setCustomValidity("");
+                input.classList.remove('is-invalid');
+                errorDiv.style.display = 'none';
             }
         }
     </script>

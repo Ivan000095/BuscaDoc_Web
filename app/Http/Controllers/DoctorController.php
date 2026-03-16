@@ -55,6 +55,9 @@ class DoctorController extends Controller
 
     public function store(Request $request)
     {
+
+
+
         $validated = $request->validate([
             "name" => "required|string|max:100",
             "email" => "required|email|unique:users,email",
@@ -72,6 +75,7 @@ class DoctorController extends Controller
             "idioma" => "nullable|string",
             "latitud" => "nullable|numeric",
             "longitud" => "nullable|numeric",
+            "citas" => "nullable",
         ]);
 
         DB::transaction(function () use ($request) {
@@ -90,7 +94,12 @@ class DoctorController extends Controller
                 'f_nacimiento' => $request->fecha,
                 'latitud' => $request->latitud,
                 'longitud' => $request->longitud,
+                
             ]);
+
+
+
+
 
             $doctor = Doctor::create([
                 'user_id' => $user->id,
@@ -100,6 +109,7 @@ class DoctorController extends Controller
                 'idiomas' => $request->idioma,
                 'horario_entrada' => $request->horarioentrada,
                 'horario_salida' => $request->horariosalida,
+                'citas' => $request->has('citas'),
             ]);
 
             $doctor->especialidades()->attach($request->especialidad_id);
@@ -158,6 +168,7 @@ class DoctorController extends Controller
                 'horario_salida' => $request->horariosalida,
                 'descripcion' => $request->descripcion,
                 'idiomas' => $request->idioma,
+                'citas' => $request->has('citas'),
             ]);
 
             $doctor->especialidades()->sync([$request->especialidad_id]);
@@ -261,6 +272,7 @@ class DoctorController extends Controller
                 "costos" => '$' . number_format($doctor->costo, 2),
                 "horarioentrada" => $doctor->horario_entrada,
                 "horariosalida" => $doctor->horario_salida,
+                "citas" => $doctor->citas,
                 "actions" => '
                 <div class="d-flex justify-content-end gap-2">
                     <button class="btn btn-outline-navy btn-sm rounded-pill" onclick="execute(\'' . route('doctores.edit', $doctor->id) . '\')" title="Editar">
