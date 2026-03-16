@@ -245,6 +245,95 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $usuario = User::find($id);
+
+            if (!$usuario) {
+                return response()->json([
+                    "success" => false,
+                    "message" => "Usuario no encontrado",
+                ], 404);
+            }
+
+            if ($usuario->role === 'doctor') {
+                $doctor = DB::table('doctors')->where('user_id', $usuario->id)->first();
+                if ($doctor) {
+                    $citasPendientes = DB::table('citas')
+                        ->where('doctor_id', $doctor->id)
+                        ->where('estado', 'pendiente')
+                        ->exists();
+
+                    if ($citasPendientes) {
+                        return response()->json([
+                            "success" => false,
+                            "message" => "No se puede eliminar la cuenta. Tienes citas pendientes por atender.",
+                        ], 400);
+                    }
+                }
+            } elseif ($usuario->role === 'paciente') {
+                $paciente = DB::table('pacientes')->where('user_id', $usuario->id)->first();
+                if ($paciente) {
+                    $citasPendientes = DB::table('citas')
+                        ->where('paciente_id', $paciente->id)
+                        ->where('estado', 'pendiente')
+                        ->exists();
+
+                    if ($citasPendientes) {
+                        return response()->json([
+                            "success" => false,
+                            "message" => "No se puede eliminar la cuenta. Tienes citas pendientes programadas.",
+                        ], 400);
+                    }
+                }
+            }
+
+            DB::beginTransaction();
+
+            DB::table('reportes')->where('id_usr_reporte', $usuario->id)->orWhere('id_usr_reportado', $usuario->id)->delete();
+
+            DB::table('mensajes')->where('id_remitente', $usuario->id)->orWhere('id_destinatario', $usuario->id)->delete();
+
+            $misComentariosIds = DB::table('comentarios')->where('id_autor', $usuario->id)->orWhere('id_destinatario', $usuario->id)->pluck('id');
+            if ($misComentariosIds->isNotEmpty()) {
+                DB::table('respuestas')->whereIn('comentario_id', $misComentariosIds)->delete();
+            }
+
+            DB::table('respuestas')->where('id_respondedor', $usuario->id)->delete();
+
+            DB::table('comentarios')->where('id_autor', $usuario->id)->orWhere('id_destinatario', $usuario->id)->delete();
+
+            if ($usuario->role === 'doctor') {
+                $doctor = DB::table('doctors')->where('user_id', $usuario->id)->first();
+                if ($doctor) {
+                    DB::table('citas')->where('doctor_id', $doctor->id)->delete();
+                    DB::table('doctor__especialidads')->where('doctor_id', $doctor->id)->delete();
+                    DB::table('doctors')->where('id', $doctor->id)->delete();
+                }
+            } elseif ($usuario->role === 'paciente') {
+                $paciente = DB::table('pacientes')->where('user_id', $usuario->id)->first();
+                if ($paciente) {
+                    DB::table('citas')->where('paciente_id', $paciente->id)->delete();
+                    DB::table('pacientes')->where('id', $paciente->id)->delete();
+                }
+            }
+
+            $usuario->delete();
+
+            DB::commit();
+
+            return response()->json([
+                "success" => true,
+                "message" => "Cuenta eliminada de forma exitosa.",
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                "success" => false,
+                "message" => "Error al intentar eliminar la cuenta.",
+                "error" => $e->getMessage(),
+            ], 500);
+        }
     }
 }

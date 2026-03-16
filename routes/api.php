@@ -45,6 +45,8 @@ Route::middleware("auth:sanctum")->group(function () {
         Route::delete("/tokens", [AuthController::class, "revokeToken"]);
     });
 
+    Route::delete('/user/{id}', [UserController::class, 'destroy']);
+
     Route::get('/home-dashboard', [HomeController::class, 'getHomeData']);
 
     // Rutas de productos (CRUD completo)
