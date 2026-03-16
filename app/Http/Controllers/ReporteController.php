@@ -43,7 +43,8 @@ public function create(Request $request)
 
         $validated = $request->validate([
             'reportado_id' => 'required|integer|exists:users,id',
-            'descripcion' => 'nullable|string|max:2000',
+            'razon' => 'nullable|string|max: 500',
+            'estado' => 'nullable|in:pendiente,en_proceso,resuelto',
         ]);
 
         if ($validated['reportado_id'] == Auth::id()) {
@@ -54,8 +55,8 @@ public function create(Request $request)
             Reporte::create([
                 'reportador_id' => Auth::id(),
                 'reportado_id' => $validated['reportado_id'],
-                'descripcion' => $validated['descripcion'],
-                'estado' => 'pendiente',
+                'razon' => $validated['razon'],
+                'estado' => $validated ['pendiente'],
             ]);
         });
 

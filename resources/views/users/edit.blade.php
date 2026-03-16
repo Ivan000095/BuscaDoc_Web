@@ -91,7 +91,12 @@ $isPatient = $user->role === 'paciente';
                             </div>
                             <div class="col-md-5">
                                 <label class="text-label mb-2">Fecha de Nacimiento</label>
-                                <input type="date" name="f_nacimiento" class="form-control" value="{{ old('f_nacimiento', $user->f_nacimiento) }}" max="{{ date('Y-m-d', strtotime('-18 years')) }}">
+                                <div class="input-group">
+                                    <span class="input-group-text "><i class="bi bi-calendar-date"></i></span>
+                                    <input type="date" name="f_nacimiento" class="form-control" 
+                                        value="{{ old('f_nacimiento', isset($user->f_nacimiento) ? \Carbon\Carbon::parse($user->f_nacimiento)->format('Y-m-d') : '') }}" 
+                                        required max="{{ date('Y-m-d', strtotime('-18 years')) }}">
+                                </div>
                             </div>
                         </div>
                     </div>

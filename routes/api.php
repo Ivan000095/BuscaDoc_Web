@@ -91,14 +91,14 @@ Route::fallback(function () {
     );
 });
 // Publico Faracias
-Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
-Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
+Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.card');
+Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.id');
 
 // Para dueños
 Route::middleware(['auth'])->group(function () {
-    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
-    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
-    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
+    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.yo');
+    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.yo.editar');
+    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.yo.actualizar');
 });
 
 Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');

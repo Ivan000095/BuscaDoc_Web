@@ -201,15 +201,15 @@ return new class extends Migration {
 
         Schema::create('reportes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_usr_reporte')
+            $table->foreignId('reportador_id')
                 ->constrained('users')
                 ->cascadeOnDelete()
                 ->restrictOnDelete();
-            $table->foreignId('id_usr_reportado')
+            $table->foreignId('reportado_id')
                 ->constrained('users')
                 ->cascadeOnDelete()
                 ->restrictOnDelete();
-            $table->text('razon');
+            $table->text('descripcion');
             $table->timestamps();
         });
     }
