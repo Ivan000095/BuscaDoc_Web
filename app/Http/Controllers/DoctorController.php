@@ -272,7 +272,9 @@ class DoctorController extends Controller
                 "costos" => '$' . number_format($doctor->costo, 2),
                 "horarioentrada" => $doctor->horario_entrada,
                 "horariosalida" => $doctor->horario_salida,
-                "citas" => $doctor->citas,
+                "citas" => $doctor->citas 
+                ? '<span class="badge bg-success rounded-pill px-3 py-2">Sí</span>' 
+                : '<span class="badge bg-secondary rounded-pill px-3 py-2">No</span>',
                 "actions" => '
                 <div class="d-flex justify-content-end gap-2">
                     <button class="btn btn-outline-navy btn-sm rounded-pill" onclick="execute(\'' . route('doctores.edit', $doctor->id) . '\')" title="Editar">
