@@ -343,7 +343,7 @@
                                     TRABAJO</h6>
                                 <div class="row g-3">
                                     <div class="col-md-12">
-                                        <input type="textarea" name="descripcion" class="form-control form-control-pill"
+                                        <input type="textarea" name="descripcion_doc" class="form-control form-control-pill"
                                             placeholder="Descripción de usted y su trabajo"
                                             value="{{ old('descripcion') }}">
                                     </div>
