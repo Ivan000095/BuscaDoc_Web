@@ -9,7 +9,7 @@ class Reporte extends Model
     protected $fillable = [
         'reportador_id',
         'reportado_id',
-        'descripcion',
+        'razon',
         'estado',
     ];
 
