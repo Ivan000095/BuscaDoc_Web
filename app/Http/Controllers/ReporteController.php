@@ -10,107 +10,104 @@ use Illuminate\Support\Facades\DB;
 
 class ReporteController extends Controller
 {
-public function create(Request $request)
-{
-    if (!Auth::check()) {
-        return redirect()->route('login')->with('error', 'Debes iniciar sesión.');
+    /**
+     * Muestra el formulario para crear un reporte (Paciente)
+     */
+    public function create(Request $request)
+    {
+        $reportadoId = $request->query('reportado_id');
+        
+        if (!$reportadoId) {
+            return redirect()->back()->with('error', 'No se especificó a quién reportar.');
+        }
+
+        // Buscamos al usuario reportado (Doctor o Farmacia)
+        $usuario = User::with(['doctor', 'farmacia'])->findOrFail($reportadoId);
+
+        // Validación de seguridad: no reportarse a uno mismo
+        if ($usuario->id === Auth::id()) {
+            return redirect()->back()->with('error', 'No puedes reportarte a ti mismo.');
+        }
+
+        return view('reportes.user.create', compact('usuario'));
     }
 
-    $reportadoId = $request->query('reportado_id');
-    if (!$reportadoId) {
-        return redirect()->back()->with('error', 'No se especificó a quién reportar.');
-    }
-
-    // Cargar usuario con sus relaciones
-    $usuario = User::with(['doctor', 'farmacia'])->find($reportadoId);
-    if (!$usuario) {
-        return redirect()->back()->with('error', 'Usuario no encontrado.');
-    }
-
-    // Opcional: restringir solo a doctor/farmacia
-    if (!in_array($usuario->role, ['doctor', 'farmacia'])) {
-        return redirect()->back()->with('error', 'Solo puedes reportar a doctores o farmacias.');
-    }
-
-    return view('reportes.user.create', compact('usuario'));
-}
-
+    /**
+     * Guarda el reporte en la base de datos (Paciente)
+     */
     public function store(Request $request)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Debes iniciar sesión.');
-        }
-
         $validated = $request->validate([
-            'reportado_id' => 'required|integer|exists:users,id',
-            'razon' => 'nullable|string|max: 500',
-            'estado' => 'nullable|in:pendiente,en_proceso,resuelto',
+            'reportado_id' => 'required|exists:users,id',
+            'razon'        => 'required|string|min:10|max:1000',
         ]);
 
-        if ($validated['reportado_id'] == Auth::id()) {
-            return back()->withErrors(['reportado_id' => 'No puedes reportarte a ti mismo.']);
-        }
+        try {
+            DB::transaction(function () use ($validated) {
+                Reporte::create([
+                    'reportador_id' => Auth::id(),
+                    'reportado_id'  => $validated['reportado_id'],
+                    'razon'         => $validated['razon'],
+                    'estado'        => 'pendiente', // Estado inicial por defecto
+                ]);
+            });
 
-        DB::transaction(function () use ($validated) {
-            Reporte::create([
-                'reportador_id' => Auth::id(),
-                'reportado_id' => $validated['reportado_id'],
-                'razon' => $validated['razon'],
-                'estado' => $validated ['pendiente'],
-            ]);
-        });
+            return redirect()->route('home')
+                ->with('success', 'Reporte enviado con éxito. El administrador lo revisará pronto.');
 
-        return redirect()->route('home')
-            ->with('success', 'Tu reporte ha sido enviado. Gracias por ayudarnos a mantener la comunidad segura.');
+} catch (\Exception $e) {
+        // ESTO TE DIRÁ EL ERROR REAL (ej. campo no encontrado o error de BD)
+        return back()->with('error', 'Error: ' . $e->getMessage());
+    }
     }
 
-public function misReportes()
-{
-    if (!Auth::check()) {
-        return redirect()->route('login');
+    /**
+     * Lista de reportes realizados por el paciente autenticado
+     */
+    public function misReportes()
+    {
+        $reportes = Reporte::with('reportado')
+            ->where('reportador_id', Auth::id())
+            ->latest()
+            ->paginate(10);
+
+        return view('reportes.user.mis_reportes', compact('reportes'));
     }
 
-    $reportes = Reporte::with('reportado')
-        ->where('reportador_id', Auth::id())
-        ->latest()
-        ->paginate(10);
+    // =========================================================================
+    // SECCIÓN ADMINISTRADOR
+    // =========================================================================
 
-    return view('reportes.user.mis_reportes', compact('reportes'));
-}
-
-    // Administrador: gestionar todos los reportes
-
+    /**
+     * Listado global de reportes para el Admin
+     */
     public function adminIndex()
     {
         $this->authorizeAdmin();
 
-        $reportes = Reporte::with([
-            'reportador' => function ($query) {
-                $query->select('id', 'name', 'role');
-            },
-            'reportado' => function ($query) {
-                $query->select('id', 'name', 'role');
-            }
-            ])
-    ->latest()
-    ->paginate(15);
+        $reportes = Reporte::with(['reportador', 'reportado'])
+            ->latest()
+            ->paginate(15);
 
-    return view('reportes.admin.index', compact('reportes'));
+        return view('reportes.admin.index', compact('reportes'));
     }
 
+    /**
+     * Detalle de un reporte específico para el Admin
+     */
     public function adminShow($id)
     {
         $this->authorizeAdmin();
 
-        $reporte = Reporte::with([
-            'reportador' => fn($q) => $q->select('id', 'name', 'role'),
-            'reportado' => fn($q) => $q->select('id', 'name', 'role')
-                ->with(['doctor', 'farmacia'])
-        ])->findOrFail($id);
+        $reporte = Reporte::with(['reportador', 'reportado.doctor', 'reportado.farmacia'])
+            ->findOrFail($id);
 
         return view('reportes.admin.show', compact('reporte'));
     }
 
+    /**
+     * Actualiza el estado del reporte (Admin)
+     */
     public function adminUpdate(Request $request, $id)
     {
         $this->authorizeAdmin();
@@ -120,17 +117,23 @@ public function misReportes()
         ]);
 
         $reporte = Reporte::findOrFail($id);
-        $reporte->update(['estado' => $request->estado]);
+        
+        $reporte->update([
+            'estado' => $request->estado,
+            'updated_at' => now() // Aseguramos la marca de tiempo de actualización
+        ]);
 
         return redirect()->route('admin.reportes.index')
-            ->with('success', 'Estado actualizado correctamente.');
+            ->with('success', "El reporte #{$id} ahora está en estado: " . str_replace('_', ' ', $request->estado));
     }
 
-
+    /**
+     * Middleware interno para validar rol de administrador
+     */
     private function authorizeAdmin()
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
-            abort(403, 'Acceso denegado.');
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'No tienes permisos para gestionar reportes.');
         }
     }
 }

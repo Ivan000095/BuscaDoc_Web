@@ -22,8 +22,8 @@
                     <h5 class="mb-0">Descripción</h5>
                 </div>
                 <div class="card-body">
-                    @if($reporte->descripcion)
-                        <p class="fs-5">{{ $reporte->descripcion }}</p>
+                    @if($reporte->razon)
+                        <p class="fs-5">{{ $reporte->razon }}</p>
                     @else
                         <p class="text-muted fst-italic">Sin descripción.</p>
                     @endif

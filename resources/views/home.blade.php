@@ -127,7 +127,7 @@
                 <div class="col-12 col-md-6 col-lg-3 mb-4">
                     <div class="card h-100 border-50 shadow-sm hover-card">
                         <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
-                            <img src="{{ asset('images/pacientes.jpg') }}" alt="Reportes"
+                            <img src="{{ asset('images/reporte.jpg') }}" alt="Reportes"
                                 class="rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
                             <h5 class="card-title fw-bold custom-text-dark">Reportes</h5>
                             <a href="{{ route('admin.reportes.index') }}"

@@ -40,7 +40,7 @@
                                 @endif
                             </td>
                             <td>
-                                {{ Str::limit($r->descripcion, 80) }}
+                                {{ Str::limit($r->razon, 80) }}
                             </td>
                             <td>
                             @php

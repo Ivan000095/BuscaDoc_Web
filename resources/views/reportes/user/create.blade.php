@@ -1,93 +1,61 @@
 <x-layout>
 
-    <head>
-        <style>
-            .head_card{
-                background-color: #1e293b;
-            }
-            .btn-navy {
-                background-color: #0f172a;
-                color: white;
-                border-radius: 50px;
-                padding: 10px 25px;
-                font-weight: 500;
-                border: none;
-                transition: transform 0.2s;
-            }
-
-            .btn-navy:hover {
-                background-color: #1e293b;
-                color: white;
-                transform: translateY(-2px);
-            }
-        </style>
-    </head>
-
-@section('title', 'Reportar a ' . $usuario->name)
-
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm border-0 rounded-3">
-                <div class="head_card text-white p-4 text-center">
-                    <h3 class="mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Reportar</h3>
-                    <p class="mb-0 text-white-75">¿Tuviste un problema con este profesional?</p>
-                </div>
+<div class="container d-flex justify-content-center py-5">
+    <div class="card shadow-lg" style="max-width: 600px; width: 100%; border-radius: 10px; overflow: hidden;">
+        
+        <div class="card-header text-white text-center py-4" style="background-color: #1a2a40;">
+            <h2 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Reportar</h2>
+            <p class="mb-0 opacity-75">¿Tuviste un problema con este profesional?</p>
+        </div>
 
-                <div class="p-4 bg-light border-bottom">
-                    <h5 class="mb-2">{{'Administrador : '. $usuario->name }}</h5>
-                    
-                    @if($usuario->role === 'doctor' && $usuario->doctor)
-                        <p class="text-muted mb-0">
-                            <strong>Cédula profesional:</strong> {{ $usuario->doctor->cedula ?? 'No registrada' }}
-                        </p>
-                    @elseif($usuario->role === 'farmacia' && $usuario->farmacia)
-                        <p class="text-muted mb-1">
-                            <strong>Farmacia:</strong> {{ $usuario->farmacia->nom_farmacia ?? 'Sin nombre' }}
-                        </p>
-                        <p class="text-muted mb-0">
-                            <strong>RFC:</strong> {{ $usuario->farmacia->rfc ?? 'No registrado' }}
-                        </p>
-                    @else
-                        <p class="text-muted mb-0">Rol: {{ ucfirst($usuario->role) }}</p>
-                    @endif
-                </div>
-
-                <div class="p-4">
-                    <form action="{{ route('reportes.store') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="reportado_id" value="{{ $usuario->id }}">
-
-                        <div class="mb-4">
-                            <label for="descripcion" class="form-label fw-bold">
-                                Motivo del reporte
-                            </label>
-                            <textarea 
-                                name="descripcion" 
-                                id="descripcion" 
-                                class="form-control"
-                                rows="5"
-                                placeholder="Describe lo ocurrido..."
-                                maxlength="2000"
-                                required
-                            >{{ old('descripcion') }}</textarea>
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-navy btn-lg">
-                                <i class="bi bi-send-check"></i> Enviar reporte
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="p-3 bg-light text-center">
-                    <a href="{{ url()->previous() }}" class="text-secondary text-decoration-none">
-                        <i class="bi bi-arrow-left"></i> Volver
-                    </a>
-                </div>
+        <div class="card-body p-4">
+            <div class="mb-4">
+                <p class="mb-1 text-muted">Administrador: <strong>{{ Auth::user()->name }}</strong></p>
+                
+                @if($usuario->role === 'farmacia')
+                    <p class="mb-1"><strong>Farmacia:</strong> {{ $usuario->farmacia->nombre_comercial ?? $usuario->name }}</p>
+                    <p class="mb-1"><strong>RFC:</strong> <span class="text-uppercase text-muted">{{ $usuario->farmacia->rfc ?? 'N/A' }}</span></p>
+                @elseif($usuario->role === 'doctor')
+                    <p class="mb-1"><strong>Doctor:</strong> {{ $usuario->doctor->nombre ?? $usuario->name }}</p>
+                    <p class="mb-1"><strong>Especialidad:</strong> {{ $usuario->doctor->especialidad ?? 'General' }}</p>
+                @endif
             </div>
+
+            <hr class="my-4">
+
+            <form action="{{ route('reportes.store') }}" method="POST">
+                @csrf
+                
+                <input type="hidden" name="reportado_id" value="{{ $usuario->id }}">
+
+                <div class="mb-4">
+                    <label for="razon" class="form-label fw-bold">Motivo del reporte</label>
+                    <textarea 
+                        name="razon" 
+                        id="razon" 
+                        rows="6" 
+                        class="form-control @error('razon') is-invalid @enderror" 
+                        placeholder="Describe lo ocurrido..."
+                        required>{{ old('razon') }}</textarea>
+                    
+                    @error('razon')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn text-white py-2 fw-bold" style="background-color: #1a2a40; border-radius: 5px;">
+                        <i class="fas fa-paper-plane me-2"></i> Enviar reporte
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-footer bg-white border-0 text-center pb-4">
+            <a href="{{ url()->previous() }}" class="text-decoration-none text-muted">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
         </div>
     </div>
 </div>
