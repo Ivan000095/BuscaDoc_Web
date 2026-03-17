@@ -51,6 +51,7 @@ return new class extends Migration {
             $table->decimal('costo', 8, 2);
             $table->time('horario_entrada')->nullable();
             $table->time('horario_salida')->nullable();
+            $table->time('citas')->default(false);
             $table->timestamps();
         });
 
