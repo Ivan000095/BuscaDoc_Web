@@ -50,15 +50,10 @@ class FarmaciaController extends Controller
         ];
     }
 
-    /**
-     * Obtener TODAS las farmacias
-     * GET /api/farmacias
-     */
     public function index(Request $request): JsonResponse
     {
         $perPage = min(max($request->integer('per_page', 15), 1), 100);
 
-        // Aseguramos cargar solo los campos necesarios del usuario
         $farmacias = Farmacia::with('user:id,name,email,foto,latitud,longitud,f_nacimiento')
             ->paginate($perPage);
 
@@ -73,14 +68,8 @@ class FarmaciaController extends Controller
             ]
         ], 200);
     }
-
-    /**
-     * Obtener UNA farmacia específica por ID
-     * GET /api/farmacias/{id}
-     */
     public function show(Farmacia $farmacia): JsonResponse
     {
-        // Cargamos la relación del usuario
         $farmacia->load('user:id,name,email,foto,latitud,longitud,f_nacimiento');
 
         return response()->json([
