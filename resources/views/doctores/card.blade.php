@@ -315,7 +315,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
 
                     <div class="tab-content" id="pills-tabContent">
                         <div class="tab-pane fade show active" id="pills-reviews" role="tabpanel">
-                            @if($puedoResenar || $doctor->citas == false)
+                            @if($puedoResenar && Auth::user()->role == 'paciente' || $doctor->citas == false && Auth::user()->role == 'paciente')
                                 <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
                                     <h6 class="fw-bold mb-3 text-navy">Deja tu opinión</h6>
 

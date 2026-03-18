@@ -103,7 +103,7 @@ $isPatient = $user->role === 'paciente';
 
                     {{-- Formulario específico para PACIENTES --}}
                     @if($isPatient)
-                    <div class="soft-card p-5 mb-4 border-start border-4 border-info">
+                    <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
                         <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-person-vcard-fill me-2"></i>Ficha Médica</h4>
                         <div class="row g-3">
                             <div class="col-md-4">
@@ -165,17 +165,27 @@ $isPatient = $user->role === 'paciente';
 
                     {{-- Formulario específico para DOCTORES --}}
                     @if($isDoctor)
-                    <div class="soft-card p-5 mb-4 border-start border-4 border-primary">
-                        <h4 class="mb-4 fw-bold text-primary"><i class="bi bi-clipboard2-pulse me-2"></i>Perfil Profesional</h4>
+                    <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
+                        <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-clipboard2-pulse me-2"></i>Perfil Profesional</h4>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="text-label mb-2">Cédula Profesional</label>
                                 <input type="text" name="cedula" class="form-control" value="{{ old('cedula', optional($user->doctor)->cedula) }}">
                             </div>
-                            <div class="col-md-6">
+
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Costo Consulta</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text fw-bold text-success rounded-start-pill">$</span>
+                                            <input type="number" name="costo" step="0.01" min="0" class="form-control rounded-end-pill" 
+                                                value="{{ old('costo', $doctor->costo ?? '') }}" required placeholder="0.00">
+                                            <div class="invalid-feedback">Ingrese un monto válido.</div>
+                                        </div>
+                                    </div>
+                            {{-- <div class="col-md-6">
                                 <label class="text-label mb-2">Costo Consulta ($)</label>
                                 <input type="number" step="0.01" name="costo" class="form-control" value="{{ old('costo', optional($user->doctor)->costo) }}">
-                            </div>
+                            </div> --}}
                             <div class="col-md-6">
                                 <label class="text-label mb-2">Horario Entrada</label>
                                 <input type="time" name="horario_entrada" class="form-control" value="{{ old('horario_entrada', optional($user->doctor)->horario_entrada) }}">
@@ -194,7 +204,7 @@ $isPatient = $user->role === 'paciente';
 
                     {{-- Botón de Guardar --}}
                     <div class="mt-4">
-                        <button type="submit" class="btn btn-dark rounded-pill py-3 px-5 shadow-sm w-100 fs-5">
+                        <button type="submit" class="btn btn-navy rounded-pill py-3 px-5 shadow-sm w-100 fs-5">
                             <i class="bi bi-check-circle me-2"></i>Guardar Cambios
                         </button>
                     </div>

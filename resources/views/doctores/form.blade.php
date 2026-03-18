@@ -123,8 +123,8 @@
                                         {{-- CORREGIDO: Formato Y-m-d para que el input type="date" lo lea --}}
                                         <input type="date" name="fecha" class="form-control rounded-end-pill" 
                                             value="{{ old('f_nacimiento', isset($doctor->user->f_nacimiento) ? \Carbon\Carbon::parse($doctor->user->f_nacimiento)->format('Y-m-d') : '') }}" 
-                                            required max="{{ date('Y-m-d', strtotime('-18 years')) }}">
-                                        <div class="invalid-feedback">Debe ser mayor de 18 años.</div>
+                                            required max="{{ date('Y-m-d', strtotime('-24 years')) }}">
+                                        <div class="invalid-feedback">Debe ser mayor de 24 años.</div>
                                     </div>
                                 </div>
 
