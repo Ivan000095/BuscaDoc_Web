@@ -15,7 +15,7 @@ return new class extends Migration {
                     CREATE TYPE estado_reporte AS ENUM ('pendiente', 'en_proceso', 'resuelto', 'descartado');
                 END IF;
                 IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_cita') THEN
-                    CREATE TYPE estado_cita AS ENUM ('pendiente', 'confirmada', 'cancelada', 'completada');
+                    CREATE TYPE estado_cita AS ENUM ('pendiente', 'confirmada', 'cancelada', 'finalizada');
                 END IF;
             END $$;");
         });
@@ -89,8 +89,8 @@ return new class extends Migration {
         // 3. Citas con corrección de tipo Postgres
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id')->constrained('doctors')->cascadeOnDelete();
-            $table->foreignId('paciente_id')->constrained('pacientes')->cascadeOnDelete();
+            $table->foreignId('doctor_id')->constrained('doctors')->restrictOnDelete();
+            $table->foreignId('paciente_id')->constrained('pacientes')->restrictOnDelete();
             $table->timestamp('fecha_hora');
             $table->text('detalles')->nullable();
             $table->timestamps();
