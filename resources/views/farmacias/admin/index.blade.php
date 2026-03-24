@@ -1,6 +1,6 @@
 <x-layout>
     @if(Auth::user() && Auth::user()->role == 'admin')
-        
+    <div class="container py-5">
         {{-- Encabezado --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -34,6 +34,7 @@
                     </table>
                 </div>
             </div>
+        </div>
         </div>
     @else
         <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100" style="margin-top: -50px;">
