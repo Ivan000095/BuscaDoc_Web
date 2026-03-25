@@ -2,7 +2,6 @@
     {{-- Solo mostramos si es admin --}}
     @if (Auth::user()->role == 'admin')
         <div class="container py-5">
-            
             {{-- Encabezado --}}
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>

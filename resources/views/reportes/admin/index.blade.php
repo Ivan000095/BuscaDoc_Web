@@ -3,13 +3,13 @@
 @section('title', 'Gestión de Reportes')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2><i class="bi bi-exclamation-triangle"></i> Reportes</h2>
-            <p class="text-muted">Lista de reportes enviados por usuarios.</p>
-        </div>
-    </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-navy mb-0">Reportes</h2>
+                    <p class="text-muted small mb-0">Lista de reportes enviados por usuarios</p>
+                </div>
+</div>
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
