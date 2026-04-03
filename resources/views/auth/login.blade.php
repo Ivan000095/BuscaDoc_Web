@@ -139,7 +139,7 @@
                             <div class="d-flex justify-content-center gap-3 mb-4">
                                 <a href="{{ route('google.login') }}"
                                     class="btn btn-outline-light border text-dark rounded-pill d-flex align-items-center gap-2 shadow-sm">
-                                    <i class="bi bi-google text-danger"></i> <span class="small">Google</span>
+                                    <i class="bi bi-google text-navy"></i> <span class="small">Google</span>
                                 </a>
                             </div>
 

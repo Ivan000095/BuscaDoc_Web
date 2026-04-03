@@ -11,42 +11,43 @@ class MensajeController extends Controller
 {
     public function index()
     {
-        // 1. Definir a quién mostrar en la lista de contactos
-        $rolBuscado = Auth::user()->role == 'paciente' ? 'doctor' : 'paciente';
+        $authId = Auth::id();
 
-        // Traemos usuarios del rol contrario (Ej: Paciente ve doctores)
-        // Opcional: Podrías filtrar solo aquellos con los que ya tiene mensajes si son muchos usuarios.
-        $contactos = User::where('role', $rolBuscado)->get();
+        $enviados = Mensaje::where('id_remitente', $authId)->select('id_destinatario as contacto_id');
+        $recibidos = Mensaje::where('id_destinatario', $authId)->select('id_remitente as contacto_id')->union($enviados)->get();
 
+        $idsContactos = $recibidos->pluck('contacto_id')->unique();
+        $contactos = User::whereIn('id', $idsContactos)->get();
         return view('mensajes.index', compact('contactos'));
     }
 
     public function show($id)
     {
-        // Misma lógica de contactos para mantener la barra lateral
-        $rolBuscado = Auth::user()->role == 'paciente' ? 'doctor' : 'paciente';
-        $contactos = User::where('role', $rolBuscado)->get();
+        $authId = Auth::id();
 
-        // Usuario con el que chateamos
+        $enviados = Mensaje::where('id_remitente', $authId)->select('id_destinatario as contacto_id');
+        $recibidos = Mensaje::where('id_destinatario', $authId)->select('id_remitente as contacto_id')->union($enviados)->get();
+
+        $idsContactos = $recibidos->pluck('contacto_id')->unique();
+        $contactos = User::whereIn('id', $idsContactos)->get();
+
         $usuarioActivo = User::findOrFail($id);
 
-        // 2. Cargar la conversación (Tus columnas personalizadas)
-        $mensajes = Mensaje::where(function ($q) use ($id) {
-            $q->where('id_remitente', Auth::id())
-                ->where('id_destinatario', $id);
+        $mensajes = Mensaje::where(function ($q) use ($id, $authId) {
+            $q->where('id_remitente', $authId)
+              ->where('id_destinatario', $id);
         })
-            ->orWhere(function ($q) use ($id) {
-                $q->where('id_remitente', $id)
-                    ->where('id_destinatario', Auth::id());
-            })
-            ->orderBy('created_at', 'asc')
-            ->get();
+        ->orWhere(function ($q) use ($id, $authId) {
+            $q->where('id_remitente', $id)
+              ->where('id_destinatario', $authId);
+        })
+        ->orderBy('created_at', 'asc')
+        ->get();
 
-        // Marcar como leídos los mensajes recibidos
-        Mensaje::where('id_remitente', $id)
-            ->where('id_destinatario', Auth::id())
-            ->where('leido', false)
-            ->update(['leido' => true]);
+            Mensaje::where('id_remitente', $id)
+                ->where('id_destinatario', $authId)
+                ->where('leido', false)
+                ->update(['leido' => true]);
 
         return view('mensajes.index', compact('contactos', 'usuarioActivo', 'mensajes'));
     }

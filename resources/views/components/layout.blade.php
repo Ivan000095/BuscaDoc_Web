@@ -88,7 +88,7 @@
             left: 50%;
             transform: translateX(-50%);
             background: white;
-            color: #333;
+            color: #757373;
             padding: 12px 30px;
             border-radius: 50px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -146,6 +146,7 @@
         @media (min-width: 768px) {
             .custom-navbar {
                 border-radius: 50rem !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             }
         }
 
@@ -153,6 +154,7 @@
             .custom-navbar {
                 border-radius: 20px !important;
                 padding: 15px 10px !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             }
 
             .navbar-collapse {
@@ -214,7 +216,7 @@
         </div>
     @endif
 
-    <nav class="navbar navbar-expand-md navbar-dark bg-custom-dark shadow-lg custom-navbar mt-4 mx-auto" style="width: 95%; z-index: 1000;">
+    <nav class="navbar navbar-expand-md navbar-dark bg-custom-dark  custom-navbar mt-4 mx-auto" style="width: 95%; z-index: 1000;">
         <div class="container px-4">
             <a class="navbar-brand d-flex align-items-center" href="{{ url('/home') }}">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo" class="me-2">
@@ -229,7 +231,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 text-center">
                     <li class="nav-item">
-                        <a class="nav-link px-3" href="{{ route('home') }}">Inicio</a>
+                        <a class="nav-link px-3" href="{{ route('top5') }}">Inicio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-3" href="{{ route('doctores.vista') }}">Doctores</a>
