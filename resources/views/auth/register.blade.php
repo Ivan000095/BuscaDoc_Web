@@ -191,10 +191,10 @@
             {{-- COLUMNA IZQUIERDA --}}
             <div class="col-lg-5 text-center text-lg-start mb-5 mb-lg-0 pe-lg-5">
                 <div class="mb-4">
-                    <img src="{{ asset('images/logo_negro.png') }}" width="280px" alt="Logo">
+                    <img src="{{ asset('images/logo_negro.png') }}" width="400px" alt="Logo">
                 </div>
                 <p class="fs-5 text-muted lh-base">
-                    Únete a la plataforma de salud más completa. Gestiona citas, recetas y servicios en un solo lugar.
+                    "Un lugar para todas tus necesidades"
                 </p>
             </div>
 
@@ -341,6 +341,13 @@
                             <div x-show="role === 'doctor'" x-transition>
                                 <h6 class="text-primary border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DE
                                     TRABAJO</h6>
+                                    <div class="mb-4 p-3 rounded-4 bg-light border-0 d-flex align-items-center">
+                                        <i class="bi bi-shield-fill-exclamation text-navy fs-1 me-3"></i>
+                                        <p class="small  mb-0" style="text-align: justify; line-height: 1.4;">
+                                            Al registrarte como <b>Doctor</b>, confirmas que aceptas nuestro Aviso de Privacidad. 
+                                            Tus datos se utilizarán exclusivamente para garantizar la seguridad de los pacientes y la integridad de la comunidad de BuscaDoc.
+                                        </p>
+                                    </div>
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <input type="textarea" name="descripcion_doc" class="form-control form-control-pill"
@@ -420,6 +427,13 @@
                             <div x-show="role === 'paciente'" x-transition>
                                 <h6 class="text-info border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS MÉDICOS
                                     BÁSICOS</h6>
+                                    <div class="mb-4 p-3 rounded-4 bg-light border-0 d-flex align-items-center">
+                                        <i class="bi bi-shield-fill-exclamation text-navy fs-1 me-3"></i>
+                                        <p class="small  mb-0" style="text-align: justify; line-height: 1.4;">
+                                            Al registrarse como<b> Paciente</b>, tus datos de salud y contacto estan protegidos bajo confidencialidad. 
+                                            Al hacer clic en "registrarse" aceptas nuestro Aviso de Privacidad, asegurando que tu información se utilizará únicamente para gestionar tus citas y mejorar tu atención en BuscaDoc.
+                                        </p>
+                                    </div>
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <select name="tipo_sangre" class="form-select form-select-pill">
@@ -461,6 +475,12 @@
                             <div x-show="role === 'farmacia'" x-transition>
                                 <h6 class="text-success border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DEL
                                     NEGOCIO</h6>
+                                    <div class="mb-4 p-3 rounded-4 bg-light border-0 d-flex align-items-center">
+                                        <i class="bi bi-shield-fill-exclamation text-navy fs-1 me-3"></i>
+                                        <p class="small  mb-0" style="text-align: justify; line-height: 1.4;">
+                                            Al registrar tu <b>farmacia</b>, confirmas que la información proporcionada es verídica y cumple con las normativas.
+                                            Tus datos comerciales serán utilizados para conectar de forma segura con los pacientes y mantener la integridad de BuscaDoc.
+                                    </div>
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <input type="textarea" name="descripcion" class="form-control form-control-pill"

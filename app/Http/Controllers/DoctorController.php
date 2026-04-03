@@ -185,7 +185,7 @@ class DoctorController extends Controller
 
     public function show($id)
     {
-        $doctor = Doctor::findOrFail($id);
+        $doctor = Doctor::with(['user','especialidades'])->findOrFail($id);
 
         return view('doctores.card', compact('doctor'));
     }

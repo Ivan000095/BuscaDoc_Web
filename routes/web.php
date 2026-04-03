@@ -20,10 +20,15 @@ use App\Http\Controllers\FarmaciaController;
 use App\Http\Controllers\MensajeController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\RankingController;
 
 Route::get("/", function () {
     return view("welcome-simple");
 })->name('welcome');
+
+Route::get("/top5", [RankingController::class, "index"])->name("top5");
+Route::get("doctores/{doctor}", [DoctorController::class, "show"])->name("doctores.show");
+Route::get('/buscar', [App\Http\Controllers\SearchController::class, 'search'])->name('global.search');
 
 // Custom auth routes with better control
 Route::get("login", [LoginController::class, "showLoginForm"])->name("login");
@@ -91,7 +96,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get("doctor/data", [DoctorController::class, "dataTable"])->name("doctor.data");
     Route::get("doctores/agregar", [DoctorController::class, "create"])->name("doctores.agregar");
     Route::get("doctores/{doctor}/download-image", [DoctorController::class, "downloadImage"])->name("doctor.download-image");
-    Route::resource("doctores", DoctorController::class);
+    Route::resource("doctores", DoctorController::class)->except(['show']);
     Route::resource('users', UserController::class);
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
@@ -105,7 +110,6 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     });
     
     Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
-    Route::get('/buscar', [App\Http\Controllers\SearchController::class, 'search'])->name('global.search');
     Route::get('/mensajes', [MensajeController::class, 'index'])->name('mensajes.index');
     Route::get('/mensajes/{id}', [MensajeController::class, 'show'])->name('mensajes.show');
     Route::post('/mensajes', [MensajeController::class, 'store'])->name('mensajes.store');
