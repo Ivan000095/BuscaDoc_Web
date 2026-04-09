@@ -14,14 +14,14 @@ class ComentarioController extends Controller
 {
     public function index(Request $request): Response
     {
-        $comentarios = Comentario::all();
+        $Comentario = Comentario::all();
 
         return new ComentarioResource($Comentario);
     }
 
     public function store(ComentarioStoreRequest $request): Response
     {
-        $comentario = Comentario::create($request->validated());
+        $Comentario = Comentario::create($request->validated());
 
         return new ComentarioResource($Comentario);
     }

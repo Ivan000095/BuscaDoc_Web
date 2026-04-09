@@ -6,7 +6,6 @@ $lng = $doctor->user->longitud ?? -92.0946;
 ?>
 
 <x-layout>
-
     <head>
         <style>
             body {

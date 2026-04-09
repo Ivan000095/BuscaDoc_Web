@@ -75,7 +75,7 @@ Route::middleware("auth:sanctum")->group(function () {
     // });
 
     Route::get("/statistics", [DoctorController::class, "stats"])->name('stats'); 
-    Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
+    
     Route::put('/user/{id}', [UserController::class, 'update']);
 });
 
@@ -103,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
 Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('specs.index');
+Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
 
 
 
