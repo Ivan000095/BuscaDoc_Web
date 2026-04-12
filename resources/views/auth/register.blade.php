@@ -338,7 +338,7 @@
                             </div>
 
                             {{-- si es doc --}}
-                            <div x-show="role === 'doctor'" x-transition>
+                           <div x-show="role === 'doctor'" x-transition x-data="{ citasActivas: {{ old('citas', '0') == '1' ? 'true' : 'false' }} }">
                                 <h6 class="text-primary border-bottom pb-2 mb-3 small fw-bold text-navy">DATOS DE
                                     TRABAJO</h6>
                                     <div class="mb-4 p-3 rounded-4 bg-light border-0 d-flex align-items-center">
@@ -371,34 +371,77 @@
                                         @error('costo') <span class="invalid-feedback ps-3">{{ $message }}</span>
                                         @enderror
                                     </div>
+                                                
+                                                <div class="col-12 mb-3 mt-3">
+                                                    <div class="bg-light p-3 rounded-pill border d-flex align-items-center justify-content-between px-4">
+                                                        <span class="small fw-bold text-navy">¿Habilitar recepción de citas en línea?</span>
+                                                        <div class="form-check form-switch mb-0">
+                                                            <input class="form-check-input" type="checkbox" name="citas" id="citasSwitch" 
+                                                                value="1" x-model="citasActivas">
+                                                            <label class="form-check-label small text-muted" for="citasSwitch" x-text="citasActivas ? 'Activo' : 'Inactivo'"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                    {{-- Horarios --}}
-                                    <div class="col-md-6">
-                                        <label class="small text-muted ms-3 fw-bold">Horario de entrada</label>
-                                        <input type="time" name="horario_entrada_doc"
-                                            class="form-control form-control-pill @error('horario_entrada') is-invalid @enderror"
-                                            value="{{ old('horario_entrada') }}">
-                                        @error('horario_entrada') <span
-                                        class="invalid-feedback ps-3">{{ $message }}</span> @enderror
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="small text-muted ms-3 fw-bold">Horario de salida</label>
-                                        <input type="time" name="horario_salida_doc"
-                                            class="form-control form-control-pill @error('horario_salida') is-invalid @enderror"
-                                            value="{{ old('horario_salida') }}">
-                                        @error('horario_salida') <span
-                                        class="invalid-feedback ps-3">{{ $message }}</span> @enderror
-                                    </div>
-                                    {{-- NUEVO CAMPO: CITAS (Booleano) --}}
-                                    <div class="col-12">
-                                        <div class="bg-light p-3 rounded-pill border d-flex align-items-center justify-content-between px-4">
-                                            <span class="small fw-bold text-navy">¿Desea habilitar la recepción de citas?</span>
-                                            <div class="form-check form-switch mb-0">
-                                                <input class="form-check-input" type="checkbox" name="citas" id="citasSwitch" value= "1" {{ old('citas') ? 'checked' : '' }}>
-                                                <label class="form-check-label small text-muted" for="citasSwitch">Activar</label>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        <div class="col-12 mt-4" x-data="{ 
+                                                    horarios: [{dia: '1', inicio: '09:00', fin: '14:00'}],
+                                                    addHorario() { this.horarios.push({dia: '1', inicio: '09:00', fin: '18:00'}) },
+                                                    removeHorario(index) { this.horarios.splice(index, 1) }
+                                                }">
+                                                    <h6 class="text-navy fw-bold small mb-3">
+                                                        <i class="bi bi-calendar3 me-2"></i>CONFIGURACIÓN DE AGENDA SEMANAL
+                                                    </h6>
+
+                                                    {{-- El campo duración se muestra SOLO si hay citas activas, pero los horarios no --}}
+                                                    <div class="bg-light p-3 rounded-4 border mb-3" x-show="citasActivas" x-transition>
+                                                        <label class="small text-muted fw-bold mb-2 d-block">Duración promedio de cada cita</label>
+                                                        <select name="duracion_cita" class="form-select form-select-pill bg-white">
+                                                            <option value="15">15 minutos</option>
+                                                            <option value="20">20 minutos</option>
+                                                            <option value="30" selected>30 minutos</option>
+                                                            <option value="45">45 minutos</option>
+                                                            <option value="60">1 hora</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <template x-for="(horario, index) in horarios" :key="index">
+                                                        <div class="row g-2 mb-3 align-items-end bg-white p-3 rounded-4 border shadow-sm mx-0">
+                                                            <div class="col-md-4">
+                                                                <label class="small text-muted fw-bold ps-2">Día</label>
+                                                                <select :name="`horarios[${index}][dia]`" x-model="horario.dia" class="form-select form-select-pill">
+                                                                    <option value="1">Lunes</option>
+                                                                    <option value="2">Martes</option>
+                                                                    <option value="3">Miércoles</option>
+                                                                    <option value="4">Jueves</option>
+                                                                    <option value="5">Viernes</option>
+                                                                    <option value="6">Sábado</option>
+                                                                    <option value="0">Domingo</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="small text-muted fw-bold ps-2">Entrada</label>
+                                                                <input type="time" :name="`horarios[${index}][inicio]`" x-model="horario.inicio" class="form-control form-control-pill">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="small text-muted fw-bold ps-2">Salida</label>
+                                                                <input type="time" :name="`horarios[${index}][fin]`" x-model="horario.fin" class="form-control form-control-pill">
+                                                            </div>
+                                                            <div class="col-md-2 text-center">
+                                                                <button type="button" @click="removeHorario(index)" class="btn btn-outline-danger border-0 rounded-circle" x-show="horarios.length > 1">
+                                                                    <i class="bi bi-trash3-fill"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+
+                                                    <button type="button" @click="addHorario()" class="btn btn-sm btn-outline-navy rounded-pill mt-2">
+                                                        <i class="bi bi-plus-circle me-1"></i> Añadir otro bloque
+                                                    </button>
+                                                </div>
+
+
+                                   
+
                                     <div class="col-md-12">
                                         <label class="small text-muted ms-3 fw-bold">Escriba los idiomas que
                                             domine</label>

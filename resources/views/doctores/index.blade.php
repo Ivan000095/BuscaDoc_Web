@@ -23,8 +23,7 @@
                                     <th class="py-3">Cédula</th>
                                     <th class="py-3">Descripción</th>
                                     <th class="py-3">Costo</th>
-                                    <th class="py-3">Entrada</th>
-                                    <th class="py-3">Salida</th>
+                                    <th class="py-3">Horario</th>
                                     <th class="py-3">Trabaja con citas?</th>
                                     <th class="py-3">Nacimiento</th>
                                     <th class="py-3">Foto</th>
@@ -78,8 +77,7 @@
                         { data: 'cedula', name: 'cedula' },
                         { data: 'descripcion', name: 'descripcion' },
                         { data: 'costos', name: 'costo' },
-                        { data: 'horarioentrada', name: 'horario_entrada' },
-                        { data: 'horariosalida', name: 'horario_salida' },
+                        { data: 'horario', orderable: false },
                         { data: 'citas', name: 'citas' },
                         { data: 'fecha', name: 'users.f_nacimiento' },
                         { 

@@ -231,7 +231,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 text-center">
                     <li class="nav-item">
-                        <a class="nav-link px-3" href="{{ route('top5') }}">Inicio</a>
+                        <a class="nav-link px-3" href="{{ route('home') }}">Inicio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-3" href="{{ route('doctores.vista') }}">Doctores</a>

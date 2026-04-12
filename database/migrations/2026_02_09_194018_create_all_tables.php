@@ -20,6 +20,9 @@ return new class extends Migration {
             END $$;");
         });
 
+
+
+
         // 2. Tablas Base
         Schema::create('users', function (Blueprint $table) {
             $table->id();
@@ -49,11 +52,30 @@ return new class extends Migration {
             $table->string('idiomas', 100)->nullable();
             $table->text('descripcion')->nullable();
             $table->decimal('costo', 8, 2);
-            $table->time('horario_entrada')->nullable();
-            $table->time('horario_salida')->nullable();
+            $table->integer('duracion_cita')->default(30);
+
             $table->boolean('citas')->default(false);
             $table->timestamps();
         });
+
+        Schema::create('doctor_disponibilidad', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
+            $table->unsignedTinyInteger('dia_semana'); // 0 (Dom) a 6 (Sáb)
+            $table->time('hora_inicio');
+            $table->time('hora_fin');
+            $table->timestamps();
+        });
+
+        Schema::create('doctor_excepciones', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
+                $table->date('fecha');
+                $table->boolean('trabaja')->default(false); // false = día libre
+                $table->time('hora_inicio')->nullable(); // Por si solo trabaja medio día
+                $table->time('hora_fin')->nullable();
+                $table->timestamps();
+            });
 
         Schema::create('pacientes', function (Blueprint $table) {
             $table->id();
@@ -89,8 +111,8 @@ return new class extends Migration {
         // 3. Citas con corrección de tipo Postgres
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id')->constrained('doctors')->restrictOnDelete();
-            $table->foreignId('paciente_id')->constrained('pacientes')->restrictOnDelete();
+            $table->foreignId('doctor_id')->constrained('doctors')->cascadeOnDelete();
+            $table->foreignId('paciente_id')->constrained('pacientes')->cascadeOnDelete();
             $table->timestamp('fecha_hora');
             $table->text('detalles')->nullable();
             $table->timestamps();

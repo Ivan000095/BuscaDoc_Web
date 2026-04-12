@@ -242,16 +242,43 @@ $lng = $doctor->user->longitud ?? -92.0946;
                     </div>
 
                     {{-- Horarios --}}
-                    <div class="info-row">
-                        <div class="info-icon"><i class="bi bi-clock"></i></div>
-                        <div>
-                            <span class="fw-bold d-block">Horarios</span>
-                            <span class="text-muted">
-                                {{ \Carbon\Carbon::parse($doctor->horario_entrada)->format('H:i') }} am -
-                                {{ \Carbon\Carbon::parse($doctor->horario_salida)->format('H:i') }} pm
-                            </span>
+                        <div class="mt-4" x-data="{ diaSeleccionado: {{ now()->dayOfWeek }} }">
+                            <h5 class="text-navy fw-bold mb-3">Horarios de Atención</h5>
+                            
+                            {{-- Selector de días --}}
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                @foreach(['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] as $num => $nombre)
+                                    @php $tieneHorario = $doctor->disponibilidades->contains('dia_semana', $num); @endphp
+                                    <button @click="diaSeleccionado = {{ $num }}" 
+                                        class="btn btn-sm rounded-pill px-3 transition-all"
+                                        :class="diaSeleccionado == {{ $num }} ? 'btn-navy shadow' : 'btn-outline-secondary'"
+                                        {{ !$tieneHorario ? 'disabled style=opacity:0.4' : '' }}>
+                                        {{ $nombre }}
+                                    </button>
+                                @endforeach
+                            </div>
+
+                            {{-- Contenedor de horas dinámicas --}}
+                            <div class="bg-light p-3 rounded-4 border">
+                                @foreach($doctor->disponibilidades->groupBy('dia_semana') as $dia => $bloques)
+                                    <div x-show="diaSeleccionado == {{ $dia }}" x-transition>
+                                        <p class="small fw-bold text-muted mb-2">Turnos disponibles:</p>
+                                        @foreach($bloques as $bloque)
+                                            <div class="d-flex align-items-center mb-1">
+                                                <i class="bi bi-check2-circle text-success me-2"></i>
+                                                <span class="text-navy">
+                                                    {{ \Carbon\Carbon::parse($bloque->hora_inicio)->format('g:i A') }} a 
+                                                    {{ \Carbon\Carbon::parse($bloque->hora_fin)->format('g:i A') }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                                <div x-show="!{{ $doctor->disponibilidades->pluck('dia_semana')->toJson() }}.includes(diaSeleccionado)">
+                                    <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> El doctor no labora este día.</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
                     <div class="info-row">
                         <div class="info-icon"><i class="bi bi-envelope-fill"></i></div> {{-- Icono de sobre --}}
                         <div>
@@ -262,7 +289,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
                     <div class="info-row mb-0">
                         <div class="info-icon"><i class="bi bi-cash-coin"></i></div>
                         <div>
-                            <span class="fw-bold d-block">Costo Consulta</span>
+                            <span class="fw-bold d-block">Costo Promedio De Consulta</span>
                             <span class="text-success fw-bold">${{ number_format($doctor->costo, 2) }}</span>
                         </div>
                     </div>
@@ -558,6 +585,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
     @include('citas.agendar')
 
     <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         function initMap() {
             const position = { lat: <?php echo $lat; ?>, lng: <?php echo $lng; ?> };

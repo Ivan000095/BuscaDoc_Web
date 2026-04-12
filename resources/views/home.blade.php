@@ -403,7 +403,7 @@
 
                         <div class="border-top pt-3 mb-3">
                             <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted fw-bold">Costo Consulta</small>
+                                <small class="text-muted fw-bold">Costo Promedio de Consulta</small>
                                 <span
                                     class="fs-5 fw-bold text-success">${{ number_format(Auth::user()->doctor->costo, 2) }}</span>
                             </div>

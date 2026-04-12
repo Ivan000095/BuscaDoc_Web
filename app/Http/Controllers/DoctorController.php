@@ -70,8 +70,11 @@ class DoctorController extends Controller
             "cedula" => "required|string|max:50",
             "descripcion" => "required|string|max:1000",
             "costos" => "required|numeric|min:0",
-            "horarioentrada" => "required",
-            "horariosalida" => "required",
+            "duracion_cita" => "required|integer|min:15|max:120", // Nuevo campo
+            "horarios" => "required|array", // Array de disponibilidad
+            "horarios.*.dia" => "required|integer|between:0,6",
+            "horarios.*.inicio" => "required|date_format:H:i",
+            "horarios.*.fin" => "required|date_format:H:i|after:horarios.*.inicio",
             "idioma" => "nullable|string",
             "latitud" => "nullable|numeric",
             "longitud" => "nullable|numeric",
@@ -106,11 +109,20 @@ class DoctorController extends Controller
                 'cedula' => $request->cedula,
                 'descripcion' => $request->descripcion,
                 'costo' => $request->costos,
+                'duracion_cita' => $request->duracion_cita, 
                 'idiomas' => $request->idioma,
-                'horario_entrada' => $request->horarioentrada,
-                'horario_salida' => $request->horariosalida,
                 'citas' => $request->has('citas'),
             ]);
+
+            foreach ($request->horarios as $bloque) {
+                        $doctor->disponibilidades()->create([
+                            'dia_semana' => $bloque['dia'],
+                            'hora_inicio' => $bloque['inicio'],
+                            'hora_fin' => $bloque['fin'],
+                        ]);
+                    }
+
+
 
             $doctor->especialidades()->attach($request->especialidad_id);
         });
@@ -185,7 +197,7 @@ class DoctorController extends Controller
 
     public function show($id)
     {
-        $doctor = Doctor::with(['user','especialidades'])->findOrFail($id);
+        $doctor = Doctor::with(['user','especialidades', 'disponibilidades'])->findOrFail($id);
 
         return view('doctores.card', compact('doctor'));
     }
@@ -248,8 +260,30 @@ class DoctorController extends Controller
         $doctors = $query->skip($start)->take($length)->get();
         $meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
         $data = $doctors->map(function ($doctor) use ($meses) {
+
             $imageHtml = "";
             $fotoPath = $doctor->user->foto;
+        // --- NUEVA LÓGICA DE HORARIO ---
+            $hoy = now()->dayOfWeek; 
+            $horaActual = now()->format('H:i:s');
+            $disponibilidadHoy = $doctor->disponibilidades->where('dia_semana', $hoy);
+            
+            $estaAbierto = false;
+            foreach($disponibilidadHoy as $bloque) {
+                if($horaActual >= $bloque->hora_inicio && $horaActual <= $bloque->hora_fin) {
+                    $estaAbierto = true;
+                    break;
+                }
+            }
+
+            $horarioHtml = $disponibilidadHoy->isEmpty() 
+                ? '<span class="badge bg-secondary rounded-pill shadow-sm">Cerrado hoy</span>'
+                : ($estaAbierto 
+                    ? '<span class="badge bg-success rounded-pill shadow-sm">Abierto ahora</span>' 
+                    : '<span class="badge bg-danger rounded-pill shadow-sm">Cerrado ahora</span>');
+            // ------------------------------
+
+
             if ($fotoPath && Storage::disk("public")->exists($fotoPath)) {
                 $url = asset("storage/" . $fotoPath);
                 $imageHtml = "<img src='{$url}' class='img-thumbnail' style='width: 50px; height: 50px; object-fit: cover;'>";
@@ -270,8 +304,7 @@ class DoctorController extends Controller
                 "image" => $imageHtml,
                 "cedula" => $doctor->cedula,
                 "costos" => '$' . number_format($doctor->costo, 2),
-                "horarioentrada" => $doctor->horario_entrada,
-                "horariosalida" => $doctor->horario_salida,
+                "horario" => $horarioHtml,
                 "citas" => $doctor->citas 
                 ? '<span class="badge bg-success rounded-pill px-3 py-2">Sí</span>' 
                 : '<span class="badge bg-secondary rounded-pill px-3 py-2">No</span>',

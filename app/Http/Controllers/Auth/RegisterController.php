@@ -41,8 +41,11 @@ class RegisterController extends Controller
 
             'cedula' => [Rule::requiredIf($data['role'] == 'doctor')],
             'costo' => [Rule::requiredIf($data['role'] == 'doctor'), 'nullable', 'numeric'],
-            'horario_entrada_doc' => [Rule::requiredIf($data['role'] == 'doctor')],
-            'horario_salida_doc' => [Rule::requiredIf($data['role'] == 'doctor')],
+            'duracion_cita' => [Rule::requiredIf($data['role'] == 'doctor'), 'nullable', 'integer'],
+            'horarios' => [Rule::requiredIf($data['role'] == 'doctor'), 'array'],
+            'horarios.*.dia' => ['required_with:horarios', 'integer', 'between:0,6'],
+            'horarios.*.inicio' => ['required_with:horarios', 'date_format:H:i'],
+            'horarios.*.fin' => ['required_with:horarios', 'date_format:H:i'],
 
             'tipo_sangre' => [Rule::requiredIf($data['role'] == 'paciente')],
             'contacto_emergencia' => [Rule::requiredIf($data['role'] == 'paciente')],
@@ -87,15 +90,24 @@ class RegisterController extends Controller
                             'user_id' => $user->id,
                             'cedula' => $data['cedula'],
                             'costo' => $data['costo'],
-                            'horario_entrada' => $data['horario_entrada_doc'],
-                            'horario_salida' => $data['horario_salida_doc'],
-                            'idiomas' => $data['idiomas'] ?? 'Español',
-                            'descripcion' => $data['descripcion_doc'] ?? 'Sin descripción',
-                            'citas' => !empty($data['citas']) && $data['citas'] !== '0',
+                            'descripcion' => $data['descripcion_doc'] ?? null,
+                            'idiomas' => $data['idiomas'] ?? null,
+                            'citas' => isset($data['citas']) ? true : false,
+                            'duracion_cita' => $data['duracion_cita'] ?? 30, // Valor por defecto
                         ]);
 
                         if (isset($data['especialidades'])) {
                             $doctor->especialidades()->sync($data['especialidades']);
+                        }
+                        // GUARDAR LOS HORARIOS MÚLTIPLES
+                        if (isset($data['horarios']) && is_array($data['horarios'])) {
+                            foreach ($data['horarios'] as $item) {
+                                $doctor->disponibilidades()->create([
+                                    'dia_semana' => $item['dia'],
+                                    'hora_inicio' => $item['inicio'],
+                                    'hora_fin'    => $item['fin'],
+                                ]);
+                            }
                         }
                         break;
 
