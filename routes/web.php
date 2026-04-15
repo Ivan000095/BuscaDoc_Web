@@ -21,6 +21,7 @@ use App\Http\Controllers\MensajeController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\SearchController;
 
 Route::get("/", function () {
     return view("welcome-simple");
