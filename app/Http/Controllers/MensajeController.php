@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Kreait\Laravel\Firebase\Facades\Firebase;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 
 class MensajeController extends Controller
 {
@@ -99,8 +101,7 @@ class MensajeController extends Controller
         return view('mensajes.index', compact('contactos', 'usuarioActivo', 'mensajes'));
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
             'id_destinatario' => 'required|exists:users,id',
             'contenido' => 'required|string|max:1000',
@@ -119,9 +120,26 @@ class MensajeController extends Controller
             'created_at' => now()->toDateTimeString()
         ];
 
-        Firebase::database()
-            ->getReference('mensajes')
-            ->push($nuevoMensaje);
+        Firebase::database()->getReference('mensajes')->push($nuevoMensaje);
+
+        $destinatario = User::find($destId);
+        
+        if ($destinatario && $destinatario->fcm_token) {
+            $messaging = Firebase::messaging();
+            
+            $notificacion = CloudMessage::new()
+                ->withNotification(Notification::create(
+                    'Nuevo mensaje de ' . Auth::user()->name, 
+                    $request->contenido
+                ))
+                ->withToken($destinatario->fcm_token);
+
+            try {
+                $messaging->send($notificacion);
+            } catch (\Exception $e) {
+                \Log::error('Error enviando push desde Web: ' . $e->getMessage());
+            }
+        }
 
         return response()->json(['success' => true]);
     }

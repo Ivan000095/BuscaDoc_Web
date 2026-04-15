@@ -179,7 +179,7 @@ class DoctorController extends Controller
     public function edit($id)
     {
         $doctor = Doctor::findOrFail($id);
-        $especialidades = Especialidad::all(); // También aquí
+        $especialidades = Especialidad::all();
         return view('doctores.form', compact('doctor', 'especialidades'));
     }
 
@@ -233,7 +233,6 @@ class DoctorController extends Controller
         $search = $request->input("search.value");
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                // Buscamos por nombre en la tabla 'users' relacionada
                 $q->whereHas('user', function ($subQ) use ($search) {
                     $subQ->where('name', 'like', "%{$search}%");
                 })

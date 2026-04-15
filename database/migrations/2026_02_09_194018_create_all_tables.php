@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
-        // 1. Tipos Nativos de PostgreSQL
         DB::transaction(function () {
             DB::statement("DO $$ BEGIN
                 IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'estado_reporte') THEN
@@ -86,7 +85,6 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        // 3. Citas con corrección de tipo Postgres
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('doctor_id')->constrained('doctors')->restrictOnDelete();
@@ -95,7 +93,6 @@ return new class extends Migration {
             $table->text('detalles')->nullable();
             $table->timestamps();
         });
-        // Vinculamos el tipo ENUM manualmente para evitar el error de Laravel
         DB::statement('ALTER TABLE citas ADD estado estado_cita DEFAULT \'pendiente\'');
 
         Schema::create('comentarios', function (Blueprint $table) {

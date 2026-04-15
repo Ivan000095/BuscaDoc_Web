@@ -45,6 +45,15 @@
         .text-main { color: var(--text-main) !important; }
         .bg-white { background-color: rgb(245, 246, 253)!important;}
 
+        .btn-navy {
+            background-color: #0d2e4e;
+            color: white;
+            border-radius: 50px;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
         .shadow-soft {
             box-shadow: 0 10px 40px -10px rgba(17, 42, 70, 0.08) !important;
         }
@@ -216,7 +225,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 text-center gap-3 navbar-center-absolute">
                     <li class="nav-item">
-                        <a class="nav-link px-3 rounded-pill" href="{{ route('home') }}">Inicio</a>
+                        <a class="nav-link px-3 rounded-pill" href="{{ url('/home') }}">Inicio</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-3 rounded-pill" href="{{ route('doctores.vista') }}">Doctores</a>
@@ -339,6 +348,51 @@
             }
         });
     </script>
+
+    @auth
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+            import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyCjY3XJoaq7uGe8TdaQFw_c2YLJZSQUqpY",
+                authDomain: "buscadoc-b204b.firebaseapp.com",
+                projectId: "buscadoc-b204b",
+                storageBucket: "buscadoc-b204b.firebasestorage.app",
+                messagingSenderId: "754493965978",
+                appId: "1:754493965978:web:769a90bb14471891594123"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const messaging = getMessaging(app);
+
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                getToken(messaging, { vapidKey: 'TU_CLAVE_VAPID_AQUI' }).then((currentToken) => {
+                    if (currentToken) {
+                    fetch('/api/usuarios/fcm-token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ fcm_token: currentToken })
+                    }).then(response => console.log('Token web guardado en BD'));
+
+                    }
+                }).catch((err) => {
+                    console.log('Error obteniendo el token web', err);
+                });
+                }
+            });
+
+            onMessage(messaging, (payload) => {
+                console.log('Mensaje recibido en primer plano: ', payload);
+                alert(payload.notification.title + ": " + payload.notification.body);
+            });
+        </script>
+    @endauth
 
     @stack('scripts')
 </body>
