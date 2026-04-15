@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-
+use App\Models\Especialidad;
+use Illuminate\Support\Facades\Auth;
 class HomeController extends Controller
 {
     /**
@@ -12,10 +13,6 @@ class HomeController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('auth')->except('top5');
-    }
 
     /**
      * Show the application dashboard.
@@ -24,29 +21,36 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
 
         $proximaCita = null;
         $proximaCitaDoctor = null;
         $ultimaReview = null;
         $ultimaQuestion = null;
         $rutas = [];
+        $doctores = [];
+
+        $especialidades = Especialidad::with(['doctors.user'])
+            ->has('doctors')
+            ->get();
 
 
-        if ($user->role == 'paciente' && $user->patient) {
+        $rutas = User::whereNotNull('latitud')
+            ->whereNotNull('longitud')
+            ->whereIn('role', ['doctor', 'farmacia']) 
+            ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
+            ->get();
+
+
+        if ($user && $user->role == 'paciente' && $user->patient) {
             $proximaCita = \App\Models\Cita::where('paciente_id', $user->patient->id)
                 ->where('fecha_hora', '>=', now())
                 ->where('estado', '!=', 'cancelada')
                 ->orderBy('fecha_hora', 'asc')
                 ->first();
-            $rutas = User::whereNotNull('latitud')
-                ->whereNotNull('longitud')
-                ->whereIn('role', ['doctor', 'farmacia']) 
-                ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
-                ->get();
         }
 
-        if ($user->role == 'doctor' && $user->doctor) {
+        if ($user && $user->role == 'doctor' && $user->doctor) {
             $proximaCitaDoctor = $user->doctor->citas()
                 ->where('fecha_hora', '>=', now())
                 ->whereIn('estado', ['pendiente', 'confirmada'])
@@ -62,7 +66,7 @@ class HomeController extends Controller
                 ->first();
         }
 
-        return view('home', compact('proximaCita', 'proximaCitaDoctor', 'ultimaReview', 'ultimaQuestion', 'rutas'));
+        return view('home', compact('proximaCita', 'proximaCitaDoctor', 'ultimaReview', 'ultimaQuestion', 'rutas', 'especialidades'));
     }
 
     public function mostrarMapa()

@@ -336,4 +336,18 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function guardarFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        
+        $user->fcm_token = $request->fcm_token;
+        $user->save();
+
+        return response()->json(['success' => true]);
+    }
 }

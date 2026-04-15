@@ -29,4 +29,11 @@ class Especialidad extends Model
             'id' => 'integer',
         ];
     }
+
+    
+
+    public function doctors()
+    {
+        return $this->belongsToMany(Doctor::class, 'doctor__especialidads', 'especialidad_id', 'doctor_id');
+    }
 }

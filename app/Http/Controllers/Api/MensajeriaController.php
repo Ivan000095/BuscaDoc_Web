@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Kreait\Laravel\Firebase\Facades\Firebase;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 
 class MensajeriaController extends Controller
 {
@@ -107,6 +110,25 @@ class MensajeriaController extends Controller
         ];
 
         Firebase::database()->getReference('mensajes')->push($nuevoMensaje);
+
+        $destinatario = User::find($destId);
+        
+        if ($destinatario && $destinatario->fcm_token) {
+            $messaging = Firebase::messaging();
+            
+            $notificacion = CloudMessage::new()
+                ->withNotification(Notification::create(
+                    'Nuevo mensaje de ' . $request->user()->name, 
+                    $request->contenido
+                ))
+                ->withToken($destinatario->fcm_token);
+
+            try {
+                $messaging->send($notificacion);
+            } catch (\Exception $e) {
+                \Log::error('Error enviando push desde API: ' . $e->getMessage());
+            }
+        }
 
         return response()->json(['success' => true]);
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EspecialidadesController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -15,7 +16,6 @@ use App\Http\Controllers\MensajeController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ChatbotController;
-use App\Http\Controllers\RankingController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -25,15 +25,16 @@ use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\GoogleController;
 use App\Models\Especialidad;
 
-Route::get('/', function () { return view('welcome-simple'); })->name('welcome');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/buscar', [SearchController::class, 'search'])->name('global.search');
-Route::get('/top5', [RankingController::class, 'index'])->name('top5');
 Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
 
 Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->name('doctores.vista');
 Route::get('/doctores/{doctor}', [DoctorController::class, 'show'])->name('doctores.show');
 Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
 Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
+Route::get('/especialidades', [EspecialidadesController::class, 'index'])->name('especialidades.index');
+Route::get('/especialidades/{id}', [EspecialidadesController::class, 'show'])->name('specs.show');
 
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
@@ -59,7 +60,6 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('security:logout');
 
     Route::middleware(['security:auth'])->group(function () {
-        Route::get('/home', [HomeController::class, 'index'])->name('home');
         Route::get('/directorio-mapa', [HomeController::class, 'mostrarMapa'])->name('mapa.directorio');
     });
 

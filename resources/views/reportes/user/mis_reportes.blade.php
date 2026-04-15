@@ -45,10 +45,10 @@
                             <td>
                             @php
                             $estados = [
-                            'pendiente' => ['text' => 'Pendiente', 'class' => 'bg-warning text-dark'],
-                            'en_proceso' => ['text' => 'En proceso', 'class' => 'bg-info text-white'],
-                            'resuelto' => ['text' => 'Resuelto', 'class' => 'bg-success text-white'],
-                            'descartado' => ['text' => 'Descartado', 'class' => 'bg-secondary text-white'],
+                                'pendiente' => ['text' => 'Pendiente', 'class' => 'bg-warning text-dark'],
+                                'en_proceso' => ['text' => 'En proceso', 'class' => 'bg-info text-white'],
+                                'resuelto' => ['text' => 'Resuelto', 'class' => 'bg-success text-white'],
+                                'descartado' => ['text' => 'Descartado', 'class' => 'bg-secondary text-white'],
                             ];
                             $estado = $estados[$r->estado] ?? ['text' => ucfirst($r->estado), 'class' => 'bg-light text-dark'];
                             @endphp
