@@ -16,6 +16,7 @@ use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\SearchController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
