@@ -10,16 +10,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes. Todas las rutas aquí serán prefijadas con /api
-|--------------------------------------------------------------------------
-*/
-
-// RUTAS PUBLICAS
-// -----------------------------------------------------------------
 Route::prefix("auth")->group(function () {
-    // /api/auth/register
     Route::post("/register", [AuthController::class, "register"]);
     Route::post("/login", [AuthController::class, "login"]);
     Route::get("/me", [AuthController::class, "me"]);
@@ -44,6 +35,10 @@ Route::middleware("auth:sanctum")->group(function () {
         Route::get("/tokens", [AuthController::class, "tokens"]);
         Route::delete("/tokens", [AuthController::class, "revokeToken"]);
     });
+
+    Route::get('/mensajes/contactos', [App\Http\Controllers\Api\MensajeriaController::class, 'getContactosApi']);
+    Route::get('/mensajes/{id}', [App\Http\Controllers\Api\MensajeriaController::class, 'getMensajesApi']);
+    Route::post('/mensajes', [App\Http\Controllers\Api\MensajeriaController::class, 'storeApi']);
 
     Route::delete('/user/{id}', [UserController::class, 'destroy']);
 
@@ -75,9 +70,47 @@ Route::middleware("auth:sanctum")->group(function () {
     // });
 
     Route::get("/statistics", [DoctorController::class, "stats"])->name('stats'); 
-    Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
+    
     Route::put('/user/{id}', [UserController::class, 'update']);
 });
+
+// Publico Faracias
+Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.card');
+Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.id');
+
+// Para dueños
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.yo');
+    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.yo.editar');
+    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.yo.actualizar');
+    });
+    
+    Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
+    Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('specs.index');
+    Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
+    
+    
+    
+    // Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
+    
+    // Route::apiResource('comentarios', App\Http\Controllers\API\ComentarioController::class);
+    
+    // Route::apiResource('respuestas', App\Http\Controllers\API\RespuestaController::class);
+    
+    // Route::apiResource('mensajes', App\Http\Controllers\API\MensajeController::class);
+    
+    
+    // Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
+    
+    // Route::apiResource('comentarios', App\Http\Controllers\API\ComentarioController::class);
+
+// Route::apiResource('respuestas', App\Http\Controllers\API\RespuestaController::class);
+
+// Route::apiResource('mensajes', App\Http\Controllers\API\MensajeController::class);
+
+
+Route::apiResource('pacientes', App\Http\Controllers\API\PacienteController::class)
+->names('api.pacientes'); 
 
 // Manejo de rutas no encontradas
 Route::fallback(function () {
@@ -90,39 +123,3 @@ Route::fallback(function () {
         404,
     );
 });
-// Publico Faracias
-Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.card');
-Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.id');
-
-// Para dueños
-Route::middleware(['auth'])->group(function () {
-    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.yo');
-    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.yo.editar');
-    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.yo.actualizar');
-});
-
-Route::get('/user/{id}', [UserController::class, 'show'])->name('user.show');
-Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('specs.index');
-
-
-
-// Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
-
-// Route::apiResource('comentarios', App\Http\Controllers\API\ComentarioController::class);
-
-// Route::apiResource('respuestas', App\Http\Controllers\API\RespuestaController::class);
-
-// Route::apiResource('mensajes', App\Http\Controllers\API\MensajeController::class);
-
-
-// Route::apiResource('doctors', App\Http\Controllers\API\DoctorController::class);
-
-// Route::apiResource('comentarios', App\Http\Controllers\API\ComentarioController::class);
-
-// Route::apiResource('respuestas', App\Http\Controllers\API\RespuestaController::class);
-
-// Route::apiResource('mensajes', App\Http\Controllers\API\MensajeController::class);
-
-
-Route::apiResource('pacientes', App\Http\Controllers\API\PacienteController::class)
-    ->names('api.pacientes'); 

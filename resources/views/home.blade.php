@@ -1,6 +1,23 @@
 <x-layout>
     @push('styles')
         <style>
+
+            .h-15 {
+                height: 15% !important;
+            }
+
+            .w-15 {
+                width: 15% !important;
+            }
+
+            .w-175r{
+                width: 1.575rem !important;
+            }
+
+            .h-175r{
+                height: 1.575rem !important;
+            }
+
             .hover-scale {
                 transition: transform 0.2s ease, box-shadow 0.2s ease;
             }
@@ -67,7 +84,6 @@
     @endpush
 
     <div class="container">
-        {{-- Notificaciones --}}
         @if(session('success'))
             <div id="notification-pill" class="pill-notification">
                 <div class="pill-icon"><i class="bi bi-check-lg"></i></div>
@@ -616,7 +632,7 @@
                         <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-center bg-white">
                             <div class="py-3">
                                 <div class="mb-3">
-                                    <i class="bi bi-calendar-plus text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                                    <x-mcr-calendar class="h-15 w-15" style="font-size: 3rem; opacity: 0.3;"/>
                                 </div>
                                 <h5 class="fw-bold text-navy">No tienes citas próximas</h5>
                                 <p class="text-muted small">¿Te sientes mal o necesitas un chequeo?</p>
@@ -660,7 +676,7 @@
                                 <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
                                     <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
                                         style="width: 60px; height: 60px;">
-                                        <i class="bi bi-chat-dots-fill fs-3"></i>
+                                        <x-mcf-chat-dots class="w-175r h-175r"/>
                                     </div>
                                     <h6 class="fw-bold text-dark">Mis chats</h6>
                                     <small class="text-muted">Enviar mensaje a un doctor</small>
