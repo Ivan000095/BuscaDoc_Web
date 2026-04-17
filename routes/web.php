@@ -24,6 +24,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\GoogleController;
 use App\Models\Especialidad;
+use Illuminate\Support\Facades\Artisan;
 
 // RUTAS PÚBLICAS
 Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -121,4 +122,13 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::put('/farmacias/{id}', [FarmaciaController::class, 'adminUpdate'])->name('admin.farmacias.update');
     Route::delete('/farmacias/{id}', [FarmaciaController::class, 'adminDestroy'])->name('admin.farmacias.destroy');
     Route::post('/farmacias/reporte-pdf', [App\Http\Controllers\FarmaciaController::class, 'generarReporte'])->name('admin.farmacias.reporte');
+});
+
+Route::get('/correr-seeders', function () {
+    try {
+        Artisan::call('db:seed', ['--force' => true]);
+        return '¡Seeders ejecutados con éxito! Ya puedes probar la app.';
+    } catch (\Exception $e) {
+        return 'Hubo un error: ' . $e->getMessage();
+    }
 });
