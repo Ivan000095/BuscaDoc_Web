@@ -215,7 +215,6 @@
             <a class="navbar-brand d-flex align-items-center" href="{{ url('/home') }}">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo BuscaDoc" class="me-2">
             </a>
-
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -257,6 +256,18 @@
                                     alt="Perfil" class="rounded-circle me-2 shadow-sm"
                                     style="width: 28px; height: 28px; object-fit: cover; border: 2px solid var(--bg-surface);">
                                 <span class="fw-bold">{{ explode(' ', trim(Auth::user()->name))[0] }}</span>
+                                <span class="ms-2 px-2 py-1 rounded-pill" 
+                                    style="font-size: 0.7rem; font-weight: 600; background-color: rgba(251, 252, 253, 0.2); color: var(--bg-surface);">
+                                    @php
+                                        $roleNames = [
+                                            'admin' => 'Administrador',
+                                            'doctor' => 'Doctor',
+                                            'farmacia' => 'Farmacia',
+                                            'paciente' => 'Paciente'
+                                        ];
+                                    @endphp
+                                    {{ $roleNames[Auth::user()->role] ?? ucfirst(Auth::user()->role) }}
+                                </span>
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -264,7 +275,7 @@
                                     <i class="bi bi-person-circle text-muted fs-5 me-2"></i> {{ __('Mi perfil') }}
                                 </a>
                                 
-                                @if(Auth::check())
+                                @if(Auth::check() && Auth::user()->role === 'paciente')
                                     <a class="dropdown-item py-2 d-flex align-items-center" href="{{ route('reportes.mis') }}">
                                         <i class="bi bi-flag text-muted fs-5 me-2"></i> {{ __('Mis reportes') }}
                                     </a>

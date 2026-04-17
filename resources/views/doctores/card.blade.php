@@ -62,12 +62,9 @@ $lng = $doctor->user->longitud ?? -92.0946;
             height: 22px;
         }
 
-        /* --- CORRECCIÓN DE COLORES --- */
-        
-        /* 1. Botones Principales (Fondo azul marino, Texto e Ícono Blancos) */
         .btn-navy {
             background-color: #0f172a !important;
-            color: #ffffff !important; /* Fuerza texto blanco */
+            color: #ffffff !important;
             border-radius: 50px;
             padding: 10px 25px;
             font-weight: 500;
@@ -85,7 +82,6 @@ $lng = $doctor->user->longitud ?? -92.0946;
             transform: translateY(-2px);
         }
         
-        /* Forzar SVGs dentro de botones a ser blancos */
         .btn-navy svg {
             width: 18px;
             height: 18px;
@@ -96,9 +92,8 @@ $lng = $doctor->user->longitud ?? -92.0946;
             fill: currentColor;
         }
 
-        /* 2. Pestañas Inactivas (Fondo transparente, Texto e Ícono Grises) */
         .nav-pills .nav-link {
-            color: #64748b !important; /* Fuerza texto gris oscuro */
+            color: #64748b !important;
             font-weight: 600;
             border-radius: 50px;
             padding: 8px 20px;
@@ -118,18 +113,14 @@ $lng = $doctor->user->longitud ?? -92.0946;
             fill: currentColor;
         }
 
-        /* 3. Pestañas Activas (Fondo azul marino, Texto e Ícono Blancos) */
         .nav-pills .nav-link.active {
             background-color: #0f172a !important;
-            color: #ffffff !important; /* Fuerza texto blanco */
+            color: #ffffff !important;
         }
         
         .nav-pills .nav-link.active svg {
             color: #ffffff !important;
         }
-
-        /* ----------------------------- */
-
         .review-input {
             background-color: #f8fafc;
             border: none;
@@ -363,7 +354,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
 
                                     <form action="{{ route('comentarios.store') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="doctor_id" value="{{ $doctor->user->id }}">
+                                        <input type="hidden" name="destinatario_id" value="{{ $doctor->user->id }}">
                                         <input type="hidden" name="tipo" value="resena">
 
                                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -488,7 +479,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
                                     </h6>
                                     <form action="{{ route('comentarios.store') }}" method="POST">
                                         @csrf
-                                        <input type="hidden" name="doctor_id" value="{{ $doctor->user->id }}">
+                                        <input type="hidden" name="destinatario_id" value="{{ $doctor->user->id }}">
                                         <input type="hidden" name="tipo" value="pregunta">
 
                                         <div class="mb-3">
