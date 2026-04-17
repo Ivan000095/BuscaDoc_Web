@@ -27,7 +27,7 @@ use App\Models\Especialidad;
 
 // RUTAS PÚBLICAS
 Route::get('/home', [HomeController::class, 'index'])->name('home');
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('inicio');
 Route::get('/buscar', [SearchController::class, 'search'])->name('global.search');
 Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
 Route::post('/doctores/reporte-pdf', [App\Http\Controllers\DoctorController::class, 'generarReporte'])->name('doctores.reporte');
