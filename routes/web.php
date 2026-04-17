@@ -4,7 +4,7 @@ use App\Http\Controllers\EspecialidadesController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
-use App\Http\Controllers\RespuestaController;
+
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
@@ -25,7 +25,6 @@ use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\GoogleController;
 use App\Models\Especialidad;
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/buscar', [SearchController::class, 'search'])->name('global.search');
 Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
@@ -59,10 +58,9 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['get', 'post'], 'logout', [LoginController::class, 'logout'])
         ->name('logout')
         ->middleware('security:logout');
+
     Route::middleware(['security:auth'])->group(function () {
         Route::get('/directorio-mapa', [HomeController::class, 'mostrarMapa'])->name('mapa.directorio');
-    Route::post('/respuestas', [RespuestaController::class, 'store'])
-        ->name('respuestas.store');
     });
 
     Route::resource('users', UserController::class);
