@@ -45,6 +45,14 @@
         .text-main { color: var(--text-main) !important; }
         .bg-white { background-color: rgb(245, 246, 253)!important;}
 
+        .icon-white {
+                stroke: white !important;
+            }
+
+        .btn-navy:hover .icon-white {
+            stroke: #0d2e4e !important;
+        }
+
         .btn-navy {
             background-color: #0d2e4e;
             color: white;

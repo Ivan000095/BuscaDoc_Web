@@ -13,12 +13,13 @@ class MensajeController extends Controller
 {
     public function index()
     {
-        $authId = Auth::id();
+        // CASTEO ESTRICTO: Obligamos a que siempre sea un número entero
+        $authId = (int) Auth::id(); 
         $firebase = Firebase::database();
 
         $mensajesEnviados = $firebase->getReference('mensajes')
             ->orderByChild('id_remitente')
-            ->equalTo($authId)
+            ->equalTo($authId) // Ahora Firebase buscará un Entero sí o sí
             ->getValue();
 
         $mensajesRecibidos = $firebase->getReference('mensajes')
@@ -30,19 +31,20 @@ class MensajeController extends Controller
 
         if ($mensajesEnviados) {
             foreach ($mensajesEnviados as $msg) {
-                $idContactos[] = $msg['id_destinatario'];
+                $idContactos[] = (int) $msg['id_destinatario']; // Aseguramos enteros
             }
         }
 
         if ($mensajesRecibidos) {
             foreach ($mensajesRecibidos as $msg) {
-                $idContactos[] = $msg['id_remitente'];
+                $idContactos[] = (int) $msg['id_remitente']; // Aseguramos enteros
             }
         }
 
         $idsContactos = array_unique($idContactos);
         $idsContactos = array_diff($idsContactos, [$authId]);
 
+        // Si la lista de IDs está vacía, whereIn simplemente devuelve una colección vacía sin fallar
         $contactos = User::whereIn('id', $idsContactos)->get();
         
         return view('mensajes.index', compact('contactos'));
@@ -50,12 +52,13 @@ class MensajeController extends Controller
 
     public function show($id)
     {
-        $authId = Auth::id();
+        $authId = (int) Auth::id();
+        $destId = (int) $id;
         $firebase = Firebase::database();
 
         $mensajesEnviados = $firebase->getReference('mensajes')
             ->orderByChild('id_remitente')
-            ->equalTo($authId) // ¡AQUÍ ESTABA EL 3! Ya está corregido a $authId
+            ->equalTo($authId)
             ->getValue();
 
         $mensajesRecibidos = $firebase->getReference('mensajes')
@@ -67,23 +70,24 @@ class MensajeController extends Controller
 
         if ($mensajesEnviados) {
             foreach ($mensajesEnviados as $msg) {
-                $idContactos[] = $msg['id_destinatario'];
+                $idContactos[] = (int) $msg['id_destinatario'];
             }
         }
 
         if ($mensajesRecibidos) {
             foreach ($mensajesRecibidos as $msg) {
-                $idContactos[] = $msg['id_remitente'];
+                $idContactos[] = (int) $msg['id_remitente'];
             }
         }
 
         $idsContactos = array_unique($idContactos);
-        $idsContactos = array_diff($idContactos, [$authId]);
+        // CORRECCIÓN DEL BUG DE LA 'S': Usamos $idsContactos en ambos lados
+        $idsContactos = array_diff($idsContactos, [$authId]); 
 
         $contactos = User::whereIn('id', $idsContactos)->get();
-        $usuarioActivo = User::findOrFail($id);
+        $usuarioActivo = User::findOrFail($destId);
 
-        $chatId = ($authId < $id) ? "{$authId}_{$id}" : "{$id}_{$authId}";
+        $chatId = ($authId < $destId) ? "{$authId}_{$destId}" : "{$destId}_{$authId}";
         $datosCrudos = $firebase->getReference('mensajes')
             ->orderByChild('chat_id')
             ->equalTo($chatId)
@@ -107,8 +111,10 @@ class MensajeController extends Controller
             'contenido' => 'required|string|max:1000',
         ]);
 
-        $authId = Auth::id();
-        $destId = (int) $request->id_destinatario;
+        $authId = (int) Auth::id(); // Aseguramos Entero
+        $destId = (int) $request->id_destinatario; // Aseguramos Entero
+        
+        // Al ser ambos enteros matemáticos, la lógica de '<' nunca fallará 
         $chatId = ($authId < $destId) ? "{$authId}_{$destId}" : "{$destId}_{$authId}";
 
         $nuevoMensaje = [

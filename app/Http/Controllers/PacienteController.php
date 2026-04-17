@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PacienteController extends Controller
 {
@@ -115,5 +116,38 @@ class PacienteController extends Controller
         $paciente->delete();
         $user->delete();
         return redirect()->route('pacientes.index')->with('success', 'Paciente eliminado correctamente');
+    }
+
+    public function generarReporte(Request $request)
+    {
+        $query = Paciente::with('user');
+
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('created_at', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('created_at', '<=', $request->fecha_fin);
+        }
+
+        if ($request->filled('tipo_sangre') && $request->tipo_sangre !== 'todos') {
+            $query->where('tipo_sangre', $request->tipo_sangre);
+        }
+
+        switch ($request->orden) {
+            case 'antiguos':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'recientes':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $pacientes = $query->get();
+
+        $pdf = Pdf::loadView('pacientes.pdf', compact('pacientes', 'request'))
+                  ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Reporte_Pacientes_BuscaDoc_' . now()->format('Ymd') . '.pdf');
     }
 }

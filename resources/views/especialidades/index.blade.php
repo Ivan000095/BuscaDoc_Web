@@ -45,7 +45,7 @@
                             <span>Consulta: ${{ number_format($doctor->costo, 2) }}</span>
                         </div>
 
-                        <a href="{{ route('doctores.show', $doctor->id) }}" class="btn btn-outline-navy rounded-pill w-100 mt-auto py-2 fw-bold">
+                        <a href="{{ route('doctores.show', $doctor->id) }}" class="btn btn-navy rounded-pill w-100 mt-auto py-2 fw-bold">
                             Ver Perfil Completo
                         </a>
                     </div>
