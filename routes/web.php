@@ -84,7 +84,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');
     Route::patch('/citas/{id}/estado', [CitaController::class, 'updateStatus'])->name('citas.status');
 
-    Route::post('/comentarios', [ComentarioController::class, 'store'])->name('comentarios.store');
+    Route::post('/comentarios', [ComentarioController::class, 'store'])->name('comentarios.save');
 
     Route::prefix('reportes')->group(function () {
         Route::get('/create', [ReporteController::class, 'create'])->name('reportes.user.create');
