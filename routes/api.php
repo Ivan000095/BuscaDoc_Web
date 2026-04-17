@@ -30,9 +30,11 @@ Route::prefix("auth")->group(function () {
 });
 
 Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('api.specs.index');
+Route::get('/dashboard/especialidades', [EspecialidadController::class, 'apiDashboard']);
 Route::apiResource('doctors', DoctorController::class);
 Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('api.farmacias.index');
 Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('api.farmacias.show');
+Route::get('/buscar', [App\Http\Controllers\api\SearchController::class, 'apiSearch']);
 
 
 Route::middleware("auth:sanctum")->group(function () {

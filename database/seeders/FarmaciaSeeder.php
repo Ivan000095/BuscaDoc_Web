@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Farmacia; // Asegúrate de tener este modelo creado
 use Illuminate\Support\Facades\Hash;
 use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Storage;
 
 class FarmaciaSeeder extends Seeder
 {
@@ -15,6 +16,8 @@ class FarmaciaSeeder extends Seeder
      */
     public function run(): void
     {
+        Farmacia::truncate();
+        User::where('role', 'farmacia')->delete();
         $faker = Faker::create('es_MX');
         $password = Hash::make('password123');
 
@@ -24,8 +27,11 @@ class FarmaciaSeeder extends Seeder
             'Farmacia La Paz', 'Farmacia Nueva', 'Farmacia San Antonio', 'Farmacia Principal'
         ];
 
+         $imagenesDisponibles = Storage::disk('public')->files('perfiles');
+
         for ($i = 0; $i < 10; $i++) {
-            
+            $fotoAleatoria = !empty($imagenesDisponibles) ? $faker->randomElement($imagenesDisponibles) : null;
+        
             $nombreFarmacia = $nombresFarmacias[$i];
             $user = User::create([
                 'name' => 'Admin ' . $nombreFarmacia,
@@ -36,6 +42,7 @@ class FarmaciaSeeder extends Seeder
                 'estado' => true,
                 'latitud' => $faker->randomFloat(6, 16.8900, 16.9200),
                 'longitud' => $faker->randomFloat(6, -92.1100, -92.0800),
+                'foto' => $fotoAleatoria,
             ]);
             Farmacia::create([
                 'user_id' => $user->id,

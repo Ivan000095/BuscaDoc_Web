@@ -17,6 +17,7 @@ use App\Utils;
 use App\Models\Comentario;
 use App\Models\Respuesta;
 use App\Models\Cita;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DoctorController extends Controller
 {
@@ -140,7 +141,6 @@ class DoctorController extends Controller
 
         DB::transaction(function () use ($request, $doctor, $user) {
 
-            // Actualizar Usuario...
             $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
@@ -189,7 +189,6 @@ class DoctorController extends Controller
 
         return view('doctores.card', compact('doctor'));
     }
-
 
     public function destroy($id)
     {
@@ -292,5 +291,44 @@ class DoctorController extends Controller
             "recordsFiltered" => $recordsFiltered,
             "data" => $data,
         ]);
+    }
+
+    public function generarReporte(Request $request)
+    {
+        $query = Doctor::with(['user', 'especialidades']);
+
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('created_at', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('created_at', '<=', $request->fecha_fin);
+        }
+
+        if ($request->citas_activas !== 'todos') {
+            $query->where('citas', $request->citas_activas);
+        }
+
+        switch ($request->orden) {
+            case 'costo_alto':
+                $query->orderBy('costo', 'desc');
+                break;
+            case 'costo_bajo':
+                $query->orderBy('costo', 'asc');
+                break;
+            case 'antiguos':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'recientes':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $doctores = $query->get();
+
+        $pdf = Pdf::loadView('doctores.pdf', compact('doctores', 'request'))
+                  ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Reporte_Doctores_BuscaDoc_' . now()->format('Ymd') . '.pdf');
     }
 }

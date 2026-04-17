@@ -25,17 +25,24 @@ use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\GoogleController;
 use App\Models\Especialidad;
 
+// RUTAS PÚBLICAS
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/buscar', [SearchController::class, 'search'])->name('global.search');
 Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
-
+Route::post('/doctores/reporte-pdf', [App\Http\Controllers\DoctorController::class, 'generarReporte'])->name('doctores.reporte');
 Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->name('doctores.vista');
-Route::get('/doctores/{doctor}', [DoctorController::class, 'show'])->name('doctores.show');
-Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
-Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
-Route::get('/especialidades', [EspecialidadesController::class, 'index'])->name('especialidades.index');
-Route::get('/especialidades/{id}', [EspecialidadesController::class, 'show'])->name('specs.show');
 
+//  RUTAS ESTÁTICAS
+Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
+Route::get('/especialidades', [EspecialidadesController::class, 'index'])->name('especialidades.index');
+
+//  RUTAS DINÁMICAS
+Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
+Route::get('/especialidades/{id}', [EspecialidadesController::class, 'show'])->name('specs.show');
+Route::get('/doctores/{id}', [DoctorController::class, 'show'])->name('doctores.show');
+
+// RUTAS DE AUTENTICACIÓN
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 
@@ -54,6 +61,7 @@ Route::post('password/confirm', [ConfirmPasswordController::class, 'confirm']);
 Route::get('google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
+//RUTAS PROTEGIDAS
 Route::middleware(['auth'])->group(function () {
     Route::match(['get', 'post'], 'logout', [LoginController::class, 'logout'])
         ->name('logout')
@@ -65,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('users', UserController::class);
     Route::resource('pacientes', PacienteController::class);
+    Route::post('/pacientes/reporte-pdf', [App\Http\Controllers\PacienteController::class, 'generarReporte'])->name('pacientes.reporte');
 
     Route::get('/mensajes', [MensajeController::class, 'index'])->name('mensajes.index');
     Route::get('/mensajes/{id}', [MensajeController::class, 'show'])->name('mensajes.show');
@@ -89,17 +98,18 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::get('doctor/data', [DoctorController::class, 'dataTable'])->name('doctor.data');
-    Route::get('doctores/agregar', [DoctorController::class, 'create'])->name('doctores.agregar');
+    Route::get('doctorstore', [DoctorController::class, 'create'])->name('doctores.agregar');
     Route::get('doctores/{doctor}/download-image', [DoctorController::class, 'downloadImage'])->name('doctor.download-image');
-    Route::resource('doctores', DoctorController::class)->except(['show']); // Show es público
+    Route::resource('doctores', DoctorController::class)->except(['show']);
 
     Route::middleware(['can.citas'])->group(function () {
         Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
     });
 });
 
+// RUTAS PARA ADMON
+
 Route::middleware(['auth'])->prefix('admin')->group(function () {
-    
     Route::get('/reportes', [ReporteController::class, 'adminIndex'])->name('admin.reportes.index');
     Route::get('/reportes/{id}', [ReporteController::class, 'adminShow'])->name('admin.reportes.show');
     Route::put('/reportes/{id}', [ReporteController::class, 'adminUpdate'])->name('admin.reportes.update');
@@ -110,5 +120,5 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/farmacias/{id}/editar', [FarmaciaController::class, 'adminEdit'])->name('admin.farmacias.edit');
     Route::put('/farmacias/{id}', [FarmaciaController::class, 'adminUpdate'])->name('admin.farmacias.update');
     Route::delete('/farmacias/{id}', [FarmaciaController::class, 'adminDestroy'])->name('admin.farmacias.destroy');
-
+    Route::post('/farmacias/reporte-pdf', [App\Http\Controllers\FarmaciaController::class, 'generarReporte'])->name('admin.farmacias.reporte');
 });

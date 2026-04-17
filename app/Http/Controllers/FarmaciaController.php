@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FarmaciaController extends Controller
 {
@@ -201,7 +202,7 @@ class FarmaciaController extends Controller
 
     public function dataTable(Request $request)
     {
-        $query = \App\Models\Farmacia::with('user');
+        $query = Farmacia::with('user');
 
         $search = $request->input("search.value");
         if (!empty($search)) {
@@ -215,7 +216,7 @@ class FarmaciaController extends Controller
             });
         }
 
-        $totalRecords = \App\Models\Farmacia::count();
+        $totalRecords = Farmacia::count();
         $recordsFiltered = $query->count();
 
         $start = $request->input("start", 0);
@@ -238,11 +239,11 @@ class FarmaciaController extends Controller
 
             $fechaNac = '—';
             if ($farmacia->user?->f_nacimiento) {
-                $fechaNac = \Carbon\Carbon::parse($farmacia->user->f_nacimiento)->translatedFormat('d M Y');
+                $fechaNac = Carbon::parse($farmacia->user->f_nacimiento)->translatedFormat('d M Y');
             }
 
-            $entrada = $farmacia->horario_entrada ? \Carbon\Carbon::parse($farmacia->horario_entrada)->format('H:i') : '??';
-            $salida = $farmacia->horario_salida ? \Carbon\Carbon::parse($farmacia->horario_salida)->format('H:i') : '??';
+            $entrada = $farmacia->horario_entrada ? Carbon::parse($farmacia->horario_entrada)->format('H:i') : '??';
+            $salida = $farmacia->horario_salida ? Carbon::parse($farmacia->horario_salida)->format('H:i') : '??';
             $horarioTexto = "$entrada - $salida";
 
             return [
@@ -280,5 +281,42 @@ class FarmaciaController extends Controller
         if (!Auth::check() || Auth::user()->role !== 'admin') {
             abort(403, 'Acceso denegado.');
         }
+    }
+
+    public function generarReporte(Request $request)
+    {
+        $this->authorizeAdmin();
+
+        $query = Farmacia::with('user');
+
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('created_at', '>=', $request->fecha_inicio);
+        }
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('created_at', '<=', $request->fecha_fin);
+        }
+
+        switch ($request->orden) {
+            case 'nombre_asc':
+                $query->orderBy('nom_farmacia', 'asc');
+                break;
+            case 'nombre_desc':
+                $query->orderBy('nom_farmacia', 'desc');
+                break;
+            case 'antiguas':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'recientes':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $farmacias = $query->get();
+
+        $pdf = Pdf::loadView('farmacias.admin.pdf', compact('farmacias', 'request'))
+                  ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Reporte_Farmacias_BuscaDoc_' . now()->format('Ymd') . '.pdf');
     }
 }

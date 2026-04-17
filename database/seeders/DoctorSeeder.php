@@ -8,6 +8,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Faker\Factory as Faker;
 
 class DoctorSeeder extends Seeder
@@ -26,16 +27,22 @@ class DoctorSeeder extends Seeder
         $faker = Faker::create('es_MX');
         $password = Hash::make('password123');
 
-        for ($i = 1; $i <= 10; $i++) {
+
+        $imagenesDisponibles = Storage::disk('public')->files('perfiles');
+
+        for ($i = 1; $i <= 100; $i++) {
+            
+            $fotoAleatoria = !empty($imagenesDisponibles) ? $faker->randomElement($imagenesDisponibles) : null;
+
             $user = User::create([
                 'name' => $faker->firstName() . ' ' . $faker->lastName(),
                 'email' => "doctor{$i}@buscadoc.com",
                 'password' => $password,
                 'role' => 'doctor',
                 'f_nacimiento' => $faker->date('Y-m-d', '1990-01-01'),
-                
                 'latitud' => $faker->randomFloat(6, 16.8900, 16.9200),
                 'longitud' => $faker->randomFloat(6, -92.1100, -92.0800),
+                'foto' => $fotoAleatoria, // <-- 3. Asignamos la ruta al usuario
             ]);
 
             $doctor = Doctor::create([

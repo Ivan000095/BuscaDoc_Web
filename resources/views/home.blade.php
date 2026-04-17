@@ -117,6 +117,130 @@
                 width: 280px;
                 flex-shrink: 0;
             }
+
+            .search-form-card {
+                background-color: transparent !important;
+
+                .card-body {
+                    border-radius: 50px;
+                    background-color: #f8f9fa;
+                }
+            }
+
+            .search-input-group {
+                background-color: white;
+                border-radius: 50px;
+                overflow: hidden;
+
+                input {
+                    font-weight: 500;
+                }
+            }
+
+            .custom-user-role-dropdown {
+                .dropdown-toggle {
+                    border-radius: 50px;
+                    color: $navy-main;
+
+                    &:after {
+                        display: none;
+                    }
+                }
+
+                .dropdown-menu {
+                    margin-top: 15px !important;
+
+                    .dropdown-item {
+                        color: $navy-main;
+
+                        &:hover {
+                            background-color: rgba($navy-main, 0.05);
+                        }
+                    }
+                }
+            }
+
+            .search-button {
+                height: 100%; // Para igualar la altura de los inputs
+
+                .icon-white {
+                    stroke: white !important;
+                }
+            }
+
+            .heart-animated {
+                pointer-events: none;
+
+                animation: latido-bg 2.5s infinite ease-in-out;
+                transform-origin: center;
+            }
+
+            @keyframes latido-bg {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.08;
+                }
+
+                10% {
+                    transform: scale(1.05);
+                    opacity: 0.15;
+                }
+
+                20% {
+                    transform: scale(1);
+                    opacity: 0.08;
+                }
+
+                30% {
+                    transform: scale(1.03);
+                    opacity: 0.12;
+                }
+
+                40% {
+                    transform: scale(1);
+                    opacity: 0.08;
+                }
+
+                100% {
+                    transform: scale(1);
+                    opacity: 0.08;
+                }
+            }
+
+            .scroll-horizontal {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 1.25rem;
+                /* El padding permite que la sombra no se corte y da espacio a la barra abajo */
+                padding: 1rem 0.5rem 1.5rem 0.5rem; 
+                scroll-snap-type: x mandatory;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* --- Barra de Scroll Moderna --- */
+            .scroll-horizontal::-webkit-scrollbar {
+                height: 8px; /* Finita y elegante */
+            }
+            .scroll-horizontal::-webkit-scrollbar-track {
+                background: rgba(0, 33, 61, 0.05); /* Riel casi transparente */
+                border-radius: 10px;
+                margin: 0 10px; /* Separación de los bordes */
+            }
+            .scroll-horizontal::-webkit-scrollbar-thumb {
+                background: rgba(0, 33, 61, 0.2); /* Color navy suavecito */
+                border-radius: 10px;
+            }
+            .scroll-horizontal::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 33, 61, 0.5); /* Se oscurece al pasar el mouse */
+            }
+
+            .doctor-card-snap {
+                scroll-snap-align: start;
+                width: 220px;
+                flex-shrink: 0; /* Evita que la tarjeta se aplaste */
+            }
         </style>
     @endpush
 
@@ -138,39 +262,138 @@
         @guest
             <div class="row mt-4 mb-5">
                 <div class="col-12">
-                    <div class="hero-guest text-center shadow-lg position-relative overflow-hidden">
-                        <i class="bi bi-heart-pulse-fill position-absolute opacity-10"
-                            style="font-size: 15rem; right: -20px; top: -40px;"></i>
+                    <div class="hero-guest text-center shadow-lg position-relative overflow-hidden"
+                        style="background: linear-gradient(135deg, #00213D 0%, #0d2e4e 100%); border-radius: 24px; color: white; padding: 4rem 2rem;">
+                        <i class="bi bi-heart-pulse-fill position-absolute heart-animated"
+                            style="font-size: 22rem; right: -40px; top: -60px; color: white; z-index: 0;"></i>
+
                         <h1 class="fw-bold mb-3 position-relative z-1">Encuentra a tu médico ideal</h1>
                         <p class="lead mb-4 opacity-75 position-relative z-1" style="max-width: 600px; margin: 0 auto;">
                             Reserva citas presenciales, envía mensajes y localiza tu farmacia más cercana en un solo lugar.
                         </p>
 
-                        <div class="row justify-content-center position-relative z-1 mb-4">
-                            <div class="col-md-8 col-lg-6">
-                                <form action="{{ route('global.search') ?? '#' }}" method="GET">
-                                    <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white p-1">
-                                        <span class="input-group-text bg-white border-0 ps-4"><i
-                                                class="bi bi-search text-muted"></i></span>
-                                        <input type="text" name="search" class="form-control border-0 shadow-none ps-2"
-                                            placeholder="Buscar especialidad, doctor o clínica..." style="height: 50px;">
-                                        <button class="btn btn-navy rounded-pill px-4 m-1 fw-bold"
-                                            type="submit">Buscar</button>
+                        <div class="row justify-content-center position-relative z-3 mb-5">
+                            <div class="col-11 col-lg-10 col-xl-9">
+                                <div class="card border-0 shadow-lg rounded-5 search-form-card"
+                                    style="background-color: #f8f9fa;">
+                                    <div class="card-body p-3 p-md-2">
+                                        <form action="{{ route('global.search') }}" method="GET" class="search-form-global"
+                                            id="searchForm">
+                                            <input type="hidden" name="type" id="searchTypeInput" value="">
+
+                                            <div class="row g-2 align-items-center">
+                                                <div class="col-12 col-md">
+                                                    <div
+                                                        class="input-group input-group-lg search-input-group bg-white rounded-pill overflow-hidden border">
+                                                        <span class="input-group-text bg-white border-0 ps-4"><i
+                                                                class="bi bi-search text-muted"></i></span>
+                                                        <input type="text" name="search"
+                                                            class="form-control border-0 shadow-none ps-2"
+                                                            placeholder="Nombre, clínica o síntoma...">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-md-auto">
+                                                    <div class="dropdown custom-user-role-dropdown w-100"
+                                                        id="searchDropdownGroup">
+                                                        <button
+                                                            class="btn btn-lg bg-white border rounded-pill text-start d-flex align-items-center justify-content-between w-100 px-4"
+                                                            style="height: 48px;" type="button" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <div class="d-flex align-items-center">
+                                                                <div id="selectedRoleIcon"
+                                                                    class="d-flex align-items-center justify-content-center me-2 text-muted flex-shrink-0"
+                                                                    style="width: 24px;">
+                                                                    <i class="bi bi-funnel fs-5"></i>
+                                                                </div>
+                                                                <span class="dropdown-label text-navy fw-bold"
+                                                                    id="selectedRoleLabel">¿Qué buscas?</span>
+                                                            </div>
+                                                            <i class="bi bi-chevron-down text-muted ms-3 small"></i>
+                                                        </button>
+
+                                                        <div
+                                                            class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 w-100 p-2 mt-2">
+                                                            <ul class="list-unstyled mb-0" id="roleSelector">
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center mb-1"
+                                                                        href="#" data-value="doctor">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper"
+                                                                            style="width: 30px; height: 30px;">
+                                                                            <x-mcr-stethoscope
+                                                                                style="width: 100%; height: 100%;" />
+                                                                        </div>
+                                                                        <div class="text-group">
+                                                                            <span
+                                                                                class="fw-bold text-navy d-block">Doctores</span>
+                                                                            <span class="text-muted small"
+                                                                                style="font-size: 0.75rem;">Especialistas
+                                                                                médicos</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center"
+                                                                        href="#" data-value="farmacia">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper"
+                                                                            style="width: 30px; height: 30px;">
+                                                                            <x-mcr-pills
+                                                                                style="width: 100%; height: 100%;" />
+                                                                        </div>
+                                                                        <div class="text-group">
+                                                                            <span
+                                                                                class="fw-bold text-navy d-block">Farmacias</span>
+                                                                            <span class="text-muted small"
+                                                                                style="font-size: 0.75rem;">Medicamentos e
+                                                                                insumos</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-md-auto d-none" id="especialidadGroup">
+                                                    <select
+                                                        class="form-select form-select-lg rounded-pill border bg-white text-navy fw-bold"
+                                                        name="especialidad_id" style="height: 48px; min-width: 200px;">
+                                                        <option value="" selected>Todas las especialidades</option>
+                                                        @foreach($especialidades ?? [] as $esp)
+                                                            <option value="{{ $esp->id }}">{{ $esp->nombre }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-12 col-md-auto">
+                                                    {{-- Alineación del ícono de buscar --}}
+                                                    <button
+                                                        class="btn btn-navy btn-lg rounded-pill w-100 px-4 fw-bold search-button d-flex align-items-center justify-content-center"
+                                                        type="submit" style="height: 48px;">
+                                                        <x-mcl-search class="icon-white me-2 flex-shrink-0"
+                                                            style="width: 1.2rem;" /> Buscar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-center gap-3 position-relative z-1">
                             <a href="/login"
-                                class="btn btn-light rounded-pill px-4 py-2 fw-bold custom-text-dark shadow-sm hover-scale">Iniciar
+                                class="btn btn-light rounded-pill px-4 py-2 fw-bold text-navy shadow-sm hover-scale">Iniciar
                                 Sesión</a>
                             <a href="/register"
                                 class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-scale">Crear Cuenta</a>
                         </div>
+
                     </div>
                 </div>
             </div>
+
+            <br><br>
 
             <div class="d-flex justify-content-center align-items-center mb-4">
                 <h2 class="fw-bold text-navy mb-0">Nuestras especialidades</h2>
@@ -178,8 +401,7 @@
 
             <div class="d-flex flex-wrap gap-3 mb-5 justify-content-center justify-content-md-start">
                 @forelse ($especialidades as $especialidad)
-                    <a href="{{ route('specs.show', $especialidad->id) }}" 
-                    class="text-decoration-none">
+                    <a href="{{ route('specs.show', $especialidad->id) }}" class="text-decoration-none">
                         <div class="bg-white border rounded-pill px-4 py-2 shadow-sm hover-scale d-flex align-items-center">
                             <i class="bi bi-star-fill text-warning me-2" style="font-size: 0.8rem;"></i>
                             <span class="fw-bold custom-text-dark me-2">{{ $especialidad->nombre }}</span>
@@ -209,29 +431,36 @@
                             <div class="col-12">
                                 <div class="scroll-horizontal px-2">
                                     @foreach ($especialidad->doctors as $doctor)
-                                        <div class="card border-0 shadow-sm rounded-4 hover-scale p-4 d-flex flex-column align-items-center doctor-card-snap">
+                                        <div
+                                            class="card border-0 shadow-sm rounded-4 hover-scale p-4 d-flex flex-column align-items-center doctor-card-snap">
                                             <div class="position-relative mb-4" style="width: 110px; height: 110px;">
                                                 @if($doctor->user->foto)
-                                                    <img src="{{ asset('storage/' . $doctor->user->foto) }}" alt="Foto de {{ $doctor->user->name }}" 
-                                                        class="rounded-circle shadow-sm border border-4 border-white w-100 h-100" style="object-fit: cover;">
+                                                    <img src="{{ asset('storage/' . $doctor->user->foto) }}"
+                                                        alt="Foto de {{ $doctor->user->name }}"
+                                                        class="rounded-circle shadow-sm border border-4 border-white w-100 h-100"
+                                                        style="object-fit: cover;">
                                                 @else
-                                                    <div class="bg-navy-subtle text-navy rounded-circle d-flex align-items-center justify-content-center shadow-sm border border-4 border-white w-100 h-100">
-                                                        <span class="fs-1 fw-bold text-uppercase">{{ substr($doctor->user->name, 0, 1) }}</span>
+                                                    <div
+                                                        class="bg-navy-subtle text-navy rounded-circle d-flex align-items-center justify-content-center shadow-sm border border-4 border-white w-100 h-100">
+                                                        <span
+                                                            class="fs-1 fw-bold text-uppercase">{{ substr($doctor->user->name, 0, 1) }}</span>
                                                     </div>
                                                 @endif
-                                                <span class="position-absolute bottom-0 end-0 bg-success border border-3 border-white rounded-circle" 
+                                                <span
+                                                    class="position-absolute bottom-0 end-0 bg-success border border-3 border-white rounded-circle"
                                                     style="width: 22px; height: 22px; margin-bottom: 5px; margin-right: 5px;"></span>
                                             </div>
 
                                             <h5 class="fw-bold text-dark text-center mb-1 text-truncate w-100">
                                                 Dr. {{ $doctor->user->name }}
                                             </h5>
-                                            
+
                                             <small class="text-muted mb-4 text-center d-block">
                                                 {{ $especialidad->nombre }}
                                             </small>
 
-                                            <a href="{{ route('doctores.show', $doctor->id) }}" class="btn btn-navy rounded-pill w-100 mt-auto py-2 fw-bold shadow-sm">
+                                            <a href="{{ route('doctores.show', $doctor->id) }}"
+                                                class="btn btn-navy rounded-pill w-100 mt-auto py-2 fw-bold shadow-sm">
                                                 Ver Perfil
                                             </a>
                                         </div>
@@ -239,7 +468,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </div>
                 @endforeach
             </div>
@@ -247,7 +476,8 @@
             @if(count($especialidades) > 2)
                 <div class="row mt-2 mb-5">
                     <div class="col-12 text-center">
-                        <button id="toggleSpecialtiesBtn" class="btn btn-outline-navy rounded-pill px-5 py-2 fw-bold shadow-sm transition-all">
+                        <button id="toggleSpecialtiesBtn"
+                            class="btn btn-outline-navy rounded-pill px-5 py-2 fw-bold shadow-sm transition-all">
                             Ver más especialidades <i class="bi bi-chevron-down ms-2"></i>
                         </button>
                     </div>
@@ -260,6 +490,7 @@
                     <p class="text-muted">Descubre a los profesionales de la salud cerca de ti.</p>
                 </div>
             </div>
+
             <div class="row g-4 mb-5">
                 <div class="col-lg-7">
                     <div id="map" class="shadow-sm border"></div>
@@ -308,6 +539,7 @@
                     <a href="/register" class="btn btn-navy rounded-pill px-5 py-2 fw-bold">Registrar mi consultorio</a>
                 </div>
             </div>
+
         @endguest
 
         @auth
@@ -419,72 +651,76 @@
                 </div>
 
             @elseif (Auth::user()->role == 'doctor')
-                <div class="row justify-content-center mb-5">
+                <div class="row justify-content-center mb-4">
                     <div class="col-lg-8 text-center">
-                        <h2 class="fw-bold text-navy mb-2">Panel Médico</h2>
-                        <p class="text-muted mb-4">Bienvenido, Dr. {{ Auth::user()->name }}</p>
+                        <h2 class="fw-bold text-navy mb-1">Panel Médico</h2>
+                        <p class="text-muted">Bienvenido, Dr. {{ Auth::user()->name }}. Aquí está tu resumen.</p>
                     </div>
                 </div>
 
                 <div class="row g-4">
-                    {{-- COLUMNA PRINCIPAL (IZQUIERDA) --}}
                     <div class="col-lg-8">
-
-                        {{-- 1. TARJETAS DE ACCIÓN RÁPIDA (BOTONES) --}}
                         <h5 class="fw-bold text-navy mb-3">Accesos Rápidos</h5>
-                        <div class="row g-3 mb-4">
+                        <div class="row g-3 mb-5">
                             @if(Auth::user()->doctor->citas == true)
-                                <div class="col-md-6">
+                                <div class="col-md-5">
                                     <a href="{{ route('doctores.citas', Auth::user()->doctor->id) }}" class="text-decoration-none">
-                                        <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-center">
+                                        <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-center bg-white">
                                             <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
                                                 style="width: 60px; height: 60px;">
                                                 <i class="bi bi-calendar-week fs-3"></i>
                                             </div>
-                                            <h6 class="fw-bold text-dark">Gestionar Agenda</h6>
+                                            <h6 class="fw-bold text-dark mb-0">Gestionar Agenda</h6>
                                         </div>
                                     </a>
                                 </div>
                             @endif
-                            <div class="col-md-6">
+
+                            <div class="col-md-{{ Auth::user()->doctor->citas == true ? '7' : '12' }}">
                                 <a href="{{ route('mensajes.index') }}" class="text-decoration-none">
-                                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-center">
-                                        <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                                            style="width: 60px; height: 60px;">
-                                            <i class="bi bi-chat-text-fill fs-3"></i>
+                                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden"
+                                        style="background: linear-gradient(135deg, #00213D 0%, #0d2e4e 100%);">
+                                        {{-- Ícono de fondo marca de agua --}}
+                                        <div class="position-absolute"
+                                            style="right: -15px; top: -15px; opacity: 0.1; transform: rotate(-15deg);">
+                                            <x-mcr-chat-dots style="font-size: 8rem;" /</x></x>>
                                         </div>
-                                        <h6 class="fw-bold text-dark">Mensajes Pacientes</h6>
+                                        <div
+                                            class="position-relative z-1 d-flex align-items-center justify-content-between h-100">
+                                            <div>
+                                                <h5 class="fw-bold mb-1">Centro de Mensajes</h5>
+                                                <p class="mb-0 opacity-75 small">Atiende las consultas de tus pacientes</p>
+                                            </div>
+                                            <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                                style="width: 45px; height: 45px;">
+                                                <i class="bi bi-arrow-right text-navy fs-5"></i>
+                                            </div>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
                         </div>
 
-                        <h5 class="fw-bold text-navy mb-3">Resumen</h5>
+                        <h5 class="fw-bold text-navy mb-3">Resumen Reciente</h5>
                         <div class="row g-4">
                             @if(Auth::user()->doctor->citas == true)
-                                <div class="col-md-4">
-                                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-
-                                        <div
-                                            class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-3"
-                                                    style="width: 40px; height: 40px;">
-                                                    <i class="bi bi-person-check-fill"></i>
-                                                </div>
-                                                <h6 class="fw-bold text-dark mb-0">Siguiente Paciente</h6>
+                                <div class="col-md-6">
+                                    <div class="card h-100 border border-light shadow-sm rounded-4 overflow-hidden">
+                                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex align-items-center">
+                                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                style="width: 40px; height: 40px;">
+                                                <i class="bi bi-person-check-fill"></i>
                                             </div>
+                                            <h6 class="fw-bold text-dark mb-0">Siguiente Paciente</h6>
                                         </div>
 
                                         <div class="card-body px-4 pb-4 pt-3">
                                             @if($proximaCitaDoctor)
                                                 <div class="p-3 bg-light rounded-3 border-start border-4 border-success">
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        {{-- Foto del Paciente --}}
+                                                    <div class="d-flex align-items-center mb-3">
                                                         <img src="{{ $proximaCitaDoctor->paciente->user->foto ? asset('storage/' . $proximaCitaDoctor->paciente->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCitaDoctor->paciente->user->name) }}"
                                                             class="rounded-circle me-3 shadow-sm" width="45" height="45"
                                                             style="object-fit: cover;">
-
                                                         <div>
                                                             <span
                                                                 class="fw-bold text-dark d-block">{{ $proximaCitaDoctor->paciente->user->name }}</span>
@@ -492,17 +728,15 @@
                                                                 class="text-muted">{{ $proximaCitaDoctor->paciente->tipo_sangre ?? 'Paciente' }}</small>
                                                         </div>
                                                     </div>
-
-                                                    <div class="d-flex align-items-center justify-content-between mt-3">
+                                                    <div class="d-flex align-items-center justify-content-between">
                                                         <span class="badge bg-white text-dark border shadow-sm">
                                                             <i class="bi bi-clock me-1 text-navy"></i>
                                                             {{ $proximaCitaDoctor->fecha_hora->format('h:i A') }}
                                                         </span>
-                                                        @if($proximaCitaDoctor->estado == 'pendiente')
-                                                            <span class="badge bg-warning text-dark">Por confirmar</span>
-                                                        @else
-                                                            <span class="badge bg-success">Confirmada</span>
-                                                        @endif
+                                                        <span
+                                                            class="badge {{ $proximaCitaDoctor->estado == 'pendiente' ? 'bg-warning text-dark' : 'bg-success' }}">
+                                                            {{ ucfirst($proximaCitaDoctor->estado) }}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             @else
@@ -515,92 +749,30 @@
                                     </div>
                                 </div>
                             @endif
-                            <div class="col-md-4">
-                                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-scale">
-                                    <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-reviews"
-                                        class="text-decoration-none stretched-link"></a>
-                                    <div
-                                        class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center me-3"
-                                                style="width: 40px; height: 40px;">
-                                                <i class="bi bi-star-fill"></i>
-                                            </div>
-                                            <h6 class="fw-bold text-dark mb-0">Última Opinión</h6>
-                                        </div>
-                                    </div>
 
-                                    <div class="card-body px-4 pb-4 pt-3 position-relative">
-                                        @if($ultimaReview)
-                                            <div class="position-relative z-1 pt-2">
-                                                {{-- Comentario --}}
-                                                <p class="text-muted fst-italic mb-3 small pe-3">
-                                                    "{{ Str::limit($ultimaReview->contenido, 80) }}"
-                                                </p>
-
-                                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
-                                                    <div class="d-flex align-items-center">
-                                                        {{-- FOTO --}}
-                                                        <img src="{{ $ultimaReview->autor?->foto ? asset('storage/' . $ultimaReview->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ultimaReview->autor?->name ?? 'Anónimo') }}"
-                                                            class="rounded-circle me-2 shadow-sm" width="30" height="30"
-                                                            style="object-fit: cover;">
-
-                                                        {{-- NOMBRE --}}
-                                                        <small
-                                                            class="fw-bold text-dark">{{ $ultimaReview->autor?->name ?? 'Anónimo' }}</small>
-                                                    </div>
-
-                                                    <div class="text-warning small bg-light px-2 py-1 rounded-pill border">
-                                                        <span
-                                                            class="fw-bold text-dark me-1">{{ number_format($ultimaReview->calificacion, 1) }}</span>
-                                                        <i class="bi bi-star-fill text-warning"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @else
-                                            <div class="text-center py-4">
-                                                <div class="text-warning opacity-50 mb-2">
-                                                    <i class="bi bi-star"></i><i class="bi bi-star"></i><i class="bi bi-star"></i>
-                                                </div>
-                                                <p class="mb-0 small text-muted">Aún no tienes reseñas.</p>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div
-                                    class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-scale position-relative">
+                            <div class="col-md-6">
+                                <div class="card h-100 border border-light shadow-sm rounded-4 overflow-hidden hover-scale">
                                     <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-questions"
                                         class="text-decoration-none stretched-link"></a>
-
-                                    <div
-                                        class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center me-3"
-                                                style="width: 40px; height: 40px;">
-                                                <i class="bi bi-question-lg"></i>
-                                            </div>
-                                            <h6 class="fw-bold text-dark mb-0">Última pregunta</h6>
+                                    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex align-items-center">
+                                        <div class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center me-3"
+                                            style="width: 40px; height: 40px;">
+                                            <i class="bi bi-question-lg"></i>
                                         </div>
+                                        <h6 class="fw-bold text-dark mb-0">Última pregunta</h6>
                                     </div>
 
                                     <div class="card-body px-4 pb-4 pt-3 position-relative">
                                         @if($ultimaQuestion)
                                             <div class="position-relative z-1 pt-2">
                                                 <p class="text-muted fst-italic mb-3 small pe-3">
-                                                    "{{ Str::limit($ultimaQuestion->contenido, 80) }}"
-                                                </p>
-                                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
-                                                    <div class="d-flex align-items-center">
-                                                        <img src="{{ $ultimaQuestion->autor?->foto ? asset('storage/' . $ultimaQuestion->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ultimaQuestion->autor?->name ?? 'Anónimo') }}"
-                                                            class="rounded-circle me-2 shadow-sm" width="30" height="30"
-                                                            style="object-fit: cover;">
-                                                        <small
-                                                            class="fw-bold text-dark">{{ $ultimaQuestion->autor?->name ?? 'Anónimo' }}</small>
-                                                    </div>
+                                                    "{{ Str::limit($ultimaQuestion->contenido, 80) }}"</p>
+                                                <div class="d-flex align-items-center border-top pt-3">
+                                                    <img src="{{ $ultimaQuestion->autor?->foto ? asset('storage/' . $ultimaQuestion->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ultimaQuestion->autor?->name ?? 'Anónimo') }}"
+                                                        class="rounded-circle me-2 shadow-sm" width="30" height="30"
+                                                        style="object-fit: cover;">
+                                                    <small
+                                                        class="fw-bold text-dark">{{ $ultimaQuestion->autor?->name ?? 'Anónimo' }}</small>
                                                 </div>
                                             </div>
                                         @else
@@ -611,11 +783,10 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
-                    {{-- COLUMNA LATERAL (PERFIL) --}}
+                    {{-- COLUMNA LATERAL (PERFIL DOCTOR) --}}
                     <div class="col-lg-4">
                         <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 20px;">
                             <div class="d-flex align-items-center mb-4">
@@ -637,7 +808,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-light p-3 rounded-3 mb-3">
+                            <div class="bg-light p-3 rounded-3 mb-4">
                                 <small class="text-muted d-block fw-bold mb-1">Horario de Atención</small>
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-clock me-2 text-navy"></i>
@@ -649,7 +820,7 @@
                             </div>
 
                             <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}"
-                                class="btn btn-outline-navy w-100 rounded-pill btn-sm">
+                                class="btn btn-outline-navy w-100 rounded-pill fw-bold">
                                 Ver mi perfil público
                             </a>
                         </div>
@@ -761,142 +932,244 @@
                 </div>
 
             @elseif (Auth::user()->role == 'paciente')
-                <div class="row justify-content-center mb-5">
-                    <div class="col-lg-8 text-center">
+                <div class="row justify-content-center mb-4">
+                    <div class="col-12 col-lg-10 col-xl-10 text-center">
                         <h2 class="fw-bold text-navy mb-2">Bienvenido a BuscaDoc, {{ Auth::user()->name }}</h2>
                         <p class="text-muted mb-4">Encuentra lo que buscas, aquí mismo.</p>
 
-                        <form action="{{ route('global.search') }}" method="GET">
-                            <div class="input-group shadow-sm rounded-pill overflow-hidden border-0 p-1 bg-white">
-                                <span class="input-group-text bg-white border-0 ps-4"><i
-                                        class="bi bi-search text-muted"></i></span>
-                                <input type="text" name="search" class="form-control border-0 shadow-none ps-2"
-                                    placeholder="Buscar cardiólogo, pediatra, farmacia..." style="height: 50px;" required>
-                                <button class="btn btn-navy rounded-pill px-4 m-1 fw-bold" type="submit">Buscar</button>
+                        {{-- EL BUSCADOR GIGANTE --}}
+                        <div class="row justify-content-center position-relative z-3 mb-5">
+                            <div class="col-12 col-md-11 col-lg-12">
+                                <div class="card border-0 shadow-sm rounded-5 search-form-card" style="background-color: #f8f9fa;">
+                                    <div class="card-body p-3 p-md-2">
+                                        <form action="{{ route('global.search') }}" method="GET" class="search-form-global" id="searchForm">
+                                            <input type="hidden" name="type" id="searchTypeInput" value="">
+                                            <div class="row g-2 align-items-center">
+                                                <div class="col-12 col-md">
+                                                    <div class="input-group input-group-lg search-input-group bg-white rounded-pill overflow-hidden border">
+                                                        <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
+                                                        <input type="text" name="search" class="form-control border-0 shadow-none ps-2" placeholder="Nombre, clínica o síntoma...">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-md-auto">
+                                                    <div class="dropdown custom-user-role-dropdown w-100" id="searchDropdownGroup">
+                                                        <button class="btn btn-lg bg-white border rounded-pill text-start d-flex align-items-center justify-content-between w-100 px-4" style="height: 48px; min-width: 180px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <div class="d-flex align-items-center">
+                                                                <div id="selectedRoleIcon" class="d-flex align-items-center justify-content-center me-2 text-muted flex-shrink-0" style="width: 24px;">
+                                                                    <i class="bi bi-funnel fs-5"></i>
+                                                                </div>
+                                                                <span class="dropdown-label text-navy fw-bold" id="selectedRoleLabel">¿Qué buscas?</span>
+                                                            </div>
+                                                            <i class="bi bi-chevron-down text-muted ms-3 small"></i>
+                                                        </button>
+
+                                                        <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 w-100 p-2 mt-2">
+                                                            <ul class="list-unstyled mb-0" id="roleSelector">
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center mb-1" href="#" data-value="doctor">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper" style="width: 30px; height: 30px;">
+                                                                            <x-mcr-stethoscope style="width: 100%; height: 100%;" />
+                                                                        </div>
+                                                                        <div class="text-group">
+                                                                            <span class="fw-bold text-navy d-block">Doctores</span>
+                                                                            <span class="text-muted small" style="font-size: 0.75rem;">Especialistas médicos</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center" href="#" data-value="farmacia">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper" style="width: 30px; height: 30px;">
+                                                                            <x-mcr-pills style="width: 100%; height: 100%;" />
+                                                                        </div>
+                                                                        <div class="text-group">
+                                                                            <span class="fw-bold text-navy d-block">Farmacias</span>
+                                                                            <span class="text-muted small" style="font-size: 0.75rem;">Medicamentos e insumos</span>
+                                                                        </div>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-md-auto d-none" id="especialidadGroup">
+                                                    <select class="form-select form-select-lg rounded-pill border bg-white text-navy fw-bold px-4" name="especialidad_id" style="height: 48px; min-width: 220px; cursor: pointer;">
+                                                        <option value="" selected>Todas las especialidades</option>
+                                                        @foreach($especialidades ?? [] as $esp)
+                                                            <option value="{{ $esp->id }}">{{ $esp->nombre }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-12 col-md-auto">
+                                                    <button class="btn btn-navy btn-lg rounded-pill w-100 px-5 fw-bold search-button d-flex align-items-center justify-content-center" type="submit" style="height: 48px;">
+                                                        <x-mcl-search class="icon-white me-2 flex-shrink-0" style="width: 1.2rem;"/> Buscar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
 
                 <div class="row g-4">
                     <div class="col-lg-8">
+                        {{-- WIDGET DE MENSAJES PREMIUM (PACIENTE) --}}
+                        <a href="{{ route('mensajes.index') }}" class="text-decoration-none mb-4 d-block">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden" 
+                                 style="background: linear-gradient(135deg, #0d2e4e 0%, #00213D 100%);">
+                                <div class="position-absolute" style="right: -10px; top: -25px; opacity: 0.1; transform: scale(1.5);">
+                                    <x-mcf-chat-dots style="width: 8rem; height: 8rem;" />
+                                </div>
+                                <div class="position-relative z-1 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <x-mcf-chat-dots class="fs-4" />
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-1">Mis Chats</h5>
+                                            <p class="mb-0 opacity-75 small">Continúa la conversación con tus médicos</p>
+                                        </div>
+                                    </div>
+                                    <i class="bi bi-arrow-right fs-4 opacity-75"></i>
+                                </div>
+                            </div>
+                        </a>
+
                         @if($proximaCita)
-                            <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                                 <div class="card-body p-0">
                                     <div class="row g-0">
-                                        <div
-                                            class="col-12 bg-navy text-white p-3 d-flex align-items-center justify-content-between d-md-none">
+                                        <div class="col-12 bg-navy text-white p-3 d-flex align-items-center justify-content-between d-md-none">
                                             <span class="fw-bold"><i class="bi bi-calendar-event me-2"></i>Tu próxima cita</span>
                                         </div>
-
-                                        <div
-                                            class="col-md-2 bg-light d-flex flex-column align-items-center justify-content-center py-4 border-end">
-                                            <span
-                                                class="text-uppercase small fw-bold text-muted">{{ $proximaCita->fecha_hora->format('M') }}</span>
-                                            <span
-                                                class="display-4 fw-bold text-navy lh-1">{{ $proximaCita->fecha_hora->format('d') }}</span>
-                                            <span class="small text-muted">{{ $proximaCita->fecha_hora->format('l') }}</span>
+                                        <div class="col-md-2 bg-light d-flex flex-column align-items-center justify-content-center py-4 border-end">
+                                            <span class="text-uppercase small fw-bold text-muted">{{ $proximaCita->fecha_hora->format('M') }}</span>
+                                            <span class="display-4 fw-bold text-navy lh-1">{{ $proximaCita->fecha_hora->format('d') }}</span>
                                         </div>
-
                                         <div class="col-md-7 p-4 d-flex align-items-center">
                                             <div class="d-flex align-items-center">
                                                 <img src="{{ $proximaCita->doctor->user->foto ? asset('storage/' . $proximaCita->doctor->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCita->doctor->user->name) }}"
-                                                    class="rounded-circle shadow-sm me-3" width="65" height="65"
-                                                    style="object-fit: cover;">
+                                                    class="rounded-circle shadow-sm me-3" width="65" height="65" style="object-fit: cover;">
                                                 <div>
-                                                    <small class="text-primary fw-bold text-uppercase"
-                                                        style="font-size: 0.7rem; letter-spacing: 1px;">
-                                                        Próxima Consulta
-                                                    </small>
-                                                    <h4 class="fw-bold text-navy mb-1">Dr. {{ $proximaCita->doctor->user->name }}
-                                                    </h4>
-                                                    <div class="d-flex align-items-center text-muted">
-                                                        <i class="bi bi-clock-fill me-2 text-warning"></i>
-                                                        <span
-                                                            class="fw-bold text-dark">{{ $proximaCita->fecha_hora->format('h:i A') }}</span>
-                                                        <span class="mx-2">•</span>
+                                                    <small class="text-primary fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Próxima Consulta</small>
+                                                    <h5 class="fw-bold text-navy mb-1">Dr. {{ $proximaCita->doctor->user->name }}</h5>
+                                                    <div class="d-flex align-items-center text-muted small">
+                                                        <i class="bi bi-clock-fill me-1 text-warning"></i>
+                                                        <span class="fw-bold text-dark">{{ $proximaCita->fecha_hora->format('h:i A') }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div
-                                            class="col-md-3 bg-white p-4 d-flex flex-column justify-content-center align-items-center border-start">
-                                            @if($proximaCita->estado == 'pendiente')
-                                                <span class="badge bg-warning text-dark rounded-pill px-3 mb-3">
-                                                    Pendiente de confirmar
-                                                </span>
-                                            @elseif($proximaCita->estado == 'confirmada')
-                                                <span class="badge bg-success rounded-pill px-3 mb-3">
-                                                    <i class="bi bi-check-circle me-1"></i> Confirmada
-                                                </span>
-                                            @endif
-                                            <a href="{{ route('pacientes.citas') }}"
-                                                class="btn btn-outline-navy rounded-pill btn-sm px-4">
-                                                Ver mis citas
-                                            </a>
+                                        <div class="col-md-3 bg-white p-4 d-flex flex-column justify-content-center align-items-center border-start">
+                                            <span class="badge {{ $proximaCita->estado == 'pendiente' ? 'bg-warning text-dark' : 'bg-success' }} rounded-pill px-3 mb-3">
+                                                {{ $proximaCita->estado == 'confirmada' ? 'Confirmada' : 'Pendiente' }}
+                                            </span>
+                                            <a href="{{ route('pacientes.citas') }}" class="btn btn-outline-navy rounded-pill btn-sm px-4">Ver mis citas</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         @else
-                            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-center bg-white">
+                            <div class="card border-0 shadow-sm rounded-4 mb-5 p-4 text-center bg-white hover-scale">
                                 <div class="py-3">
-                                    <div class="mb-3">
-                                        <x-mcr-calendar class="h-15 w-15" style="font-size: 3rem; opacity: 0.3;" />
-                                    </div>
+                                    <div class="mb-3"><x-mcr-calendar class="h-15 w-15 text-muted opacity-25" style="font-size: 3rem;" /></div>
                                     <h5 class="fw-bold text-navy">No tienes citas próximas</h5>
                                     <p class="text-muted small">¿Te sientes mal o necesitas un chequeo?</p>
-                                    <a href="{{ route('doctores.vista') }}" class="btn btn-navy rounded-pill px-4 mt-2">
-                                        Buscar un Doctor
-                                    </a>
                                 </div>
                             </div>
                         @endif
 
-                        <h5 class="fw-bold text-navy mb-3">¿Qué necesitas hacer?</h5>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <a href="{{ route('doctores.vista') }}" class="text-decoration-none">
-                                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
-                                        <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                                            style="width: 60px; height: 60px;">
-                                            <i class="bi bi-person-lines-fill fs-3"></i>
-                                        </div>
-                                        <h6 class="fw-bold text-dark">Buscar Doctor</h6>
-                                        <small class="text-muted">Agenda tu consulta</small>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="col-md-4">
-                                <a href="{{ route('farmacias.catalogo') }}" class="text-decoration-none">
-                                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
-                                        <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                                            style="width: 60px; height: 60px;">
-                                            <i class="bi bi-shop fs-3"></i>
-                                        </div>
-                                        <h6 class="fw-bold text-dark">Farmacias</h6>
-                                        <small class="text-muted">Encuentra una farmacia</small>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="col-md-4">
-                                <a href="{{ route('mensajes.index') }}" class="text-decoration-none">
-                                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
-                                        <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                                            style="width: 60px; height: 60px;">
-                                            <x-mcf-chat-dots class="w-175r h-175r" />
-                                        </div>
-                                        <h6 class="fw-bold text-dark">Mis chats</h6>
-                                        <small class="text-muted">Enviar mensaje a un doctor</small>
-                                    </div>
-                                </a>
-                            </div>
+                        {{-- SECCIÓN DE ESPECIALIDADES IMPORTADA DE GUEST --}}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold custom-text-dark mb-0">Nuestras especialidades</h4>
                         </div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            @forelse ($especialidades as $especialidad)
+                                <a href="{{ route('specs.show', $especialidad->id) }}" class="text-decoration-none">
+                                    <div class="bg-white border rounded-pill px-3 py-2 shadow-sm hover-scale d-flex align-items-center">
+                                        <i class="bi bi-star-fill text-warning me-2" style="font-size: 0.8rem;"></i>
+                                        <span class="fw-bold custom-text-dark me-2 small">{{ $especialidad->nombre }}</span>
+                                        <span class="badge bg-navy-subtle text-navy rounded-circle" style="font-size: 0.7rem;">
+                                            {{ $especialidad->doctors->count() }}
+                                        </span>
+                                    </div>
+                                </a>
+                            @empty
+                                <div class="text-muted small fst-italic">Aún no hay especialidades registradas.</div>
+                            @endforelse
+                        </div>
+
+                        {{-- CONTENEDOR CON ID EXACTO PARA QUE EL JS LO DETECTE --}}
+                        <div id="specialties-container">
+                            @php $contadorEspecialidades = 0; @endphp
+                            
+                            @foreach ($especialidades as $especialidad)
+                                @if($especialidad->doctors->count() > 0)
+                                    {{-- Se ocultan a partir de la 3ra especialidad válida --}}
+                                    <div class="specialty-section-patient mb-4 {{ $contadorEspecialidades >= 2 ? 'd-none hidden-specialty' : '' }}">
+                                        
+                                        <div class="d-flex justify-content-between align-items-end mb-2 px-2">
+                                            <h5 class="fw-bold custom-text-dark mb-0">{{ $especialidad->nombre }}</h5>
+                                            <a href="{{ route('specs.show', $especialidad->id) }}"
+                                                class="text-decoration-none text-navy fw-bold" style="font-size: 0.85rem;">Ver todos ></a>
+                                        </div>
+
+                                        {{-- CARRUSEL MODERNO --}}
+                                        <div class="scroll-horizontal">
+                                            @foreach ($especialidad->doctors as $doctor)
+                                                <div class="card border-0 shadow-sm rounded-4 hover-scale p-3 d-flex flex-column align-items-center doctor-card-snap bg-white">
+                                                    
+                                                    <div class="position-relative mb-3 mt-2" style="width: 85px; height: 85px;">
+                                                        @if($doctor->user->foto)
+                                                            <img src="{{ asset('storage/' . $doctor->user->foto) }}"
+                                                                alt="Foto de {{ $doctor->user->name }}"
+                                                                class="rounded-circle shadow-sm border border-3 border-white w-100 h-100"
+                                                                style="object-fit: cover;">
+                                                        @else
+                                                            <div class="bg-navy-subtle text-navy rounded-circle d-flex align-items-center justify-content-center shadow-sm border border-3 border-white w-100 h-100">
+                                                                <span class="fs-3 fw-bold text-uppercase">{{ substr($doctor->user->name, 0, 1) }}</span>
+                                                            </div>
+                                                        @endif
+                                                        <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle"
+                                                            style="width: 18px; height: 18px; margin-bottom: 4px; margin-right: 4px;"></span>
+                                                    </div>
+
+                                                    <h6 class="fw-bold text-dark text-center mb-1 text-truncate w-100">Dr. {{ $doctor->user->name }}</h6>
+                                                    <small class="text-muted mb-4 text-center d-block" style="font-size: 0.75rem;">{{ $especialidad->nombre }}</small>
+
+                                                    <a href="{{ route('doctores.show', $doctor->id) }}"
+                                                        class="btn btn-navy rounded-pill w-100 mt-auto py-2 fw-bold shadow-sm"
+                                                        style="font-size: 0.85rem;">
+                                                        Ver Perfil
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    @php $contadorEspecialidades++; @endphp
+                                @endif
+                            @endforeach
+                        </div>
+
+                        {{-- BOTÓN "VER MÁS" (Aparece solo si hay más de 2 especialidades válidas) --}}
+                        @if($contadorEspecialidades > 2)
+                            <div class="row mt-2 mb-5">
+                                <div class="col-12 text-center">
+                                    <button id="toggleSpecialtiesBtn" class="btn btn-outline-navy rounded-pill px-5 py-2 fw-bold shadow-sm transition-all">
+                                        Ver más especialidades <i class="bi bi-chevron-down ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
+                    {{-- COLUMNA LATERAL (PERFIL PACIENTE) --}}
                     <div class="col-lg-4">
                         <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 20px; z-index: 1;">
                             <div class="d-flex align-items-center mb-4">
@@ -904,24 +1177,21 @@
                                     class="rounded-circle me-3 shadow-sm" width="50" height="50" style="object-fit: cover;">
                                 <div>
                                     <h6 class="fw-bold mb-0 text-navy">Mi Ficha Médica</h6>
-                                    <a href="{{ route('users.show', Auth::user()->id) }}"
-                                        class="small text-muted text-decoration-none">Ver perfil completo ></a>
+                                    <a href="{{ route('users.show', Auth::user()->id) }}" class="small text-muted text-decoration-none">Ver perfil completo ></a>
                                 </div>
                             </div>
 
                             @if(Auth::user()->patient)
                                 <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                                     <span class="text-muted small fw-bold">Mi tipo de sangre</span>
-                                    <span
-                                        class="fw-bold text-danger bg-danger-subtle px-3 py-1 rounded-pill">{{ Auth::user()->patient->tipo_sangre ?? '--' }}</span>
+                                    <span class="fw-bold text-danger bg-danger-subtle px-3 py-1 rounded-pill">{{ Auth::user()->patient->tipo_sangre ?? '--' }}</span>
                                 </div>
                                 <div class="mb-3">
                                     <span class="text-muted small fw-bold d-block mb-1">Mis alergias</span>
-                                    <span
-                                        class="fw-medium text-dark small bg-light p-2 rounded d-block border">{{ Auth::user()->patient->alergias ?? 'Ninguna registrada' }}</span>
+                                    <span class="fw-medium text-dark small bg-light p-2 rounded d-block border">{{ Auth::user()->patient->alergias ?? 'Ninguna registrada' }}</span>
                                 </div>
                                 <div class="mb-3">
-                                    <span class="text-muted small fw-bold d-block mb-1">Mi contacto de emergencia</span>
+                                    <span class="text-muted small fw-bold d-block mb-1">Contacto de emergencia</span>
                                     <div class="d-flex align-items-center text-navy fw-bold bg-light p-2 rounded border">
                                         <i class="bi bi-telephone-fill me-2"></i>
                                         {{ Auth::user()->patient->contacto_emergencia ?? '--' }}
@@ -932,68 +1202,6 @@
                                     <i class="bi bi-exclamation-circle-fill me-1"></i> Completa tu perfil médico para emergencias.
                                 </div>
                             @endif
-                        </div>
-                    </div>
-                </div>
-
-                <br>
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h2 class="fw-bold custom-text-dark">Matriz de ubicaciones</h2>
-                    </div>
-                </div>
-                <div class="row g-4 mb-4">
-
-                    <div class="col-lg-7">
-                        <div id="map" class="shadow-sm border"></div>
-                    </div>
-
-                    <div class="col-lg-5 d-flex flex-column" style="height: 450px;">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold text-navy mb-0">
-                                <i class="bi bi-geo-alt-fill me-2"></i>Lugares cercanos
-                            </h5>
-                            <span class="badge bg-navy-subtle text-navy rounded-pill">{{ count($rutas ?? []) }}
-                                resultados</span>
-                        </div>
-
-                        <div class="flex-grow-1" style="overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
-                            @forelse ($rutas as $usuario)
-                                <div class="card border-0 shadow-sm rounded-4 mb-3 hover-scale overflow-hidden"
-                                    style="cursor: pointer;"
-                                    onclick="centrar('{{ $usuario->latitud }}', '{{ $usuario->longitud }}')">
-                                    <div class="card-body p-3 d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center">
-                                            @if($usuario->foto)
-                                                <img src="{{ asset('storage/' . $usuario->foto) }}" alt="{{ $usuario->name }}"
-                                                    class="rounded-circle shadow-sm me-3 border border-2 border-white" width="55"
-                                                    height="55" style="object-fit: cover;">
-                                            @else
-                                                <div class="bg-navy-subtle text-navy rounded-circle d-flex align-items-center justify-content-center shadow-sm me-3 border border-2 border-white"
-                                                    style="width: 55px; height: 55px;">
-                                                    <i
-                                                        class="bi {{ $usuario->role == 'doctor' ? 'bi-person-fill' : 'bi-shop' }} fs-4"></i>
-                                                </div>
-                                            @endif
-                                            <div>
-                                                <h6 class="fw-bold text-dark mb-0">{{ $usuario->name }}</h6>
-                                                <small class="text-muted d-block text-capitalize">{{ $usuario->role }}</small>
-                                            </div>
-                                        </div>
-                                        <div class="text-end">
-                                            <button class="btn btn-light rounded-circle text-navy shadow-sm btn-geo">
-                                                <i class="bi bi-geo-alt icon-normal"></i>
-                                                <i class="bi bi-geo-alt-fill icon-hover d-none"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="alert alert-info border-0 shadow-sm rounded-4 text-center p-4">
-                                    <i class="bi bi-geo-alt fs-1 d-block mb-2"></i>
-                                    No hay ubicaciones registradas aún.
-                                </div>
-                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -1086,27 +1294,27 @@
 
                 function appendUserMessage(text) {
                     const html = `
-                                <div class="d-flex flex-row justify-content-end mb-4 fade-in">
-                                    <div class="p-3 me-3 bg-navy text-white shadow-sm" style="border-radius: 15px; border-top-right-radius: 0;">
-                                        <p class="small mb-0">${text}</p>
+                                    <div class="d-flex flex-row justify-content-end mb-4 fade-in">
+                                        <div class="p-3 me-3 bg-navy text-white shadow-sm" style="border-radius: 15px; border-top-right-radius: 0;">
+                                            <p class="small mb-0">${text}</p>
+                                        </div>
+                                        <img src="{{ Auth::check() && Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?? 'U') }}" 
+                                            alt="user avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
                                     </div>
-                                    <img src="{{ Auth::check() && Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?? 'U') }}" 
-                                        alt="user avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
-                                </div>
-                            `;
+                                `;
                     chatMessages.insertAdjacentHTML('beforeend', html);
                     scrollToBottom();
                 }
 
                 function appendBotMessage(text) {
                     const html = `
-                                <div class="d-flex flex-row justify-content-start mb-4 fade-in">
-                                    <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div class="p-3 ms-3 bg-white border border-light shadow-sm" style="border-radius: 15px; border-top-left-radius: 0;">
-                                        <div class="small mb-0 text-dark chatbot-reply">${text}</div>
+                                    <div class="d-flex flex-row justify-content-start mb-4 fade-in">
+                                        <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div class="p-3 ms-3 bg-white border border-light shadow-sm" style="border-radius: 15px; border-top-left-radius: 0;">
+                                            <div class="small mb-0 text-dark chatbot-reply">${text}</div>
+                                        </div>
                                     </div>
-                                </div>
-                            `;
+                                `;
                     chatMessages.insertAdjacentHTML('beforeend', html);
                     scrollToBottom();
                 }
@@ -1114,15 +1322,15 @@
                 function appendLoadingIndicator() {
                     const id = 'loader-' + Date.now();
                     const html = `
-                                <div id="${id}" class="d-flex flex-row justify-content-start mb-4 fade-in typing-indicator-container">
-                                    <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm opacity-75" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div class="p-3 ms-3 bg-white border border-light shadow-sm d-flex align-items-center" style="border-radius: 15px; border-top-left-radius: 0; min-height: 40px;">
-                                        <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem;"></div>
-                                        <div class="spinner-grow spinner-grow-sm text-secondary mx-1" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.2s"></div>
-                                        <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.4s"></div>
+                                    <div id="${id}" class="d-flex flex-row justify-content-start mb-4 fade-in typing-indicator-container">
+                                        <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm opacity-75" style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div class="p-3 ms-3 bg-white border border-light shadow-sm d-flex align-items-center" style="border-radius: 15px; border-top-left-radius: 0; min-height: 40px;">
+                                            <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem;"></div>
+                                            <div class="spinner-grow spinner-grow-sm text-secondary mx-1" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.2s"></div>
+                                            <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.4s"></div>
+                                        </div>
                                     </div>
-                                </div>
-                            `;
+                                `;
                     chatMessages.insertAdjacentHTML('beforeend', html);
                     scrollToBottom();
                     return id;
@@ -1174,13 +1382,13 @@
                                 : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(usuario.name);
 
                             const contentString = `
-                                        <div style="text-align: center; padding: 5px; min-width: 120px;">
-                                            <img src="${photoUrl}" alt="${usuario.name}" 
-                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 8px;">
-                                            <h6 style="margin: 0; color: #0d2e4e; font-weight: bold; font-family: sans-serif;">${usuario.name}</h6>
-                                            <small style="color: #6c757d; text-transform: capitalize; font-family: sans-serif;">${usuario.role}</small>
-                                        </div>
-                                    `;
+                                            <div style="text-align: center; padding: 5px; min-width: 120px;">
+                                                <img src="${photoUrl}" alt="${usuario.name}" 
+                                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 8px;">
+                                                <h6 style="margin: 0; color: #0d2e4e; font-weight: bold; font-family: sans-serif;">${usuario.name}</h6>
+                                                <small style="color: #6c757d; text-transform: capitalize; font-family: sans-serif;">${usuario.role}</small>
+                                            </div>
+                                        `;
 
                             infoWindow.setContent(contentString);
                             infoWindow.open({
@@ -1219,7 +1427,7 @@
             if (toggleSpecialtiesBtn) {
                 toggleSpecialtiesBtn.addEventListener('click', function () {
                     specialtiesExpanded = !specialtiesExpanded;
-                    
+
                     hiddenSpecialties.forEach(section => {
                         if (specialtiesExpanded) {
                             section.classList.remove('d-none');
@@ -1238,9 +1446,73 @@
                     }
                 });
             }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const roleSelectorLinks = document.querySelectorAll('#roleSelector a');
+                const searchTypeInput = document.getElementById('searchTypeInput');
+                const selectedRoleLabel = document.getElementById('selectedRoleLabel');
+                const selectedRoleIcon = document.getElementById('selectedRoleIcon');
+                const especialidadGroup = document.getElementById('especialidadGroup');
+
+                if (roleSelectorLinks.length > 0) {
+                    roleSelectorLinks.forEach(link => {
+                        link.addEventListener('click', function (e) {
+                            e.preventDefault();
+
+                            const target = e.currentTarget;
+                            const selectedValue = target.getAttribute('data-value');
+                            const labelText = target.querySelector('.fw-bold').innerText;
+                            const iconHTML = target.querySelector('.icon-wrapper').innerHTML;
+
+                            searchTypeInput.value = selectedValue;
+                            selectedRoleLabel.innerText = labelText;
+
+                            selectedRoleIcon.innerHTML = iconHTML;
+                            selectedRoleIcon.classList.remove('text-muted');
+                            selectedRoleIcon.classList.add('text-navy');
+
+                            if (selectedValue === 'doctor') {
+                                especialidadGroup.classList.remove('d-none');
+                                especialidadGroup.classList.add('d-block');
+                            } else {
+                                especialidadGroup.classList.remove('d-block');
+                                especialidadGroup.classList.add('d-none');
+                                especialidadGroup.value = '';
+                            }
+                        });
+                    });
+                }
+
+                const toggleSpecialtiesBtn = document.getElementById('toggleSpecialtiesBtn');
+                const hiddenSpecialties = document.querySelectorAll('.hidden-specialty');
+                let specialtiesExpanded = false;
+
+                if (toggleSpecialtiesBtn) {
+                    toggleSpecialtiesBtn.addEventListener('click', function () {
+                        specialtiesExpanded = !specialtiesExpanded;
+                        hiddenSpecialties.forEach(section => {
+                            if (specialtiesExpanded) {
+                                section.classList.remove('d-none');
+                                section.classList.add('fade-in');
+                            } else {
+                                section.classList.add('d-none');
+                                section.classList.remove('fade-in');
+                            }
+                        });
+
+                        if (specialtiesExpanded) {
+                            toggleSpecialtiesBtn.innerHTML = 'Ocultar especialidades <i class="bi bi-chevron-up ms-2"></i>';
+                        } else {
+                            toggleSpecialtiesBtn.innerHTML = 'Ver más especialidades <i class="bi bi-chevron-down ms-2"></i>';
+                            document.getElementById('specialties-container').scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                }
+            });
+
         </script>
 
-        <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key={{ env('API_KEY') }}&callback=initMap&v=beta"></script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ env('API_KEY') }}&callback=initMap&v=beta">
+        </script>
     @endpush
 </x-layout>

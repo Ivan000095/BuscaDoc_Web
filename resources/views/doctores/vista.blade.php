@@ -38,10 +38,8 @@
                                 </span>
                             </div>
 
-                            {{-- 3. DATOS PRINCIPALES --}}
                             <h5 class="card-title fw-bold text-navy mb-1">Dr. {{ $doctor->user->name }}</h5>
 
-                            {{-- Especialidad como subtítulo --}}
                             <p class="text-primary small fw-bold mb-2">
                                 {{ $doctor->especialidades->first()->nombre ?? 'Médico General' }}
                             </p>
@@ -50,9 +48,7 @@
                                 {{ Str::limit($doctor->descripcion, 100) }}
                             </p>
 
-                            {{-- 4. INFO EXTRA (Horario y Costo en lugar de Teléfono/RFC) --}}
                             <div class="mt-auto">
-                                {{-- Horario --}}
                                 <div class="d-flex align-items-center mb-2">
                                     <i class="bi bi-clock me-2 text-navy"></i>
                                     <small class="text-muted">
@@ -61,7 +57,6 @@
                                     </small>
                                 </div>
 
-                                {{-- Costo --}}
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-cash-coin me-2 text-navy"></i>
                                     <small class="fw-bold text-success">
@@ -71,10 +66,9 @@
                             </div>
                         </div>
 
-                        {{-- 5. FOOTER CON BOTÓN --}}
                         <div class="card-footer bg-white border-0 pt-0 pb-4 px-4">
                             <a href="{{ route('doctores.show', $doctor->id) }}"
-                                class="btn btn-outline-navy w-100 rounded-pill">
+                                class="btn btn-navy w-100 rounded-pill">
                                 Ver Perfil
                             </a>
                         </div>
