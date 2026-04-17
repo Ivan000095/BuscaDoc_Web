@@ -13,9 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
 
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->alias([
-        'can.citas' => \App\Http\Middleware\CheckCitasEnabled::class,
-    ]);
+        $middleware->trustProxies(at: '*');
+        $middleware->alias([
+            'can.citas' => \App\Http\Middleware\CheckCitasEnabled::class,
+        ]);
     })
 
 
@@ -51,10 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Manejar excepciones de autenticación para APIs
-        $exceptions->render(function (
-            \Illuminate\Auth\AuthenticationException $e,
-            $request,
-        ) {
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request, ) {
             if ($request->is("api/*") || $request->expectsJson()) {
                 return response()->json(
                     [
@@ -71,10 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // Manejar otras excepciones para APIs
-        $exceptions->render(function (
-            \Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e,
-            $request,
-        ) {
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request, ) {
             if ($request->is("api/*") || $request->expectsJson()) {
                 return response()->json(
                     [
@@ -87,10 +82,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (
-            \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e,
-            $request,
-        ) {
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e, $request, ) {
             if ($request->is("api/*") || $request->expectsJson()) {
                 return response()->json(
                     [
@@ -105,4 +97,3 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->create();
-    
