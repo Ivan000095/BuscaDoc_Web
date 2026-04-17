@@ -12,6 +12,8 @@ use App\Http\Controllers\API\PacienteController;
 use App\Http\Controllers\Api\EspecialidadController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\MensajeriaController;
+use App\Http\Controllers\Api\RespuestaController;
+use App\Http\Controllers\Api\ComentarioController;
 // use App\Http\Controllers\Api\ProductController; // Descomentar cuando lo uses
 
 
@@ -66,6 +68,9 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('api.farmacias.yo.actualizar');
 
     Route::apiResource('pacientes', PacienteController::class)->names('api.pacientes'); 
+
+    Route::apiResource('comentarios', ComentarioController::class);
+    Route::apiResource('respuestas', RespuestaController::class);
 
 });
 

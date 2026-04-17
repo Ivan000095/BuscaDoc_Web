@@ -1,190 +1,564 @@
 <?php
+use Carbon\Carbon;
+?>
+<?php
 $apiKey = env('API_KEY');
 $lat = $farmacia->user->latitud ?? 16.9080;
 $lng = $farmacia->user->longitud ?? -92.0946;
 ?>
+
 <x-layout>
-<head>
-<style>
-body { background-color: #f3f4f6; }
-.soft-card {
-    background: white;
-    border: none;
-    border-radius: 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    overflow: hidden;
-}
-.profile-photo-container {
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    height: 400px;
-    background-color: #e9ecef;
-}
-.profile-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.text-navy { color: #0f172a; }
-.text-label { font-weight: 700; color: #000; }
-.info-row {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 1.2rem;
-}
-.info-icon {
-    font-size: 1.3rem;
-    color: #0f172a;
-    margin-right: 15px;
-    width: 24px;
-    text-align: center;
-}
-.btn-navy {
-    background-color: #0f172a;
-    color: white;
-    border-radius: 50px;
-    padding: 10px 25px;
-    font-weight: 500;
-    border: none;
-    transition: transform 0.2s;
-}
-.btn-navy:hover {
-    background-color: #1e293b;
-    color: white;
-    transform: translateY(-2px);
-}
-</style>
-</head>
+    <style>
+        body {
+            background-color: #f3f4f6;
+        }
 
-@if(session('success'))
-<div id="notification-pill" class="pill-notification">
-    <div class="pill-icon"><i class="bi bi-check-lg"></i></div>
-    <span>{{ session('success') }}</span>
-</div>
-@endif
+        .soft-card {
+            background: white;
+            border: none;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
 
-<div class="container py-5">
-    <div class="row g-5">
-        {{-- Columna Izquierda --}}
-        <div class="col-lg-4">
-            <div class="profile-photo-container mb-4">
-                <img src="{{ $farmacia->user->foto ? asset('storage/' . $farmacia->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($farmacia->user->name) }}"
-                    alt="{{ $farmacia->nom_farmacia }}" 
-                    class="profile-photo">
-            </div>
+        .profile-photo-container {
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            height: 400px;
+            background-color: #e9ecef;
+        }
 
-            <div class="soft-card p-4">
-                <div class="mb-2">
-                    <span class="text-label">Farmacia:</span>
-                    <span class="text-muted">{{ $farmacia->nom_farmacia }}</span>
-                </div>
-                <div class="mb-2">
-                    <span class="text-label">Propietario:</span>
-                    <span class="text-muted">{{ $farmacia->user->name }}</span>
-                </div>
-                <div class="mb-2">
-                    <span class="text-label">RFC:</span>
-                    <span class="text-muted">{{ $farmacia->rfc ?? 'No registrado' }}</span>
-                </div>
-                <div class="mb-0">
-                    <span class="text-label">Teléfono:</span>
-                    <span class="text-muted">{{ $farmacia->telefono ?? 'No registrado' }}</span>
-                </div>
-            </div>
+        .profile-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-            <br>
-            <div class="soft-card p-1">
-                <div id="map" style="height: 300px; border-radius: 24px;"></div>
-            </div>
+        .text-navy {
+            color: #0f172a;
+        }
+
+        .text-label {
+            font-weight: 700;
+            color: #000;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+        }
+
+        .info-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            width: 24px;
+            height: 24px;
+            color: #0f172a;
+        }
+
+        .info-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .btn-navy {
+            background-color: #0f172a !important;
+            color: #ffffff !important; /* Fuerza texto blanco */
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 500;
+            border: none;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-navy:hover {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-navy svg {
+            width: 18px;
+            height: 18px;
+            color: #ffffff !important; 
+        }
+        .btn-navy svg path {
+            stroke: currentColor;
+            fill: currentColor;
+        }
+
+        .nav-pills .nav-link {
+            color: #64748b !important;
+            font-weight: 600;
+            border-radius: 50px;
+            padding: 8px 20px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .nav-pills .nav-link svg {
+            width: 18px;
+            height: 18px;
+            color: #64748b !important; 
+        }
+        .nav-pills .nav-link svg path {
+            stroke: currentColor;
+            fill: currentColor;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+        }
+        
+        .nav-pills .nav-link.active svg {
+            color: #ffffff !important;
+        }
+
+        /* ----------------------------- */
+
+        .review-input {
+            background-color: #f8fafc;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+        }
+
+        .rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .rating input {
+            display: none;
+        }
+
+        .rating label {
+            cursor: pointer;
+            width: 25px;
+            font-size: 25px;
+            color: #cbd5e1;
+            transition: color 0.2s;
+        }
+
+        .rating label:before {
+            content: '\2605';
+        }
+
+        .rating input:checked~label,
+        .rating label:hover,
+        .rating label:hover~label {
+            color: #fbbf24;
+        }
+
+        .avatar-small {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .styled-textarea {
+            width: 100%;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 15px 20px;
+            font-size: 0.95rem;
+            color: #334155;
+            transition: all 0.3s ease;
+            resize: none;
+            min-height: 100px;
+        }
+
+        .styled-textarea:focus {
+            background-color: #ffffff;
+            border-color: #0f172a;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+            outline: none;
+        }
+
+        .styled-textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        .textarea-respuesta {
+            width: 100%;
+            min-height: 20px !important;
+        }
+    </style>
+
+    @if(session('success'))
+        <div id="notification-pill" class="pill-notification">
+            <div class="pill-icon"><x-mcr-check-circle style="width: 16px; height: 16px; color: white;" /></div>
+            <span>{{ session('success') }}</span>
         </div>
+    @endif
 
-        {{-- Columna Derecha --}}
-        <div class="col-lg-8">
-            <div class="soft-card p-5 mb-4">
-                <div class="info-row">
-                    <div class="info-icon"><i class="bi bi-geo-alt-fill"></i></div>
-                    <div>
-                        <span class="fw-bold d-block">Ubicación</span>
-                        <span class="text-muted">Consultar mapa abajo <i class="bi bi-arrow-down-short"></i></span>
-                    </div>
+    <div class="container py-5">
+        <div class="row g-5">
+
+            <div class="col-lg-4">
+                <div class="profile-photo-container mb-4">
+                    <img src="{{ $farmacia->user->foto ? asset('storage/' . $farmacia->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($farmacia->user->name) }}"
+                        alt="{{ $farmacia->user->name }}" class="profile-photo">
                 </div>
 
-                {{-- Horarios --}}
-                <div class="info-row">
-                    <div class="info-icon"><i class="bi bi-clock"></i></div>
-                    <div>
-                        <span class="fw-bold d-block">Horario de Atención</span>
-                        <span class="text-muted">
-                            @if($farmacia->horario_entrada && $farmacia->horario_salida)
-                                {{ \Carbon\Carbon::parse($farmacia->horario_entrada)->format('H:i') }} - 
-                                {{ \Carbon\Carbon::parse($farmacia->horario_salida)->format('H:i') }}
-                            @else
-                                No especificado
-                            @endif
-                        </span>
+                <div class="soft-card p-4">
+                    <div class="mb-2">
+                        <span class="text-label">Encargado:</span>
+                        <span class="text-muted">{{ $farmacia->user->name }}</span>
                     </div>
-                </div>
 
-                {{-- Días de operación --}}
-                @if($farmacia->dias_op)
-                    <div class="info-row">
-                        <div class="info-icon"><i class="bi bi-calendar-week"></i></div>
-                        <div>
-                            <span class="fw-bold d-block">Días de Operación</span>
-                            <span class="text-muted">{{ $farmacia->dias_op }}</span>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- Email --}}
-                <div class="info-row">
-                    <div class="info-icon"><i class="bi bi-envelope-fill"></i></div>
-                    <div>
-                        <span class="fw-bold d-block">Contacto (Email)</span>
+                    <div class="mb-2">
+                        <span class="text-label">Contacto:</span>
                         <span class="text-muted">{{ $farmacia->user->email }}</span>
                     </div>
-                </div>
 
-                {{-- Descripción --}}
-                @if($farmacia->descripcion)
-                    <div class="info-row mb-0">
-                        <div class="info-icon"><i class="bi bi-file-text"></i></div>
-                        <div>
-                            <span class="fw-bold d-block">Descripción</span>
-                            <span class="text-muted">{{ $farmacia->descripcion }}</span>
+                    <div class="mt-4 pt-3 border-top text-center">
+                        <p class="text-muted small mb-1 fw-bold text-uppercase" style="letter-spacing: 1px;">
+                            Calificación</p>
+
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <h1 class="mb-0 fw-bold text-navy display-4">{{ $farmacia->promedio_calificacion }}</h1>
+
+                            <div class="text-start">
+                                <div class="text-warning">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="bi {{ $i <= round($farmacia->promedio_calificacion) ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                    @endfor
+                                </div>
+
+                                <small class="text-muted d-block" style="line-height: 1.2;">
+                                    Basado en <br>
+                                    <strong>{{ $farmacia->reviews->count() }} opiniones</strong>
+                                </small>
+                            </div>
                         </div>
                     </div>
-                @endif
+                </div>
+                <br>
+                <div class="soft-card p-1">
+                    <div id="map" style="height: 300px; border-radius: 24px;"></div>
+                </div>
             </div>
 
-            {{-- Botones de Acción --}}
-            @if(Auth::check() && Auth::user()->role == 'paciente')
-                <div class="d-flex gap-3 mb-5">
-                    <a href="{{ route('reportes.user.create', ['reportado_id' => $farmacia->user->id]) }}" 
-                       class="btn btn-navy px-4 flex-grow-1">
-                        <i class="bi bi-person-fill-exclamation"></i> Reportar
-                    </a>
+            <div class="col-lg-8">
+                <div class="soft-card p-5 mb-4">
+                    <div class="info-row">
+                        <div class="info-icon"><x-mcr-location-pin /></div>
+                        <div>
+                            <span class="fw-bold d-block">Ubicación de la Farmacia</span>
+                            <span class="text-muted">
+                                Consultar mapa abajo <i class="bi bi-arrow-down-short"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-icon"><x-mcr-clock /></div>
+                        <div>
+                            <span class="fw-bold d-block">Horarios</span>
+                            <span class="text-muted">
+                                {{ Carbon::parse($farmacia->horario_entrada)->format('h:i A') }} -
+                                {{ Carbon::parse($farmacia->horario_salida)->format('h:i A') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-icon"><x-mcr-envelope /></div>
+                        <div>
+                            <span class="fw-bold d-block">Contacto (Telefono)</span>
+                            <span class="text-muted">{{ $farmacia->telefono }}</span>
+                        </div>
+                    </div>
+                    <div class="info-row mb-0">
+                        <div class="info-icon"><x-mcr-wallet /></div>
+                        <div>
+                            <span class="fw-bold d-block">RFC</span>
+                            <span class="text-muted">{{$farmacia->rfc}}</span>
+                        </div>
+                    </div>
                 </div>
-            @endif
+
+                @if(Auth()->user()?->role == 'paciente')
+                    <div class="d-flex flex-column flex-md-row gap-3 mb-5">
+                        @if($farmacia->citas == true)
+                        <button type="button" class="btn btn-navy flex-grow-1" data-bs-toggle="modal"
+                            data-bs-target="#agendarCitaModal">
+                            <x-mcr-calendar /> Agendar Cita
+                        </button>
+                        @endif
+                        <a type="button" class="btn btn-navy flex-grow-1"
+                            href="{{ route('reportes.user.create', ['reportado_id' =>  $farmacia->user->id]) }}">
+                            <x-mcr-triangle-exclamation /> Reportar
+                        </a>
+                    </div>
+                @endif
+
+
+
+                    @php
+                        $puedoResenar = Auth::check() && Auth::user()->role == 'paciente';
+                    @endphp
+                <div id="seccion-comentarios" class="soft-card p-4 mb-4">
+                    <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-reviews-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-reviews" type="button" role="tab">
+                                <x-mcr-star /> Reseñas
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-questions-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-questions" type="button" role="tab">
+                                <x-mcr-question-circle /> Preguntas
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-reviews" role="tabpanel">
+                            @if (Auth::user())
+                                @if($puedoResenar)
+                                <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
+                                    <h6 class="fw-bold mb-3 text-navy">Deja tu opinión</h6>
+
+                                    <form action="{{ route('comentarios.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="destinatario_id" value="{{ $farmacia->user->id }}">
+                                        <input type="hidden" name="tipo" value="resena">
+
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted small">Califica tu experiencia:</span>
+                                            <div class="rating">
+                                                <input type="radio" name="rating" value="5" id="5"><label for="5"></label>
+                                                <input type="radio" name="rating" value="4" id="4"><label for="4"></label>
+                                                <input type="radio" name="rating" value="3" id="3"><label for="3"></label>
+                                                <input type="radio" name="rating" value="2" id="2"><label for="2"></label>
+                                                <input type="radio" name="rating" value="1" id="1"><label for="1"></label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <textarea name="contenido" class="styled-textarea"
+                                                placeholder="Cuéntanos, ¿qué tal te pareció la atención?..."
+                                                required></textarea>
+                                        </div>
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                Publicar Reseña <x-mcl-send-right class="ms-1"/>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                @endif
+                            @else
+                                <div class="alert alert-light border-0 shadow-sm rounded-4 mb-4 text-center">
+                                    <x-mcr-info-circle class="text-muted me-2" style="width: 20px; height: 20px;" />
+                                    <span class="text-muted small">Inicie sesión para dejar una reseña.</span>
+                                </div>
+                            @endif
+                            <div class="reviews-list">
+                                @forelse($farmacia->reviews ?? [] as $review)
+                                    <div class="d-flex mb-4 border-bottom pb-3">
+                                        <img src="{{ $review->autor->foto ? asset('storage/' . $review->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($review->autor->name) }}"
+                                            class="avatar-small me-3 shadow-sm">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0 fw-bold">{{ $review->autor->name }}</h6>
+                                                <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
+                                            </div>
+                                            <div class="text-warning small mb-1">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <i class="bi {{ $i <= $review->calificacion ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                                @endfor
+                                            </div>
+                                            <p class="text-muted small mb-0">{{ $review->contenido }}</p>
+                                            @if(Auth::check() && Auth::user()->role == 'farmacia' && Auth::user()->farmacia->id == $farmacia->id)
+                                                <br>
+                                                <form action="{{ route('respuestas.store') }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="comentario_id" value="{{ $review->id }}">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="text-muted small">Responde a {{ $review->autor->name }}</span>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <textarea name="contenido" class="styled-textarea textarea-respuesta"
+                                                            cols="1" placeholder="Responde a este comentario"
+                                                            required></textarea>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <button type="submit"
+                                                            class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                            Publicar Respuesta <x-mcl-send-right class="ms-1"/>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            @endif
+                                            @forelse($review->respuestas as $respuesta)
+                                                <div class="d-flex mb-3 ms-5 mt-3">
+                                                    <div class="flex-shrink-0">
+                                                        <img src="{{ $respuesta->autor->foto ? asset('storage/' . $respuesta->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($respuesta->autor->name) }}"
+                                                            class="avatar-small me-2 rounded-circle shadow-sm"
+                                                            style="width: 35px; height: 35px;">
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="bg-light p-3 rounded-4">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <div>
+                                                                    <span class="fw-bold text-dark small">{{ $respuesta->autor->name }}</span>
+                                                                    @if($respuesta->autor->id == $farmacia->user->id)
+                                                                        <span class="badge bg-primary text-white ms-1"
+                                                                            style="font-size: 0.65rem;">Propietario</span>
+                                                                    @endif
+                                                                </div>
+                                                                <small class="text-muted"
+                                                                    style="font-size: 0.7rem;">{{ $respuesta->created_at->diffForHumans() }}</small>
+                                                            </div>
+                                                            <p class="text-dark small mb-0 lh-sm">{{ $respuesta->contenido }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-4 text-muted">
+                                        <x-mcr-star class="d-block mx-auto mb-2" style="width: 32px; height: 32px; color: #cbd5e1;" />
+                                        Aún no hay reseñas.
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-questions" role="tabpanel">
+                            @if(Auth::check() && Auth::user()->role == 'paciente')
+                                <div class="bg-white border p-4 rounded-4 mb-4 shadow-sm">
+                                    <h6 class="fw-bold mb-3 text-navy d-flex align-items-center gap-2">
+                                        <x-mcr-question-circle style="width: 20px; height: 20px;"/> Haz una pregunta
+                                    </h6>
+                                    <form action="{{ route('comentarios.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="destinatario_id" value="{{ $farmacia->user->id }}">
+                                        <input type="hidden" name="tipo" value="pregunta">
+                                        <div class="mb-3">
+                                            <textarea name="contenido" class="styled-textarea"
+                                                placeholder="Escribe tu duda o consulta aquí..." required
+                                                style="min-height: 80px;"></textarea>
+                                        </div>
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                Enviar Pregunta <x-mcl-send-right class="ms-1"/>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            @endif
+                            <div class="questions-list">
+                                @forelse($farmacia->questions ?? [] as $question)
+                                    <div class="mb-4 border-bottom pb-3">
+                                        <div class="d-flex mb-3">
+                                            <img src="{{ $question->autor->foto ? asset('storage/' . $question->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($question->autor->name) }}"
+                                                class="avatar-small me-3 shadow-sm">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h6 class="mb-0 fw-bold">{{ $question->autor->name }}</h6>
+                                                    <small class="text-muted">{{ $question->created_at->diffForHumans() }}</small>
+                                                </div>
+                                                <p class="text-muted small mb-0 mt-1">{{ $question->contenido }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="ms-5">
+                                            @if(Auth::check() && Auth::user()->role == 'farmacia' && Auth::user()->farmacia->id == $farmacia->id)
+                                                <div class="card border-0 bg-light rounded-4 p-3 mb-3">
+                                                    <form action="{{ route('respuestas.store') }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="comentario_id" value="{{ $question->id }}">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <span class="text-muted small fw-bold">Responder a {{ $question->autor->name }}</span>
+                                                        </div>
+                                                        <div class="d-flex gap-2">
+                                                            <textarea name="contenido"
+                                                                class="styled-textarea textarea-respuesta" rows="1"
+                                                                placeholder="Escribe una respuesta..." style="min-height: 40px;"
+                                                                required></textarea>
+                                                            <button type="submit"
+                                                                class="btn btn-navy btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+                                                                style="width: 40px; height: 40px; flex-shrink: 0; padding: 0;">
+                                                                <x-mcl-send-right style="width: 18px; height: 18px;"/>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            @endif
+                                            @forelse($question->respuestas as $respuesta)
+                                                <div class="d-flex mb-3 mt-2">
+                                                    <div class="flex-shrink-0">
+                                                        <img src="{{ $respuesta->autor->foto ? asset('storage/' . $respuesta->autor->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($respuesta->autor->name) }}"
+                                                            class="avatar-small me-2 rounded-circle shadow-sm"
+                                                            style="width: 35px; height: 35px;">
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="bg-light p-3 rounded-4">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <div>
+                                                                    <span class="fw-bold text-dark small">{{ $respuesta->autor->name }}</span>
+                                                                    @if($respuesta->autor->id == $farmacia->user->id)
+                                                                        <span class="badge bg-primary text-white ms-1"
+                                                                            style="font-size: 0.65rem;">Propietario</span>
+                                                                    @endif
+                                                                </div>
+                                                                <small class="text-muted"
+                                                                    style="font-size: 0.7rem;">{{ $respuesta->created_at->diffForHumans() }}</small>
+                                                            </div>
+                                                            <p class="text-dark small mb-0 lh-sm">{{ $respuesta->contenido }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-4 text-muted">
+                                        <x-mcr-comment class="d-block mx-auto mb-2" style="width: 32px; height: 32px; color: #cbd5e1;" />
+                                        Aún no hay preguntas. ¡Sé el primero!
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
         </div>
     </div>
-</div>
-
-<script async src="https://maps.googleapis.com/maps/api/js?key={{ $apiKey }}&callback=initMap"></script>
-<script>
-function initMap() {
-    const position = { lat: <?php echo $lat; ?>, lng: <?php echo $lng; ?> };
-    const map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 16,
-        center: position,
-        disableDefaultUI: true,
-    });
-    new google.maps.Marker({
-        position: position,
-        map: map,
-        title: "{{ $farmacia->nom_farmacia }}"
-    });
-}
-</script>
 </x-layout>
+
+<script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
+<script>
+    function initMap() {
+        const position = { lat: <?php echo $lat; ?>, lng: <?php echo $lng; ?> };
+        const map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 16,
+            center: position,
+            disableDefaultUI: true,
+        });
+        new google.maps.Marker({
+            position: position,
+            map: map,
+            title: "{{$farmacia->user->name}}"
+        });
+    }
+</script>

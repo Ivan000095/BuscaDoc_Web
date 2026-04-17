@@ -9,14 +9,8 @@ use Illuminate\Http\JsonResponse;
 
 class FarmaciaController extends Controller
 {
-    /**
-     * Formatea una farmacia para la respuesta de la API
-     * Basado EXCLUSIVAMENTE en las columnas reales de tu BD:
-     * id, user_id, nom_farmacia, descripcion, horario_entrada, horario_salida
-     */
     private function formatFarmacia(Farmacia $f): array
     {
-        // Combinamos entrada y salida para dar un horario legible
         $horarioCompleto = null;
         if ($f->horario_entrada && $f->horario_salida) {
             $horarioCompleto = $f->horario_entrada . ' - ' . $f->horario_salida;
@@ -25,14 +19,12 @@ class FarmaciaController extends Controller
         return [
             'id' => $f->id,
             'nom_farmacia' => $f->nom_farmacia,
-            // Eliminamos rfc y telefono porque NO existen en tu tabla 'farmacias'
-            // Si los necesitas, deberás agregarlos a la BD con una migración.
             'descripcion' => $f->descripcion,
-            
-            // Campos de horario corregidos (sin la 'd' extra y usando los nombres reales)
             'horario_entrada' => $f->horario_entrada,
             'horario_salida' => $f->horario_salida,
             'horario_completo' => $horarioCompleto,
+            'telefono' => $f->telefono,
+            'rfc' => $f->rfc,
             
             'created_at' => $f->created_at?->toISOString(),
             
