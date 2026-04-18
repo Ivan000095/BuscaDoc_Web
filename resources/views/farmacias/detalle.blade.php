@@ -384,7 +384,7 @@ $lng = $farmacia->user->longitud ?? -92.0946;
                                                 @endfor
                                             </div>
                                             <p class="text-muted small mb-0">{{ $review->contenido }}</p>
-                                            @if(Auth::check() && Auth::user()->role == 'farmacia' && Auth::user()->farmacia->id == $farmacia->id)
+                                            @if($review->tipo == 'pregunta' && Auth::check() && Auth::user()->role == 'farmacia' && Auth::user()->farmacia->id == $farmacia->id)
                                                 <br>
                                                 <form action="{{ route('respuestas.store') }}" method="POST">
                                                     @csrf
@@ -394,7 +394,27 @@ $lng = $farmacia->user->longitud ?? -92.0946;
                                                     </div>
                                                     <div class="mb-2">
                                                         <textarea name="contenido" class="styled-textarea textarea-respuesta"
-                                                            cols="1" placeholder="Responde a este comentario"
+                                                            cols="1" placeholder="Responde a esta pregunta"
+                                                            required></textarea>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <button type="submit"
+                                                            class="btn btn-navy px-4 py-2 rounded-pill shadow-sm">
+                                                            Publicar Respuesta <x-mcl-send-right class="ms-1"/>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            @elseif($review->tipo == 'resena' && Auth::check() && Auth::user()->role == 'paciente')
+                                                <br>
+                                                <form action="{{ route('respuestas.store') }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="comentario_id" value="{{ $review->id }}">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="text-muted small">Responde a {{ $review->autor->name }}</span>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <textarea name="contenido" class="styled-textarea textarea-respuesta"
+                                                            cols="1" placeholder="Responde a esta reseña"
                                                             required></textarea>
                                                     </div>
                                                     <div class="text-end">

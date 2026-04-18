@@ -25,7 +25,7 @@ class FarmaciaController extends Controller
             'horario_completo' => $horarioCompleto,
             'telefono' => $f->telefono,
             'rfc' => $f->rfc,
-            
+            "promedio" => round($f->reviews->avg('calificacion') ?? 0, 1),
             'created_at' => $f->created_at?->toISOString(),
             
             'dueño' => [

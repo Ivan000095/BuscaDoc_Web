@@ -36,7 +36,7 @@ class DoctorController extends Controller
                     $q->whereHas('user', function ($userQuery) use ($search) {
                         $userQuery->where("name", "like", "%{$search}%");
                     })
-                        ->orWhere("descripcion", "like", "%{$search}%");
+                    ->orWhere("descripcion", "like", "%{$search}%");
                 });
             }
 
@@ -328,9 +328,9 @@ class DoctorController extends Controller
                 ], 404);
             }
 
-            $doctor->especialidades()->detach();
-            $doctor->delete();
-            $doctor->user->delete();
+                $doctor->especialidades()->detach();
+                $doctor->delete();
+                $doctor->user->delete();
 
             return response()->json([
                 "success" => true,

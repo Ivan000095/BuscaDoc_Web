@@ -16,7 +16,7 @@ use App\Http\Controllers\MensajeController;
 use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ChatbotController;
-
+use App\Http\Controllers\RespuestaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -90,6 +90,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [ReporteController::class, 'create'])->name('reportes.user.create');
         Route::post('/', [ReporteController::class, 'store'])->name('reportes.store');
         Route::get('/mis-reportes', [ReporteController::class, 'misReportes'])->name('reportes.mis');
+
+        // Crear comentario/pregunta
+    Route::post('/comentarios', [ComentarioController::class, 'store'])->name('comentarios.store');
+    
+    // Crear respuesta
+    Route::post('/respuestas', [RespuestaController::class, 'store'])->name('respuestas.store');
     });
 
     Route::prefix('mi-farmacia')->group(function () {
