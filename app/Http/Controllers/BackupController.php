@@ -35,12 +35,14 @@ class BackupController extends Controller
     public function create()
     {
         try {
-            // Se aumenta el tiempo límite de PHP por si la BD es muy pesada
             set_time_limit(300);
+            
             Artisan::call('backup:run');
-            return redirect()->back()->with('success', '¡Respaldo generado con éxito!');
+            $output = Artisan::output(); 
+
+            return redirect()->back()->with('success', 'Comando ejecutado. Salida: ' . $output);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al generar el respaldo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
