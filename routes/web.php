@@ -21,6 +21,7 @@ use App\Http\Controllers\MensajeController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\ExpedienteController;
 
 Route::get("/", function () {
     return view("welcome-simple");
@@ -79,6 +80,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
     Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
     Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
+
+// Ruta para que el solicitante cree la propuesta
+    Route::post('/citas/{id}/solicitar-cambio', [CitaController::class, 'solicitarCambio'])
+        ->name('citas.solicitar-cambio');
+
+    // Ruta para que el solicitado acepte o rechace
+    Route::post('/solicitudes-cambio/{id}/responder', [CitaController::class, 'responderCambio'])
+        ->name('citas.responder-cambio');
+
+
 });
 
 Route::middleware(['auth'])->prefix('admin')->group(function () {
@@ -101,7 +112,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
-    Route::post('/doctores/{id}/agendar', [CitaController::class, 'store'])->name('citas.store');
+    
     Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');
     // Solo doctores con la opción "citas" activa podrán entrar aquí
     Route::middleware(['auth', 'can.citas'])->group(function () {
@@ -109,6 +120,11 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
         // ... otras rutas de citas
     });
     
+    Route::post('/doctor/{id}/agendar', [App\Http\Controllers\CitaController::class, 'store'])->name('citas.store');
+
+
+    Route::delete('/citas/{id}', [CitaController::class, 'destroy'])->name('citas.destroy');
+
     Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
     Route::get('/mensajes', [MensajeController::class, 'index'])->name('mensajes.index');
     Route::get('/mensajes/{id}', [MensajeController::class, 'show'])->name('mensajes.show');
@@ -139,10 +155,15 @@ Route::get('register', function () {
 
 Route::post('register', [RegisterController::class, 'register']);
 
+Route::post('/notas-medicas/{cita}', [App\Http\Controllers\NotaMedicaController::class, 'store'])->name('notas.store');
+
 Route::resource('pacientes', App\Http\Controllers\PacienteController::class);
 
 Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
 
+Route::get('/expedientes/{id}', [ExpedienteController::class, 'show'])->name('expedientes.show')->middleware('auth');
+
+Route::get('/api/disponibilidad/{doctorId}', [App\Http\Controllers\CitaController::class, 'getDisponibilidad']);
 // Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
 
 // Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');

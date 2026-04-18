@@ -478,9 +478,20 @@
                                         </p>
                                     </div>
                                 <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-navy small">Género</label>
+                                            <select name="genero" class="form-select-pill">
+                                                <option value="masculino">Masculino</option>
+                                                <option value="femenino">Femenino</option>
+                                            </select>
+                                        </div>
+
+
+
                                     <div class="col-md-6">
+                                        <label class="form-label fw-bold text-navy small">Tipo de Sangre</label>
                                         <select name="tipo_sangre" class="form-select form-select-pill">
-                                            <option value="" disabled selected>Tipo de Sangre</option>
+                                            <option value="" disabled selected>Seleccione el Tipo de Sangre</option>
                                             @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $ts)
                                                 <option value="{{ $ts }}" {{ old('tipo_sangre') == $ts ? 'selected' : '' }}>
                                                     {{ $ts }}
@@ -488,30 +499,22 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-6">
-                                        <input type="text" name="contacto_emergencia"
-                                            class="form-control form-control-pill" placeholder="Contacto Emergencia"
-                                            value="{{ old('contacto_emergencia') }}">
-                                    </div>
+
                                     <div class="col-12">
+                                        <label class="form-label fw-bold text-navy small">Alergias </label>
                                         <textarea name="alergias" class="form-control form-control-pill" rows="2"
                                             placeholder="Escriba que alergias tiene"
                                             style="border-radius: 20px; resize: none;">{{ old('alergias') }}</textarea>
                                     </div>
-                                    <div class="col-md-12">
-                                        <input type="text" name="cirugias" class="form-control form-control-pill"
-                                            placeholder="Escriba que cirugías ha tenido" value="{{ old('cirugias') }}">
+                                    <div class="col-12">
+                                            <label class="form-label fw-bold text-navy small">Padecimientos Crónicos</label>
+                                            <textarea name="padecimientos_cronicos" class="form-control-pill" rows="2" placeholder="Diabetes, Hipertensión, etc."></textarea>
                                     </div>
-                                    <div class="col-md-12">
-                                        <input type="text" name="padecimientos" class="form-control form-control-pill"
-                                            placeholder="Describa que padecimientos tiene (diabetes, depresión, gastritis, etc..)"
-                                            value="{{ old('padecimientos') }}">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <input type="text" name="habitos" class="form-control form-control-pill"
-                                            placeholder="Describa los hábitos que tiene (si fuma, o toma, o hace deporte, etc...)"
-                                            value="{{ old('padecimientos') }}">
-                                    </div>
+
+                                    <div class="col-12">
+                                            <label class="form-label fw-bold text-navy small">Hábitos de Salud</label>
+                                            <textarea name="habitos_salud" class="form-control-pill" rows="2" placeholder="Ej: Ejercicio regular, fumador, etc."></textarea>
+                                        </div>
                                 </div>
                             </div>
 

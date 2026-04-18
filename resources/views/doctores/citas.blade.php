@@ -7,7 +7,7 @@
             </div>
             <div class="bg-white p-2 rounded-pill shadow-sm d-flex align-items-center px-3">
                 <i class="bi bi-calendar-check text-navy me-2"></i>
-                <span class="fw-bold">{{ now()->format('d M, Y') }}</span>
+                <span class="fw-bold">{{ now()->translatedFormat('l d \d\e F') }}</span>
             </div>
         </div>
 
@@ -15,42 +15,176 @@
             @forelse($citas as $cita)
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden hover-scale">
-
+                            @if(in_array($cita->estado, ['cancelada', 'rechazada', 'finalizada']))
+                                <form action="{{ route('citas.destroy', $cita->id) }}" method="POST" 
+                                    class="position-absolute" style="top: 10px; right: 10px; z-index: 10;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm border-0" 
+                                            onclick="return confirm('¿Deseas eliminar esta cita de tu vista?')"
+                                            style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-x-lg text-danger" style="font-size: 0.8rem;"></i>
+                                    </button>
+                                </form>
+                            @endif
                         <div class="position-absolute top-0 bottom-0 start-0"
-                            style="width: 6px; background-color: {{ $cita->estado == 'pendiente' ? '#ffc107' : ($cita->estado == 'confirmada' ? '#198754' : '#dc3545') }};">
+                            style="width: 6px; background-color: {{ $cita->estado == 'pendiente' ? '#ffc107' : ($cita->estado == 'confirmada' || $cita->estado == 'finalizada' ? '#198754' : '#dc3545') }};">
                         </div>
 
                         <div class="card-body p-4 ps-4">
                             <div class="d-flex align-items-center mb-3">
-                                <img src="{{ $cita->paciente->user->foto ? asset('storage/' . $cita->paciente->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($cita->paciente->user->name) }}"
+                                <img src="{{ $cita->expediente->user->foto ? asset('storage/' . $cita->expediente->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($cita->expediente->user->name) }}"
                                     class="rounded-circle shadow-sm me-3" width="50" height="50" style="object-fit: cover;">
                                 <div>
-                                    <h6 class="fw-bold text-navy mb-0">{{ $cita->paciente->user->name }}</h6>
+                                    <h6 class="fw-bold text-navy mb-0">{{ $cita->expediente->nombre_completo }}</h6>
                                     <small class="text-muted">Paciente</small>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <div class="d-flex align-items-center text-muted small mb-2">
-                                    <i class="bi bi-clock-fill me-2 text-navy"></i>
-                                    {{ $cita->fecha_hora->format('d/m/Y') }} —
-                                    <strong class="text-dark ms-1">{{ $cita->fecha_hora->format('h:i A') }}</strong>
+                                    
+                                    
+                                    <i class="bi bi-clock-fill me-2 text-navy"> Cita programada para el:</i>
+                                    {{ $cita->fecha->format('d/m/Y') }} —
+                                    <strong class="text-dark ms-1">{{ $cita->hora_inicio }}</strong>
                                 </div>
                                 <div class="bg-light p-3 rounded-3 border-0">
                                     <small class="text-muted fw-bold d-block mb-1">Motivo de consulta:</small>
-                                    <p class="mb-0 small text-dark fst-italic">"{{ Str::limit($cita->detalles, 80) }}"</p>
+                                    <p class="mb-0 small text-dark fst-italic">"{{ Str::limit($cita->motivo_consulta, 80) }}"</p>
                                 </div>
                             </div>
 
                             <div class="d-grid gap-2">
-                                <a href="{{ route('users.show', $cita->paciente->user->id) }}"
+                                <a href="{{ route('expedientes.show', $cita->expediente_id) }}"
                                     class="btn btn-outline-navy rounded-pill btn-sm fw-bold">
                                     <i class="bi bi-person-vcard-fill me-1"></i> Ver Ficha Médica
                                 </a>
 
+
+
+
+
+
+
                                 @php
-                                    $esPasada = \Carbon\Carbon::parse($cita->fecha_hora)->isPast();
+
+                                $user = Auth::user();
+                                    // Buscamos si esta cita tiene una solicitud pendiente donde el usuario actual es el solicitado
+                                    $solicitudPendiente = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
+                                                        ->where('solicitado_id', Auth::id())
+                                                        ->where('estado', 'pendiente')
+                                                        ->first();
+
+                                    // Buscamos si esta cita tiene una solicitud pendiente donde el usuario actual es el solicitante
+                                    $solicitudEnviada = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
+                                                         ->where('solicitante_id', Auth::id())
+                                                         ->where('estado', 'pendiente')
+                                                         ->first();
+                                
+                                    // Buscamos si esta cita tiene una solicitud confirmada donde el usuario actual es el solicitado
+                                    $solicitudConfirmada = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
+                                                         ->where('solicitado_id', Auth::id())
+                                                         ->where('estado', 'aceptada')
+                                                         ->first();
+
+                                    // Buscamos si el usuario actual fue el solicitante de un cambio que fue rechazado
+                                    $ultimoRechazo = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
+                                                        ->where('solicitante_id', Auth::id())
+                                                        ->where('estado', 'rechazada')
+                                                        ->latest()
+                                                        ->first();
+
+                                            // Buscamos si esta cita tiene una solicitud confirmada donde el usuario actual es el solicitado
+                                            $solicitudAceptada = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
+                                                                ->where('solicitante_id', Auth::id())
+                                                                ->where('estado', 'aceptada')
+                                                                ->first(); 
+                                    
                                 @endphp
+
+    
+                                   
+                                                       
+
+                                   @if($ultimoRechazo && !$solicitudEnviada && !$solicitudConfirmada)
+                                            <div class="alert alert-danger border-0 shadow-sm rounded-4 small p-2 mt-2">
+                                                <center><i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i></center>
+                                                <div class="d-flex align-items-center">
+                                                    
+                                                    <div>
+                                                        <h6 class="fw-bold mb-1">Tu solicitud de cambio fue rechazada</h6>
+                                                        
+                                                            <strong>Motivo:</strong> {{ $ultimoRechazo->motivo }}
+                                                        
+                                                    </div>
+                                                </div>
+                                                @if(!$solicitudPendiente)
+                                                <div class="text-center mt-2">
+                                                    <button class="btn btn-sm btn-outline-danger rounded-pill" 
+                                                            data-bs-toggle="modal"
+                                                    data-bs-target="#modalSolicitarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                        Intentar otro horario
+                                                    </button>
+                                                </div>
+                                                @endif
+                                            </div>
+                                        @endif
+                                        @if($solicitudAceptada && !$solicitudEnviada && !$solicitudConfirmada && $cita->estado != 'finalizada')
+                                        <span
+                                            class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-1 py-2">
+                                            La solicitud fue aceptada con exito!
+                                        </span>
+                                        @endif
+
+                                @php
+                                    $fecha = \Carbon\Carbon::parse($cita->fecha)->format('Y/m/d');
+                                    $hora = $cita->hora_inicio;
+                                    $fecha_hora = \Carbon\Carbon::parse($fecha . ' ' . $hora);
+                                    $esPasada = \Carbon\Carbon::parse($fecha_hora)->isPast();
+                        
+
+                                @endphp
+
+                                
+                                        @if($solicitudPendiente && !$esPasada)
+                                            <div class="alert alert-warning border-0 rounded-4 small p-2 mt-2">
+                                                <strong>¡Solicitud de cambio!</strong><br>
+                                                Propuesta: {{ $solicitudPendiente->nueva_fecha }} a las {{ $solicitudPendiente->nueva_hora }}
+                                                <div class="d-flex gap-2 mt-2">
+                                                    <form action="{{ route('citas.responder-cambio', $cita->id) }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="accion" value="aceptar">
+                                                        <button type="submit" class="btn btn-xs btn-success rounded-pill">Aceptar</button>
+                                                    </form>
+                                                    
+                                                    <button type="button" 
+                                                    class="btn btn-xs btn-danger rounded-pill " data-bs-toggle="modal"
+                                                    data-bs-target="#modalRechazarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                         Rechazar  
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endif
+
+
+
+
+
+                                
+                                @if(in_array($cita->estado, ['pendiente', 'confirmada']) && !$solicitudEnviada && !$esPasada && !$solicitudPendiente)
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-2" data-bs-toggle="modal"
+                                                    data-bs-target="#modalSolicitarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                <i class="bi bi-calendar-event me-1"></i> Solicitar Cambio
+                                            </button>
+                                @elseif($solicitudEnviada)
+                                        <div class="alert alert-warning border-0 rounded-4 small p-2 mt-2 text-center"> 
+                                            <strong>¡Solicitud Enviada!</strong><br>
+                                        </div>
+                                                 
+                                @endif
+
 
                                 @if($cita->estado == 'pendiente')
                                     <div class="row g-2">
@@ -78,15 +212,20 @@
                                         </span>
                                     </div>
 
-                                    <div class="row g-2">
-                                        <div class="col-12">
-                                            <form action="{{ route('citas.status', $cita->id) }}" method="POST">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="estado" value="finalizada">
-                                                <button class="btn btn-navy rounded-pill btn-sm w-100 shadow-sm" title="Marcar como atendida">
-                                                    <i class="bi bi-check2-all me-1"></i> Finalizar Consulta
+                                    <div class="row g-2 justi">
+                                        <div class="text-center" >
+                                          
+                                            
+                                                @if($cita->estado == 'confirmada')
+                                                <button type="button" class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
+                                                    data-bs-target="#modalNotaMedica" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    <i class="bi bi-check2-circle me-1"></i> Finalizar Cita
                                                 </button>
-                                            </form>
+
+
+                                
+                                                @endif
+                                            
                                         </div>
                                         <div class="col-12">
                                             <form action="{{ route('citas.status', $cita->id) }}" method="POST" onsubmit="return confirm('¿Marcar inasistencia?');">
@@ -106,6 +245,9 @@
                                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
                                                 <i class="bi bi-calendar-check me-1"></i> Confirmada
                                             </span>
+
+
+
                                         @elseif($cita->estado == 'finalizada')
                                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3">
                                                 <i class="bi bi-clipboard-check me-1"></i> Completada
@@ -125,6 +267,9 @@
                         </div>
                     </div>
                 </div>
+                        @push('modals')
+                        @include('users.modal_reagendar')
+                        @endpush
             @empty
                 <div class="col-12 text-center py-5">
                     <div class="bg-light rounded-circle d-inline-flex p-4 mb-3 text-muted">
@@ -136,6 +281,7 @@
         </div>
     </div>
 
+
     <style>
         .hover-scale {
             transition: transform 0.2s;
@@ -145,4 +291,10 @@
             transform: translateY(-5px);
         }
     </style>
+
+
+                        @push('modals')
+                        @include('doctores.modal_nota_medica')
+                        @endpush
+
 </x-layout>

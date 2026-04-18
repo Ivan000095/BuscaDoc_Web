@@ -202,7 +202,7 @@
                 <div class="col-lg-8">
 
                     {{-- 1. TARJETAS DE ACCIÓN RÁPIDA (BOTONES) --}}
-                    <h5 class="fw-bold text-navy mb-3">Accos Rápidos</h5>
+                    <h5 class="fw-bold text-navy mb-3">Accesos Rápidos</h5>
                     <div class="row g-3 mb-4">
                         @if(Auth::user()->doctor->citas == true)
                         <div class="col-md-6">
@@ -232,60 +232,64 @@
 
                     <h5 class="fw-bold text-navy mb-3">Resumen</h5>
                     <div class="row g-4">
-                        @if(Auth::user()->doctor->citas == true)
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                                
-                                <div
-                                    class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-3"
-                                            style="width: 40px; height: 40px;">
-                                            <i class="bi bi-person-check-fill"></i>
+                            @if(Auth::user()->doctor->citas == true)
+                                <div class="col-md-4">
+                                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+
+                                        <div
+                                            class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                    style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-person-check-fill"></i>
+                                                </div>
+                                                <h6 class="fw-bold text-dark mb-0">Siguiente Paciente</h6>
+                                            </div>
                                         </div>
-                                        <h6 class="fw-bold text-dark mb-0">Siguiente Paciente</h6>
+
+                                        <div class="card-body px-4 pb-4 pt-3">
+                                            @if($proximaCitaDoctor)
+                                                <div class="p-3 bg-light rounded-3 border-start border-4 border-success">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        {{-- Foto del Paciente --}}
+
+
+                                                        <div>
+                                                            <span
+                                                                class="fw-bold text-dark d-block">{{ $proximaCitaDoctor->expediente->nombre_completo }}</span>
+                         
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="d-flex align-items-center justify-content-between mt-3">
+                                                        <span class="badge bg-white text-dark border shadow-sm">
+                                                            <i class="bi bi-clock me-1 text-navy"></i>
+                                                             {{ \Carbon\Carbon::parse($proximaCitaDoctor->fecha)->format('d/m/Y') }}, 
+                                                             {{ \Carbon\Carbon::parse($proximaCitaDoctor->hora_inicio)->format('g:i A') }}
+                                                            
+                                                        </span>
+
+                                                    </div>
+
+                                                    <div class="d-flex align-items-center justify-content-left mt-3">                                                       
+                                                        @if($proximaCitaDoctor->estado == 'pendiente')
+                                                            <br>
+                                                            <span class="badge bg-warning text-dark">Por confirmar</span>
+                                                        @else
+                                                            <span class="badge bg-success">Confirmada</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="text-center py-4 opacity-50">
+                                                    <i class="bi bi-calendar-check fs-1 text-muted"></i>
+                                                    <p class="mb-0 small mt-2">No tienes citas próximas.</p>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <div class="card-body px-4 pb-4 pt-3">
-                                    @if($proximaCitaDoctor)
-                                        <div class="p-3 bg-light rounded-3 border-start border-4 border-success">
-                                            <div class="d-flex align-items-center mb-2">
-                                                {{-- Foto del Paciente --}}
-                                                <img src="{{ $proximaCitaDoctor->paciente->user->foto ? asset('storage/' . $proximaCitaDoctor->paciente->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCitaDoctor->paciente->user->name) }}"
-                                                    class="rounded-circle me-3 shadow-sm" width="45" height="45"
-                                                    style="object-fit: cover;">
-
-                                                <div>
-                                                    <span
-                                                        class="fw-bold text-dark d-block">{{ $proximaCitaDoctor->paciente->user->name }}</span>
-                                                    <small
-                                                        class="text-muted">{{ $proximaCitaDoctor->paciente->tipo_sangre ?? 'Paciente' }}</small>
-                                                </div>
-                                            </div>
-
-                                            <div class="d-flex align-items-center justify-content-between mt-3">
-                                                <span class="badge bg-white text-dark border shadow-sm">
-                                                    <i class="bi bi-clock me-1 text-navy"></i>
-                                                    {{ $proximaCitaDoctor->fecha_hora->format('h:i A') }}
-                                                </span>
-                                                @if($proximaCitaDoctor->estado == 'pendiente')
-                                                    <span class="badge bg-warning text-dark">Por confirmar</span>
-                                                @else
-                                                    <span class="badge bg-success">Confirmada</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="text-center py-4 opacity-50">
-                                            <i class="bi bi-calendar-check fs-1 text-muted"></i>
-                                            <p class="mb-0 small mt-2">No tienes citas próximas.</p>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        @endif
+                            @endif
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-scale">
                                 <a href="{{ route('doctores.show', Auth::user()->doctor->id) }}#pills-reviews"
@@ -413,10 +417,37 @@
                             <small class="text-muted d-block fw-bold mb-1">Horario de Atención</small>
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-clock me-2 text-navy"></i>
-                                <span class="small text-dark">
-                                    {{ \Carbon\Carbon::parse(Auth::user()->doctor->horario_entrada)->format('h:i A') }} -
-                                    {{ \Carbon\Carbon::parse(Auth::user()->doctor->horario_salida)->format('h:i A') }}
-                                </span>
+                                
+                                {{-- Horario --}}
+                            @php
+                                $hoy = now()->dayOfWeek; // 0 (Dom) a 6 (Sáb)
+                                $horaActual = now()->format('H:i:s');
+                                $disponibilidadHoy = Auth::user()->doctor->disponibilidades->where('dia_semana', $hoy);
+                                $estaAbierto = false;
+                                $rangoHoy = "Cerrado ahora";
+
+                                foreach($disponibilidadHoy as $bloque) {
+                                    if($horaActual >= $bloque->hora_inicio && $horaActual <= $bloque->hora_fin) {
+                                        $estaAbierto = true;
+                                    }
+                                }
+                            @endphp
+
+                            
+                                
+                                @if($disponibilidadHoy->isEmpty())
+                                    <span class="badge bg-secondary rounded-pill">Sin consultas hoy</span>
+                                @else
+                                    <span class="badge {{ $estaAbierto ? 'bg-success' : 'bg-danger' }} rounded-pill me-2">
+                                        {{ $estaAbierto ? 'Abierto ahora' : 'Cerrado ahora' }}
+                                    </span>
+                                    <small class="text-muted">
+                                        {{ \Carbon\Carbon::parse($disponibilidadHoy->first()->hora_inicio)->format('g:i A') }} - 
+                                        {{ \Carbon\Carbon::parse($disponibilidadHoy->last()->hora_fin)->format('g:i A') }}
+                                    </small>
+                                @endif
+                            
+                               
                             </div>
                         </div>
 
@@ -553,79 +584,77 @@
 
             <div class="row g-4">
                 <div class="col-lg-8">
-                    @if($proximaCita)
-                        <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
-                            <div class="card-body p-0">
-                                <div class="row g-0">
-                                    <div
-                                        class="col-12 bg-navy text-white p-3 d-flex align-items-center justify-content-between d-md-none">
-                                        <span class="fw-bold"><i class="bi bi-calendar-event me-2"></i>Tu próxima cita</span>
-                                    </div>
+                         @if($proximaCita)
+                            <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+                                <div class="card-body p-0">
+                                    <div class="row g-0">
+                                        <div
+                                            class="col-12 bg-navy text-white p-3 d-flex align-items-center justify-content-between d-md-none">
+                                            <span class="fw-bold"><i class="bi bi-calendar-event me-2"></i>Tu próxima cita</span>
+                                        </div>
 
-                                    <div
-                                        class="col-md-2 bg-light d-flex flex-column align-items-center justify-content-center py-4 border-end">
-                                        <span
-                                            class="text-uppercase small fw-bold text-muted">{{ $proximaCita->fecha_hora->format('M') }}</span>
-                                        <span
-                                            class="display-4 fw-bold text-navy lh-1">{{ $proximaCita->fecha_hora->format('d') }}</span>
-                                        <span class="small text-muted">{{ $proximaCita->fecha_hora->format('l') }}</span>
-                                    </div>
+                                        <div
+                                            class="col-md-2 bg-light d-flex flex-column align-items-center justify-content-center py-4 border-end">
+                                            <span
+                                                class="text-uppercase small fw-bold text-muted">{{ $proximaCita->fecha->format('M') }}</span>
+                                            <span
+                                                class="display-4 fw-bold text-navy lh-1">{{ $proximaCita->fecha->format('d') }}</span>
+                                            <span class="small text-muted">{{ $proximaCita->fecha->format('l') }}</span>
+                                        </div>
 
-                                    <div class="col-md-7 p-4 d-flex align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            <img src="{{ $proximaCita->doctor->user->foto ? asset('storage/' . $proximaCita->doctor->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCita->doctor->user->name) }}"
-                                                class="rounded-circle shadow-sm me-3" width="65" height="65"
-                                                style="object-fit: cover;">
-                                            <div>
-                                                <small class="text-primary fw-bold text-uppercase"
-                                                    style="font-size: 0.7rem; letter-spacing: 1px;">
-                                                    Próxima Consulta
-                                                </small>
-                                                <h4 class="fw-bold text-navy mb-1">Dr. {{ $proximaCita->doctor->user->name }}
-                                                </h4>
-                                                <div class="d-flex align-items-center text-muted">
-                                                    <i class="bi bi-clock-fill me-2 text-warning"></i>
-                                                    <span
-                                                        class="fw-bold text-dark">{{ $proximaCita->fecha_hora->format('h:i A') }}</span>
-                                                    <span class="mx-2">•</span>
+                                        <div class="col-md-7 p-4 d-flex align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ $proximaCita->doctor->user->foto ? asset('storage/' . $proximaCita->doctor->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCita->doctor->user->name) }}"
+                                                    class="rounded-circle shadow-sm me-3" width="65" height="65"
+                                                    style="object-fit: cover;">
+                                                <div>
+                                                    <small class="text-primary fw-bold text-uppercase"
+                                                        style="font-size: 0.7rem; letter-spacing: 1px;">
+                                                        Próxima Consulta
+                                                    </small>
+                                                    <h4 class="fw-bold text-navy mb-1">Dr. {{ $proximaCita->doctor->user->name }}
+                                                    </h4>
+                                                    <div class="d-flex align-items-center text-muted">
+                                                        <i class="bi bi-clock-fill me-2 text-warning"></i>
+                                                        <span
+                                                            class="fw-bold text-dark">{{ \Carbon\Carbon::parse($proximaCita->hora_inicio)->format('h:i A') }}</span>
+                                                        <span class="mx-2">•</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div
-                                        class="col-md-3 bg-white p-4 d-flex flex-column justify-content-center align-items-center border-start">
-                                        @if($proximaCita->estado == 'pendiente')
-                                            <span class="badge bg-warning text-dark rounded-pill px-3 mb-3">
-                                                Pendiente de confirmar
-                                            </span>
-                                        @elseif($proximaCita->estado == 'confirmada')
-                                            <span class="badge bg-success rounded-pill px-3 mb-3">
-                                                <i class="bi bi-check-circle me-1"></i> Confirmada
-                                            </span>
-                                        @endif
-                                        <a href="{{ route('pacientes.citas') }}"
-                                            class="btn btn-outline-navy rounded-pill btn-sm px-4">
-                                            Ver mis citas
-                                        </a>
+                                        <div
+                                            class="col-md-3 bg-white p-4 d-flex flex-column justify-content-center align-items-center border-start">
+                                            @if($proximaCita->estado == 'pendiente')
+                                                <span class="badge bg-warning text-dark rounded-pill px-3 mb-3">
+                                                    Pendiente de confirmar
+                                                </span>
+                                            @elseif($proximaCita->estado == 'confirmada')
+                                                <span class="badge bg-success rounded-pill px-3 mb-3">
+                                                    <i class="bi bi-check-circle me-1"></i> Confirmada
+                                                </span>
+                                            @endif
+                                            <a href="{{ route('pacientes.citas') }}"
+                                                class="btn btn-outline-navy rounded-pill btn-sm px-4">
+                                                Ver mis citas
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    @else
-                        <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-center bg-white">
-                            <div class="py-3">
-                                <div class="mb-3">
-                                    <i class="bi bi-calendar-plus text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
+                        @else
+                            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-center bg-white">
+                                <div class="py-3">
+                       
+                                    <h5 class="fw-bold text-navy">No tienes citas próximas</h5>
+                                    <p class="text-muted small">¿Te sientes mal o necesitas un chequeo?</p>
+                                    <a href="{{ route('doctores.vista') }}" class="btn btn-navy rounded-pill px-4 mt-2">
+                                        Buscar un Doctor
+                                    </a>
                                 </div>
-                                <h5 class="fw-bold text-navy">No tienes citas próximas</h5>
-                                <p class="text-muted small">¿Te sientes mal o necesitas un chequeo?</p>
-                                <a href="{{ route('doctores.vista') }}" class="btn btn-navy rounded-pill px-4 mt-2">
-                                    Buscar un Doctor
-                                </a>
                             </div>
-                        </div>
-                    @endif
+                        @endif
 
                     <h5 class="fw-bold text-navy mb-3">¿Qué necesitas hacer?</h5>
                     <div class="row g-3">
@@ -677,34 +706,59 @@
                                 class="rounded-circle me-3 shadow-sm" width="50" height="50" style="object-fit: cover;">
                             <div>
                                 <h6 class="fw-bold mb-0 text-navy">Mi Ficha Médica</h6>
-                                <a href="{{ route('users.show', Auth::user()->id) }}"
-                                    class="small text-muted text-decoration-none">Ver perfil completo ></a>
+                                <a href="#" class="btn btn-light btn-sm rounded-pill px-3">
+                                Ver más
+                            </a>
                             </div>
                         </div>
 
-                        @if(Auth::user()->patient)
-                            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                                <span class="text-muted small fw-bold">Mi tipo de sangre</span>
-                                <span
-                                    class="fw-bold text-danger bg-danger-subtle px-3 py-1 rounded-pill">{{ Auth::user()->patient->tipo_sangre ?? '--' }}</span>
-                            </div>
-                            <div class="mb-3">
-                                <span class="text-muted small fw-bold d-block mb-1">Mis alergias</span>
-                                <span
-                                    class="fw-medium text-dark small bg-light p-2 rounded d-block border">{{ Auth::user()->patient->alergias ?? 'Ninguna registrada' }}</span>
-                            </div>
-                            <div class="mb-3">
-                                <span class="text-muted small fw-bold d-block mb-1">Mi contacto de emergencia</span>
-                                <div class="d-flex align-items-center text-navy fw-bold bg-light p-2 rounded border">
-                                    <i class="bi bi-telephone-fill me-2"></i>
-                                    {{ Auth::user()->patient->contacto_emergencia ?? '--' }}
+                            @php
+                                // Obtenemos el expediente marcado como 'Propio' para este paciente
+                                $expedientePropio = Auth::user()->expedientes()->where('parentesco', 'Propio')->first();
+                            @endphp
+
+                            @if($expedientePropio)
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-danger bg-opacity-10 p-2 rounded-3 me-3">
+                                            <i class="bi bi-droplet-fill text-danger"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-0">Tipo de Sangre</p>
+                                            <p class="fw-bold text-navy mb-0">{{ $expedientePropio->tipo_sangre ?? 'No especificado' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        @else
-                            <div class="alert alert-warning small border-0 rounded-3">
-                                <i class="bi bi-exclamation-circle-fill me-1"></i> Completa tu perfil médico para emergencias.
-                            </div>
-                        @endif
+
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-warning bg-opacity-10 p-2 rounded-3 me-3">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-0">Alergias</p>
+                                            <p class="fw-bold text-navy mb-0 small">{{ Str::limit($expedientePropio->alergias, 40) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-0">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-info bg-opacity-10 p-2 rounded-3 me-3">
+                                            <i class="bi bi-heart-pulse-fill text-info"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-0">Padecimientos Crónicos</p>
+                                            <p class="fw-bold text-navy mb-0 small">{{ Str::limit($expedientePropio->padecimientos_cronicos, 40) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="text-center py-3">
+                                    <p class="text-muted small">No se encontró tu expediente principal.</p>
+                                    <a href="{{ route('expedientes.create') }}" class="btn btn-navy btn-sm rounded-pill">Crear Ficha</a>
+                                </div>
+                            @endif
                     </div>
                 </div>
             </div>

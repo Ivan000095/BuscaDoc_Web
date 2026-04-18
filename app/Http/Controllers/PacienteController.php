@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Expediente;
 
 class PacienteController extends Controller
 {
@@ -30,38 +31,50 @@ class PacienteController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
             'foto' => 'nullable|image|max:5120',
+            // Campos para el expediente inicial
+            'f_nacimiento' => 'required|date',
+            'genero' => 'required|in:masculino,femenino,otro',
             'tipo_sangre' => 'nullable|string',
             'alergias' => 'nullable|string',
-            'cirugias' => 'nullable|string',
-            'padecimientos' => 'nullable|string',
-            'habitos' => 'nullable|string',
-            'contacto_emergencia' => 'nullable|string|max:10',
+            'padecimientos_cronicos' => 'nullable|string',
+            'habitos_salud' => 'nullable|string',
         ]);
 
-        $rutaFoto = null;
-        if ($request->hasFile('foto')) {
-            $rutaFoto = $request->file('foto')->store('users', 'public');
-        }
+        return DB::transaction(function () use ($request, $validated) {
+            $rutaFoto = $request->hasFile('foto') 
+                ? $request->file('foto')->store('users', 'public') 
+                : null;
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'paciente',
-            'foto' => $rutaFoto,
-        ]);
+            // 1. Crear el Usuario
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'paciente',
+                'foto' => $rutaFoto,
+                'f_nacimiento' => $validated['f_nacimiento'],
+            ]);
 
-        Paciente::create([
-            'user_id' => $user->id,
-            'tipo_sangre' => $validated['tipo_sangre'],
-            'alergias' => $validated['alergias'],
-            'cirugias' => $validated['cirugias'],
-            'padecimientos' => $validated['padecimientos'],
-            'habitos' => $validated['habitos'],
-            'contacto_emergencia' => $validated['contacto_emergencia'],
-        ]);
+            // 2. Crear el Perfil de Paciente (Cuenta principal)
+            $paciente = Paciente::create([
+                'user_id' => $user->id,
+            ]);
 
-        return redirect()->route('pacientes.index')->with('success', 'Paciente creado correctamente');
+            // 3. Crear el Expediente inicial (El del titular)
+            Expediente::create([
+                'user_id' => $user->id,
+                'nombre_completo' => $user->name,
+                'fecha_nacimiento' => $user->f_nacimiento,
+                'genero' => $validated['genero'],
+                'parentesco' => 'Propio',
+                'tipo_sangre' => $validated['tipo_sangre'],
+                'alergias' => $validated['alergias'],
+                'padecimientos_cronicos' => $validated['padecimientos_cronicos'],
+                'habitos_salud' => $validated['habitos_salud'],
+            ]);
+
+            return redirect()->route('pacientes.index')->with('success', 'Paciente y expediente creados correctamente');
+        });
     }
 
     public function edit(Paciente $paciente): View
@@ -74,39 +87,60 @@ class PacienteController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $paciente->user_id,
-            'password' => 'nullable|min:8', // Contraseña opcional al editar
+            'password' => 'nullable|min:8',
             'foto' => 'nullable|image|max:5120',
+            
+            // Campos que ahora pertenecen al Expediente
+            'f_nacimiento' => 'required|date',
+            'genero' => 'required|in:masculino,femenino,otro',
             'tipo_sangre' => 'nullable|string',
             'alergias' => 'nullable|string',
-            'cirugias' => 'nullable|string',
-            'padecimientos' => 'nullable|string',
-            'habitos' => 'nullable|string',
-            'contacto_emergencia' => 'nullable|string|max:10',
+            'padecimientos_cronicos' => 'nullable|string',
+            'habitos_salud' => 'nullable|string',
         ]);
 
-        $user = $paciente->user;
+        return DB::transaction(function () use ($request, $validated, $paciente) {
+            $user = $paciente->user;
 
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
+            // 1. Actualizar datos del Usuario
+            $user->name = $validated['name'];
+            $user->email = $validated['email'];
+            $user->f_nacimiento = $validated['f_nacimiento'];
 
-        if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
-        if ($request->hasFile('foto')) {
-            // Borrar foto anterior si existe
-            if ($user->foto) {
-                Storage::disk('public')->delete($user->foto);
+            if (!empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
             }
-            $user->foto = $request->file('foto')->store('users', 'public');
-        }
 
-        $user->save();
+            if ($request->hasFile('foto')) {
+                if ($user->foto) {
+                    Storage::disk('public')->delete($user->foto);
+                }
+                $user->foto = $request->file('foto')->store('users', 'public');
+            }
 
-        $pacienteData = collect($validated)->except(['name', 'email', 'password', 'foto'])->toArray();
-        $paciente->update($pacienteData);
+            $user->save();
 
-        return redirect()->route('pacientes.index')->with('success', 'Paciente actualizado correctamente');
+            // 2. Actualizar el Expediente Principal (el del titular)
+            // Buscamos el expediente que pertenece a este paciente y es el "Propio"
+            $expedientePrincipal = $user->expedientes()
+                ->where('parentesco', 'Propio')
+                ->first();
+
+            if ($expedientePrincipal) {
+                $expedientePrincipal->update([
+                    'nombre_completo' => $user->name,
+                    'fecha_nacimiento' => $user->f_nacimiento,
+                    'genero' => $validated['genero'],
+                    'tipo_sangre' => $validated['tipo_sangre'],
+                    'alergias' => $validated['alergias'],
+                    'padecimientos_cronicos' => $validated['padecimientos_cronicos'],
+                    'habitos_salud' => $validated['habitos_salud'],
+                ]);
+            }
+
+            return redirect()->route('pacientes.index')
+                ->with('success', 'Perfil y expediente actualizados correctamente');
+        });
     }
 
     public function destroy(Paciente $paciente): RedirectResponse

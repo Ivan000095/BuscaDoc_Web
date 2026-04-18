@@ -64,7 +64,7 @@ class UserController extends Controller
     }
     public function edit($id)
     {
-        $user = User::with(['doctor', 'patient', 'farmacia'])->findOrFail($id);
+        $user = User::with(['doctor', 'paciente', 'farmacia'])->findOrFail($id);
 
         // Verificamos que el usuario solo edite su propio perfil (Seguridad básica)
         if (auth()->id() !== $user->id && auth()->user()->role !== 'admin') {
@@ -146,7 +146,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $user->role == 'doctor' ? $user->load('doctor') : ($user->role == 'farmacia' ? $user->load('farmacia') : $user->load('patient'));
+        $user->role == 'doctor' ? $user->load('doctor') : ($user->role == 'farmacia' ? $user->load('farmacia') : $user->load('paciente') );
         return view('users.show', compact('user'));
 
     }

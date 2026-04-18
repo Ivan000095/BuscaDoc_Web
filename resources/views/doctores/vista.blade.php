@@ -70,7 +70,7 @@
                             <div class="d-flex align-items-center mb-2">
                                 <i class="bi bi-clock me-2 text-navy"></i>
                                 @if($disponibilidadHoy->isEmpty())
-                                    <span class="badge bg-secondary rounded-pill">Sin consulta hoy</span>
+                                    <span class="badge bg-secondary rounded-pill">Sin consultas hoy</span>
                                 @else
                                     <span class="badge {{ $estaAbierto ? 'bg-success' : 'bg-danger' }} rounded-pill me-2">
                                         {{ $estaAbierto ? 'Abierto ahora' : 'Cerrado ahora' }}

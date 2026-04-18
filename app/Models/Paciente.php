@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Paciente extends Model
 {
@@ -12,16 +13,13 @@ class Paciente extends Model
 
     protected $fillable = [
         'user_id',
-        'tipo_sangre',
-        'alergias',
-        'cirugias',        // Nuevo campo
-        'padecimientos',   // Nuevo campo
-        'habitos',         // Nuevo campo
-        'contacto_emergencia', // Nuevo campo
+        // Quitamos los campos médicos de aquí, ya que van en el Expediente
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+
+
 }
