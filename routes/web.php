@@ -132,3 +132,13 @@ Route::get('/correr-seeders', function () {
         return 'Hubo un error: ' . $e->getMessage();
     }
 });
+
+Route::get('/backup/uP8&vQ8#zL8*nX8!', function () {
+    try {
+        Artisan::call('backup:run');
+        Artisan::call('backup:clean');
+        return 'Backup completado';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
