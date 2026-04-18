@@ -57,8 +57,7 @@ class DoctorController extends Controller
                     "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
                     "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 30),
                     "fecha" => $doctor->user->f_nacimiento,
-                    // Puse localhost, porque ando compartiendo el puerto a mi teléfono físico, pero después debería de tener el host de la página
-                    "image" => "http://localhost:8000/storage/" . $doctor->user->foto,
+                    "image" => "https://buscadoc.online/storage/" . $doctor->user->foto,
                     "promedio" => $promedio,
                     "cedula" => $doctor->cedula,
                     "role" => $doctor->user->role,
