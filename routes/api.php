@@ -15,8 +15,8 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\API\DoctorController;
 use App\Http\Controllers\API\FarmaciaController;
 use App\Http\Controllers\API\PacienteController;
-use App\Http\Controllers\Api\CommentController;
-use App\Http\Controllers\Api\ReplyController;
+use App\Http\Controllers\Api\ComentarioController;
+use App\Http\Controllers\Api\RespuestaController;
 
 // ─────────────────────────────────────────────────────────────
 // HEALTH CHECK / STATUS
@@ -64,8 +64,8 @@ Route::get('/buscar', [SearchController::class, 'apiSearch']);
 // ─────────────────────────────────────────────────────────────
 // MÓDULO: COMENTARIOS Y RESEÑAS (PÚBLICO - LECTURA)
 // ─────────────────────────────────────────────────────────────
-Route::get('/users/{userId}/comments', [CommentController::class, 'index']);
-Route::get('/comments/{commentId}/replies', [ReplyController::class, 'index']);
+Route::get('/users/{userId}/comments', [ComentarioController::class, 'index']);
+Route::get('/comments/{commentId}/replies', [RespuestaController::class, 'index']);
 
 // ─────────────────────────────────────────────────────────────
 // RUTAS PROTEGIDAS (auth:sanctum)
@@ -99,10 +99,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mensajes/{id}', [MensajeriaController::class, 'getMensajesApi']);
     Route::post('/mensajes', [MensajeriaController::class, 'storeApi']);
 
-    // ─── Comentarios y Reseñas (Escritura) ───────────────────
-    Route::post('/comments', [CommentController::class, 'store']);
-    Route::get('/users/{userId}/can-review', [CommentController::class, 'canReview']);
-    Route::post('/comments/{commentId}/reply', [ReplyController::class, 'store']);
+    // ─── Mi Farmacia (dueño) ─────────────────────────────────
+    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('api.farmacias.yo');
+    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('api.farmacias.yo.editar');
+    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('api.farmacias.yo.actualizar');
+
+    // ─── Comentarios y Reseñas (Escritura protegida) ─────────
+    Route::post('/comments', [ComentarioController::class, 'store']);
+    Route::get('/users/{userId}/can-review', [ComentarioController::class, 'canReview']);
+    Route::post('/comments/{commentId}/reply', [RespuestaController::class, 'store']);
 
 });
 
