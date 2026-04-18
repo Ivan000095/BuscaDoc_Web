@@ -386,4 +386,18 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('.btn-primary-custom');
+
+            form.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Conectando...';
+                submitBtn.style.opacity = '0.8';
+                submitBtn.style.cursor = 'not-allowed';
+            });
+        });
+    </script>
 </x-layout>
