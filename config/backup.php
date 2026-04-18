@@ -53,7 +53,7 @@ return [
 
             'compression_level' => 9,
 
-            'filename_prefix' => 'backup-',
+            'filename_prefix' => 'buscadoc-',
 
             'disks' => [
                 'local',
