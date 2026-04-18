@@ -212,34 +212,32 @@
                 flex-wrap: nowrap;
                 overflow-x: auto;
                 gap: 1.25rem;
-                /* El padding permite que la sombra no se corte y da espacio a la barra abajo */
                 padding: 1rem 0.5rem 1.5rem 0.5rem; 
                 scroll-snap-type: x mandatory;
                 scroll-behavior: smooth;
                 -webkit-overflow-scrolling: touch;
             }
 
-            /* --- Barra de Scroll Moderna --- */
             .scroll-horizontal::-webkit-scrollbar {
-                height: 8px; /* Finita y elegante */
+                height: 8px;
             }
             .scroll-horizontal::-webkit-scrollbar-track {
-                background: rgba(0, 33, 61, 0.05); /* Riel casi transparente */
+                background: rgba(0, 33, 61, 0.05);
                 border-radius: 10px;
-                margin: 0 10px; /* Separación de los bordes */
+                margin: 0 10px;
             }
             .scroll-horizontal::-webkit-scrollbar-thumb {
-                background: rgba(0, 33, 61, 0.2); /* Color navy suavecito */
+                background: rgba(0, 33, 61, 0.2);
                 border-radius: 10px;
             }
             .scroll-horizontal::-webkit-scrollbar-thumb:hover {
-                background: rgba(0, 33, 61, 0.5); /* Se oscurece al pasar el mouse */
+                background: rgba(0, 33, 61, 0.5);
             }
 
             .doctor-card-snap {
                 scroll-snap-align: start;
                 width: 220px;
-                flex-shrink: 0; /* Evita que la tarjeta se aplaste */
+                flex-shrink: 0;
             }
         </style>
     @endpush
@@ -551,8 +549,8 @@
                     </div>
                 </div>
 
-                <div class="row mb-5">
-                    <div class="col-12 col-md-6 col-lg-3 mb-4">
+                <div class="row mb-5 justify-content-center">
+                    <div class="col-12 col-md-6 col-lg-3 mb-5">
                         <div class="card h-100 border-50 shadow-sm hover-card">
                             <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
                                 <img src="{{ asset('images/doctores.jpg') }}" alt="Doctores"
@@ -563,7 +561,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="col-12 col-md-6 col-lg-3 mb-5">
                         <div class="card h-100 border-50 shadow-sm hover-card">
                             <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
                                 <img src="{{ asset('images/farmacias.jpeg') }}" alt="Farmacias"
@@ -574,7 +572,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="col-12 col-md-6 col-lg-3 mb-5">
                         <div class="card h-100 border-50 shadow-sm hover-card">
                             <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
                                 <img src="{{ asset('images/pacientes.jpg') }}" alt="Pacientes"
@@ -585,12 +583,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="col-12 col-md-6 col-lg-3 mb-5">
                         <div class="card h-100 border-50 shadow-sm hover-card">
                             <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
                                 <img src="{{ asset('images/reporte.jpg') }}" alt="Reportes"
                                     class="rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
                                 <h5 class="card-title fw-bold custom-text-dark">Reportes</h5>
+                                <a href="{{ route('admin.reportes.index') }}"
+                                    class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3 mb-5">
+                        <div class="card h-100 border-50 shadow-sm hover-card">
+                            <div class="card-body text-center d-flex flex-column justify-content-center align-items-center p-4">
+                                <x-mcr-download
+                                    class="rounded-circle mb-2 shadow-sm" style="width: 80px; height: 80px; "/>
+                                <h5 class="card-title fw-bold custom-text-dark">Backups</h5>
                                 <a href="{{ route('admin.reportes.index') }}"
                                     class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                             </div>

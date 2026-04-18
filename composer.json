@@ -20,7 +20,8 @@
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
         "league/commonmark": "^2.8",
-        "spatie/laravel-backup": "^10.2"
+        "spatie/laravel-backup": "^10.2",
+        "ext-zip": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
