@@ -6,9 +6,9 @@ use Illuminate\Support\Facades\Route;
 // Importaciones de Controladores (Ordenadas)
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\API\DoctorController;
-use App\Http\Controllers\API\FarmaciaController;
-use App\Http\Controllers\API\PacienteController;
+use App\Http\Controllers\Api\DoctorController;
+use App\Http\Controllers\Api\FarmaciaController;
+use App\Http\Controllers\Api\PacienteController;
 use App\Http\Controllers\Api\EspecialidadController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\MensajeriaController;
@@ -20,7 +20,7 @@ use App\Http\Controllers\Api\ComentarioController;
 Route::get("/status", function () {
     return response()->json([
         "success" => true,
-        "message" => "API funcionando correctamente",
+        "message" => "Api funcionando correctamente",
         "timestamp" => now(),
         "version" => "1.0.0",
     ]);
@@ -31,12 +31,12 @@ Route::prefix("auth")->group(function () {
     Route::post("/login", [AuthController::class, "login"]);
 });
 
-Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('api.specs.index');
-Route::get('/dashboard/especialidades', [EspecialidadController::class, 'apiDashboard']);
-Route::apiResource('doctors', DoctorController::class);
-Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('api.farmacias.index');
-Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('api.farmacias.show');
-Route::get('/buscar', [App\Http\Controllers\api\SearchController::class, 'apiSearch']);
+Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('Api.specs.index');
+Route::get('/dashboard/especialidades', [EspecialidadController::class, 'ApiDashboard']);
+Route::ApiResource('doctors', DoctorController::class);
+Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('Api.farmacias.index');
+Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('Api.farmacias.show');
+Route::get('/buscar', [App\Http\Controllers\Api\SearchController::class, 'ApiSearch']);
 
 
 Route::middleware("auth:sanctum")->group(function () {
@@ -52,7 +52,7 @@ Route::middleware("auth:sanctum")->group(function () {
 
     Route::get('/home-dashboard', [HomeController::class, 'getHomeData']);
 
-    Route::get('/user/{id}', [UserController::class, 'show'])->name('api.user.show');
+    Route::get('/user/{id}', [UserController::class, 'show'])->name('Api.user.show');
     Route::put('/user/{id}', [UserController::class, 'update']);
     Route::delete('/user/{id}', [UserController::class, 'destroy']);
     Route::post('/usuarios/fcm-token', [UserController::class, 'guardarFcmToken']);
@@ -61,16 +61,16 @@ Route::middleware("auth:sanctum")->group(function () {
     Route::get('/mensajes/{id}', [MensajeriaController::class, 'getMensajesApi']);
     Route::post('/mensajes', [MensajeriaController::class, 'storeApi']);
 
-    Route::get("/statistics", [DoctorController::class, "stats"])->name('api.doctors.stats'); 
+    Route::get("/statistics", [DoctorController::class, "stats"])->name('Api.doctors.stats'); 
 
-    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('api.farmacias.yo');
-    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('api.farmacias.yo.editar');
-    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('api.farmacias.yo.actualizar');
+    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('Api.farmacias.yo');
+    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('Api.farmacias.yo.editar');
+    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('Api.farmacias.yo.actualizar');
 
-    Route::apiResource('pacientes', PacienteController::class)->names('api.pacientes'); 
+    Route::ApiResource('pacientes', PacienteController::class)->names('Api.pacientes'); 
 
-    Route::apiResource('comentarios', ComentarioController::class);
-    Route::apiResource('respuestas', RespuestaController::class);
+    Route::ApiResource('comentarios', ComentarioController::class);
+    Route::ApiResource('respuestas', RespuestaController::class);
 
 });
 
