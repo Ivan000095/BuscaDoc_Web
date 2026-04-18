@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Respuesta;
@@ -12,16 +13,27 @@ class RespuestaController extends Controller
     {
         $request->validate([
             'comentario_id' => 'required|exists:comentarios,id',
-            'contenido'     => 'required|string|max:250',
+            'contenido'     => 'required|string|max:500',
         ]);
 
         $comentario = Comentario::findOrFail($request->comentario_id);
-        $user       = Auth::user();
-        if (!in_array($user->role, ['farmacia', 'doctor'])) {
-            abort(403, 'No tienes permiso para responder.');
-        }
-        if ($user->id !== $comentario->id_destinatario) {
-            abort(403, 'No estás autorizado para responder este comentario.');
+        $user = Auth::user();
+
+        // 🔒 LÓGICA DE PERMISOS ACTUALIZADA
+        if ($comentario->tipo === 'pregunta') {
+            // ❓ Preguntas: SOLO el dueño (doctor/farmacia) puede responder
+            if ($user->id !== $comentario->id_destinatario) {
+                abort(403, 'Solo el doctor o farmacia propietario puede responder a sus preguntas.');
+            }
+        } 
+        elseif ($comentario->tipo === 'resena') {
+            // ⭐ Reseñas: SOLO pacientes pueden responder
+            if ($user->role !== 'paciente') {
+                abort(403, 'Solo los pacientes pueden responder a las reseñas.');
+            }
+        } 
+        else {
+            abort(400, 'Tipo de comentario no válido.');
         }
 
         Respuesta::create([
