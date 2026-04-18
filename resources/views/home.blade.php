@@ -600,7 +600,7 @@
                                 <x-mcr-download
                                     class="rounded-circle mb-2 shadow-sm" style="width: 80px; height: 80px; "/>
                                 <h5 class="card-title fw-bold custom-text-dark">Backups</h5>
-                                <a href="{{ route('admin.reportes.index') }}"
+                                <a href="{{ route('backups.index') }}"
                                     class="btn btn-navy btn-sm stretched-link mt-2 rounded-pill px-4">Entrar</a>
                             </div>
                         </div>

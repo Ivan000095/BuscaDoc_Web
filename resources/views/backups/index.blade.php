@@ -22,7 +22,7 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <form action="{{ route('admin.backups.create') }}" method="POST" id="formBackup">
+                    <form action="{{ route('backups.create') }}" method="POST" id="formBackup">
                         @csrf
                         <button type="submit" class="btn btn-navy rounded-pill px-4 shadow-sm" id="btnCrearRespaldo">
                             <i class="bi bi-database-add me-1 text-white"></i>
@@ -45,7 +45,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($backups as $backup)
+                                @foreach ($backups as $backup)
                                     <tr>
                                         <td class="ps-4 fw-bold text-navy">
                                             <i class="bi bi-file-earmark-zip text-secondary me-2"></i>
@@ -56,22 +56,15 @@
                                         </td>
                                         <td class="text-muted">{{ $backup['last_modified'] }}</td>
                                         <td class="text-end pe-4">
-                                            <a href="{{ route('admin.backups.download', $backup['file_name']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                <i class="bi bi-download"></i> Descargar
+                                            <a href="{{ route('backups.download', $backup['file_name']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                <i class="bi bi-download"></i>
                                             </a>
-                                            <button onclick="deleteBackup('{{ route('admin.backups.destroy', $backup['file_name']) }}')" class="btn btn-sm btn-outline-danger rounded-pill px-3 ms-1">
-                                                <i class="bi bi-trash"></i> Eliminar
+                                            <button onclick="deleteBackup('{{ route('backups.destroy', $backup['file_name']) }}')" class="btn btn-sm btn-outline-danger rounded-pill px-3 ms-1">
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center py-5 text-muted">
-                                            <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                                            Aún no hay respaldos generados.
-                                        </td>
-                                    </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -107,26 +100,24 @@
 
         <script>
             $(document).ready(function () {
-                // Instancia simple de DataTable (sin ajax) para la tabla de archivos
                 $('#backupsTable').DataTable({
                     language: {
                         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
                         search: "_INPUT_",
-                        searchPlaceholder: "Buscar respaldo..."
+                        searchPlaceholder: "Buscar respaldo...",
+                        emptyTable: `
+                            <div class="d-flex flex-column align-items-center justify-content-center text-muted py-5">
+                                <i class="bi bi-inbox display-4 mb-3" style="font-size: 3rem;"></i>
+                                <h5 class="fw-bold mb-1">Sin respaldos</h5>
+                                <p class="mb-0">Aún no hay copias de seguridad generadas.</p>
+                            </div>
+                        `
                     },
-                    order: [[2, 'desc']], // Ordenar por fecha descendente por defecto
+                    order: [[2, 'desc']], 
                     dom: '<"d-flex justify-content-between align-items-center p-3"f>rt<"d-flex justify-content-between align-items-center p-3"ip>'
-                });
-
-                // Efecto de carga en el botón de respaldo manual
-                $('#formBackup').on('submit', function() {
-                    let btn = $('#btnCrearRespaldo');
-                    btn.prop('disabled', true);
-                    btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generando...');
                 });
             });
 
-            // Función para eliminar el respaldo
             function deleteBackup(url) {
                 if (confirm('¿Estás seguro de eliminar este archivo de respaldo? Esta acción no se puede deshacer.')) {
                     let form = document.createElement('form');
