@@ -37,10 +37,9 @@ class BackupController extends Controller
         try {
             set_time_limit(300);
             
-            Artisan::call('backup:run');
-            $output = Artisan::output(); 
+            Artisan::call('backup:run', ['--only-db' => true]);
 
-            return redirect()->back()->with('success', 'Comando ejecutado. Salida: ' . $output);
+            return redirect()->back()->with('success', 'Respaldo creado exitosamente');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
