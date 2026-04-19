@@ -62,6 +62,46 @@
             transition: all 0.3s;
         }
 
+        .btn-outline-navy {
+            color: var(--brand-navy); 
+            border: 1.5px solid var(--brand-navy);
+            background-color: transparent; 
+            font-weight: 600; 
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-outline-navy:hover {
+            background-color: var(--brand-navy);
+            color: var(--bg-surface, #ffffff);
+        }
+
+        .btn-outline-danger-custom {
+            color: #dc3545;
+            border: 1.5px solid #dc3545;
+            background-color: transparent;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-outline-danger-custom:hover {
+            background-color: #dc3545;
+            color: #ffffff;
+        }
+
+        .btn-outline-navy svg,
+        .btn-outline-danger-custom svg {
+            width: 1.2rem;
+            height: 1.2rem;
+            fill: currentColor; 
+            stroke: currentColor;
+            stroke-width: 1.1px;
+        }
+
         .shadow-soft {
             box-shadow: 0 10px 40px -10px rgba(17, 42, 70, 0.08) !important;
         }
@@ -106,6 +146,7 @@
             border: 1.5px solid rgba(251, 252, 253, 0.5);
             background-color: transparent; font-weight: 600; transition: all 0.3s ease;
         }
+        
         .btn-outline-light:hover {
             background-color: var(--bg-surface); color: var(--brand-navy) !important;
             border-color: var(--bg-surface); transform: translateY(-2px);

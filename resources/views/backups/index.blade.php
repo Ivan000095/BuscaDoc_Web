@@ -31,7 +31,7 @@
                     </form>
                 </div>
             </div>
-
+            
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -56,10 +56,10 @@
                                         </td>
                                         <td class="text-muted">{{ $backup['last_modified'] }}</td>
                                         <td class="text-end pe-4">
-                                            <a href="{{ route('backups.download', $backup['file_name']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                <i class="bi bi-download"></i>
+                                            <a href="{{ route('backups.download', $backup['file_name']) }}" class="btn btn-sm btn-outline-navy rounded-pill px-3">
+                                                <x-mcr-download/>
                                             </a>
-                                            <button onclick="deleteBackup('{{ route('backups.destroy', $backup['file_name']) }}')" class="btn btn-sm btn-outline-danger rounded-pill px-3 ms-1">
+                                            <button onclick="deleteBackup('{{ route('backups.destroy', $backup['file_name']) }}')" class="btn btn-sm btn-outline-danger-custom rounded-pill px-3 ms-1">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
