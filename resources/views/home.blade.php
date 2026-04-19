@@ -1234,14 +1234,26 @@
                                     <span class="fw-bold text-danger bg-danger-subtle px-3 py-1 rounded-pill">{{ $expedientePropio->tipo_sangre ?? 'No especificado' }}</span>
                                 </div>
                                 <div class="mb-3">
-                                    <span class="text-muted small fw-bold d-block mb-1">Mis alergias</span>
-                                    <span class="fw-medium text-dark small bg-light p-2 rounded d-block border">{{ Str::limit($expedientePropio->alergias, 40) }}</span>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-warning bg-opacity-10 p-2 rounded-3 me-3">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-0">Alergias</p>
+                                            <p class="fw-bold text-navy mb-0 small">{{ Str::limit($expedientePropio->alergias, 40) }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <span class="text-muted small fw-bold d-block mb-1">Padecimientos Crónicos</span>
-                                    <div class="d-flex align-items-center text-navy fw-bold bg-light p-2 rounded border">
-                                        <i class="bi bi-heart-pulse-fill text-info"></i>
-                                        {{ Str::limit($expedientePropio->padecimientos_cronicos, 40) }}
+
+                                <div class="mb-0">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-info bg-opacity-10 p-2 rounded-3 me-3">
+                                            <i class="bi bi-heart-pulse-fill text-info"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-0">Padecimientos Crónicos</p>
+                                            <p class="fw-bold text-navy mb-0 small">{{ Str::limit($expedientePropio->padecimientos_cronicos, 40) }}</p>
+                                        </div>
                                     </div>
                                 </div>
                             @else

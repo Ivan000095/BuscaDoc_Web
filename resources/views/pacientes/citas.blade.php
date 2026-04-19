@@ -262,63 +262,130 @@
                             </div>
                         </div>
                     </div>
+
                     @push('modals')
                      @include('users.modal_reagendar')
                      @endpush
 
 
-
-                <div class="modal fade" id="reprogramarLibreModal{{ $cita->id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content border-0 shadow-lg rounded-4">
-                            <div class="modal-header border-0 pb-0">
-                                <h5 class="fw-bold text-navy">Reagendar Cita</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            
-                            <form action="{{ route('citas.reprogramarLibre', $cita->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <div class="modal-body">
-                                    <div class="alert alert-info border-0 rounded-4 small mb-4">
-                                        <i class="bi bi-info-circle-fill me-2"></i>
-                                        Esta es tu **única oportunidad** para cambiar la fecha de esta cita sin previa autorización del médico.
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="small fw-bold text-navy mb-2">1. Selecciona la nueva fecha</label>
-                                        <input type="date" 
-                                            name="nueva_fecha" 
-                                            id="fechaReprogramar{{ $cita->id }}" 
-                                            class="form-control rounded-pill border-0 bg-light input-fecha-reprogramar" 
-                                            data-cita-id="{{ $cita->id }}"
-                                            data-doctor-id="{{ $cita->doctor_id }}"
-                                            min="{{ date('Y-m-d') }}" 
-                                            required>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="small fw-bold text-navy mb-2">2. Horarios disponibles</label>
-                                        <div id="slotsContainer{{ $cita->id }}" class="d-flex flex-wrap gap-2">
-                                            <span class="text-muted small italic">Selecciona una fecha para ver horarios...</span>
+                    <div class="modal fade" id="reprogramarLibreModal{{ $cita->id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg rounded-4">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="fw-bold text-navy">Reagendar Cita</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                
+                                <form action="{{ route('citas.reprogramarLibre', $cita->id) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="modal-body">
+                                        <div class="alert alert-info border-0 rounded-4 small mb-4">
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                            Esta es tu **única oportunidad** para cambiar la fecha de esta cita sin previa autorización del médico.
                                         </div>
-                                        <input type="hidden" name="nueva_hora" id="horaSeleccionada{{ $cita->id }}" required>
-                                    </div>
-                                </div>
 
-                                <div class="modal-footer border-0">
-                                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="submit" id="btnConfirmar{{ $cita->id }}" class="btn btn-navy rounded-pill px-4" disabled>
-                                        Confirmar Cambio
-                                    </button>
-                                </div>
-                            </form>
+                                        <div class="mb-4">
+                                            <label class="small fw-bold text-navy mb-2">1. Selecciona la nueva fecha</label>
+                                            <input type="date" 
+                                                name="nueva_fecha" 
+                                                id="fechaReprogramar{{ $cita->id }}" 
+                                                class="form-control rounded-pill border-0 bg-light input-fecha-reprogramar" 
+                                                data-cita-id="{{ $cita->id }}"
+                                                data-doctor-id="{{ $cita->doctor_id }}"
+                                                min="{{ date('Y-m-d') }}" 
+                                                required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="small fw-bold text-navy mb-2">2. Horarios disponibles</label>
+                                            <div id="slotsContainer{{ $cita->id }}" class="d-flex flex-wrap gap-2">
+                                                <span class="text-muted small italic">Selecciona una fecha para ver horarios...</span>
+                                            </div>
+                                            <input type="hidden" name="nueva_hora" id="horaSeleccionada{{ $cita->id }}" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" id="btnConfirmar{{ $cita->id }}" class="btn btn-navy rounded-pill px-4" disabled>
+                                            Confirmar Cambio
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
 
 
-                 @empty
+
+                    <script>
+                    document.addEventListener('change', function(e) {
+                        if (e.target.classList.contains('input-fecha-reprogramar')) {
+                            const citaId = e.target.dataset.citaId;
+                            const doctorId = e.target.dataset.doctorId;
+                            const fecha = e.target.value;
+                            const container = document.getElementById(`slotsContainer${citaId}`);
+                            const btnConfirmar = document.getElementById(`btnConfirmar${citaId}`);
+                            const inputHora = document.getElementById(`horaSeleccionada${citaId}`);
+
+                            // Limpiar contenedor y resetear hora
+                            container.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div> <span class="small ms-2">Buscando...</span>';
+                            inputHora.value = '';
+                            btnConfirmar.disabled = true;
+
+                            fetch(`/api/disponibilidad/{{ $cita->doctor->id }}?fecha=${fecha}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    container.innerHTML = '';
+                                    if (data.slots && data.slots.length > 0) {
+                                        data.slots.forEach(hora => {
+                                            const btn = document.createElement('button');
+                                            btn.type = 'button';
+                                            btn.className = 'btn btn-outline-primary btn-sm rounded-pill btn-slot-repro';
+                                            btn.textContent = hora;
+                                            btn.dataset.hora = hora;
+                                            btn.dataset.citaId = citaId;
+                                            container.appendChild(btn);
+                                        });
+                                    } else {
+                                        container.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle me-1"></i> ${data.mensaje || 'No hay horarios disponibles.'}</span>`;
+                                    }
+                                })
+                                .catch(error => {
+                                    container.innerHTML = '<span class="text-danger small">Error al cargar horarios.</span>';
+                                });
+                        }
+                    });
+
+                    // Manejar el clic en los botones de hora (slots)
+                    document.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('btn-slot-repro')) {
+                            const citaId = e.target.dataset.citaId;
+                            const hora = e.target.dataset.hora;
+                            const container = document.getElementById(`slotsContainer${citaId}`);
+                            const inputHora = document.getElementById(`horaSeleccionada${citaId}`);
+                            const btnConfirmar = document.getElementById(`btnConfirmar${citaId}`);
+
+                            // Desmarcar otros botones en este modal
+                            container.querySelectorAll('.btn-slot-repro').forEach(btn => {
+                                btn.classList.replace('btn-primary', 'btn-outline-primary');
+                            });
+
+                            // Marcar el seleccionado
+                            e.target.classList.replace('btn-outline-primary', 'btn-primary');
+                            inputHora.value = hora;
+                            btnConfirmar.disabled = false;
+                        }
+                    });
+                    </script>
+
+
+
+
+
+
+                @empty
                     <div class="text-center py-5">
                         <img src="https://illustrations.popsy.co/gray/calendar.svg" alt="Empty"
                             style="width: 150px; opacity: 0.5;">
@@ -334,9 +401,7 @@
 
 
 
-    @push('modals')
-        @include('users.modal_reagendar')
-    @endpush
+ 
 
 
 
@@ -344,65 +409,6 @@
 
 
 
-<script>
-document.addEventListener('change', function(e) {
-    if (e.target.classList.contains('input-fecha-reprogramar')) {
-        const citaId = e.target.dataset.citaId;
-        const doctorId = e.target.dataset.doctorId;
-        const fecha = e.target.value;
-        const container = document.getElementById(`slotsContainer${citaId}`);
-        const btnConfirmar = document.getElementById(`btnConfirmar${citaId}`);
-        const inputHora = document.getElementById(`horaSeleccionada${citaId}`);
 
-        // Limpiar contenedor y resetear hora
-        container.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div> <span class="small ms-2">Buscando...</span>';
-        inputHora.value = '';
-        btnConfirmar.disabled = true;
-
-        fetch(`/api/disponibilidad/{{ $cita->doctor->id }}?fecha=${fecha}`)
-            .then(response => response.json())
-            .then(data => {
-                container.innerHTML = '';
-                if (data.slots && data.slots.length > 0) {
-                    data.slots.forEach(hora => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'btn btn-outline-primary btn-sm rounded-pill btn-slot-repro';
-                        btn.textContent = hora;
-                        btn.dataset.hora = hora;
-                        btn.dataset.citaId = citaId;
-                        container.appendChild(btn);
-                    });
-                } else {
-                    container.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle me-1"></i> ${data.mensaje || 'No hay horarios disponibles.'}</span>`;
-                }
-            })
-            .catch(error => {
-                container.innerHTML = '<span class="text-danger small">Error al cargar horarios.</span>';
-            });
-    }
-});
-
-// Manejar el clic en los botones de hora (slots)
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('btn-slot-repro')) {
-        const citaId = e.target.dataset.citaId;
-        const hora = e.target.dataset.hora;
-        const container = document.getElementById(`slotsContainer${citaId}`);
-        const inputHora = document.getElementById(`horaSeleccionada${citaId}`);
-        const btnConfirmar = document.getElementById(`btnConfirmar${citaId}`);
-
-        // Desmarcar otros botones en este modal
-        container.querySelectorAll('.btn-slot-repro').forEach(btn => {
-            btn.classList.replace('btn-primary', 'btn-outline-primary');
-        });
-
-        // Marcar el seleccionado
-        e.target.classList.replace('btn-outline-primary', 'btn-primary');
-        inputHora.value = hora;
-        btnConfirmar.disabled = false;
-    }
-});
-</script>
 
 </x-layout>
