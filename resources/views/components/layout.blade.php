@@ -270,6 +270,10 @@
             background-color: #f8fafc;
             border-color: #e2e8f0;
         }
+
+        .dataTables_wrapper .dataTables_processing > div:not(.d-flex) {
+            display: none !important;
+        }
     </style>
 
     @stack('styles')
