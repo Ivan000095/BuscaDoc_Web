@@ -9,3 +9,6 @@ cmds = [
     "apt-get update",
     "apt-get install -y postgresql-client-18"
 ]
+
+[start]
+cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"

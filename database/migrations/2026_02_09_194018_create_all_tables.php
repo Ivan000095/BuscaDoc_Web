@@ -164,8 +164,6 @@ return new class extends Migration {
         });
 
 
-
-
         Schema::create('comentarios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_autor')->constrained('users')->cascadeOnDelete();
