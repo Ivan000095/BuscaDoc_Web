@@ -19,7 +19,6 @@ class BackupController extends Controller
             if (substr($file, -4) == '.zip' && $disk->exists($file)) {
                 $backups[] = [
                     'file_path' => $file,
-                    // Limpiamos el nombre de la ruta para la vista
                     'file_name' => str_replace('backups/', '', $file), 
                     'file_size' => $this->humanFilesize($disk->size($file)),
                     'last_modified' => Carbon::createFromTimestamp($disk->lastModified($file))->format('Y-m-d H:i:s'),
@@ -28,7 +27,7 @@ class BackupController extends Controller
         }
 
         $backups = array_reverse($backups);
-        return view('admin.backups.index', compact('backups'));
+        return view('backups.index', compact('backups'));
     }
 
     public function create()
