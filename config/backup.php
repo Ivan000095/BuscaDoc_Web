@@ -14,7 +14,7 @@ use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 return [
 
     'backup' => [
-        'name' => 'public/backups',
+        'name' => 'backups',
 
         'source' => [
             'files' => [
@@ -88,12 +88,7 @@ return [
         'notifiable' => Notifiable::class,
 
         'mail' => [
-            'to' => 'your@example.com',
-
-            'from' => [
-                'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-                'name' => env('MAIL_FROM_NAME', 'Example'),
-            ],
+            'to' => []
         ],
 
         'slack' => [
