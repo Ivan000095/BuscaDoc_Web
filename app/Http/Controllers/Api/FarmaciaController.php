@@ -18,6 +18,7 @@ class FarmaciaController extends Controller
 
         return [
             'id' => $f->id,
+            'user_id' => $f->user_id,
             'nom_farmacia' => $f->nom_farmacia,
             'descripcion' => $f->descripcion,
             'horario_entrada' => $f->horario_entrada,
@@ -25,8 +26,10 @@ class FarmaciaController extends Controller
             'horario_completo' => $horarioCompleto,
             'telefono' => $f->telefono,
             'rfc' => $f->rfc,
-            "promedio" => round($f->reviews->avg('calificacion') ?? 0, 1),
+            'promedio' => round($f->reviews->avg('calificacion') ?? 0, 1),
+            'total_resenas' => $f->reviews->where('tipo', 'resena')->count(),
             'created_at' => $f->created_at?->toISOString(),
+            'updated_at' => $f->updated_at?->toISOString(),
             
             'dueño' => [
                 'id' => $f->user?->id,
@@ -39,6 +42,10 @@ class FarmaciaController extends Controller
                     'lng' => $f->user?->longitud,
                 ],
             ],
+            
+            // Alias para compatibilidad con Flutter
+            'responsableNombre' => $f->user?->name,
+            'idUsuario' => $f->user_id,
         ];
     }
 
@@ -46,8 +53,10 @@ class FarmaciaController extends Controller
     {
         $perPage = min(max($request->integer('per_page', 15), 1), 100);
 
-        $farmacias = Farmacia::with('user:id,name,email,foto,latitud,longitud,f_nacimiento')
-            ->paginate($perPage);
+        $farmacias = Farmacia::with([
+            'user:id,name,email,foto,latitud,longitud,f_nacimiento',
+            'reviews'
+        ])->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -56,13 +65,18 @@ class FarmaciaController extends Controller
             'pagination' => [
                 'current_page' => $farmacias->currentPage(),
                 'last_page' => $farmacias->lastPage(),
+                'per_page' => $farmacias->perPage(),
                 'total' => $farmacias->total(),
             ]
         ], 200);
     }
+
     public function show(Farmacia $farmacia): JsonResponse
     {
-        $farmacia->load('user:id,name,email,foto,latitud,longitud,f_nacimiento');
+        $farmacia->load([
+            'user:id,name,email,foto,latitud,longitud,f_nacimiento',
+            'reviews'
+        ]);
 
         return response()->json([
             'success' => true,
