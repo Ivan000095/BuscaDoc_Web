@@ -27,16 +27,13 @@ use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\GoogleController;
 
 use App\Models\Especialidad;
-<<<<<<< HEAD
-use App\Http\Controllers\FarmaciaController;
-use App\Http\Controllers\MensajeController;
-use App\Http\Controllers\ReporteController;
-use App\Http\Controllers\ChatbotController;
+
+
+
+
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\ExpedienteController;
-=======
 use Illuminate\Support\Facades\Artisan;
->>>>>>> main
 
 // --- RUTAS PÚBLICAS ---
 Route::get('/', [HomeController::class, 'index'])->name('inicio');
@@ -200,7 +197,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/mensajes/{id}', [MensajeController::class, 'show'])->name('mensajes.show');
     Route::post('/mensajes', [MensajeController::class, 'store'])->name('mensajes.store');
     Route::get('/directorio-mapa', [App\Http\Controllers\HomeController::class, 'mostrarMapa'])->name('mapa.directorio');
-});
+
 
 Auth::routes();
 Route::get('/expedientes/crear', [ExpedienteController::class, 'create'])->name('expedientes.create');

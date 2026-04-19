@@ -41,12 +41,8 @@ class HomeController extends Controller
             $proximaCita = \App\Models\Cita::whereIn('expediente_id', $user->expedientes->pluck('id'))
                 ->with(['doctor.user', 'expediente']) // Cargamos el expediente para saber de quién es la cita
                 ->where(DB::raw("CONCAT(fecha, ' ', hora_inicio)"), '>=', now())
+                ->get();
 
-        $rutas = User::whereNotNull('latitud')
-            ->whereNotNull('longitud')
-            ->whereIn('role', ['doctor', 'farmacia']) 
-            ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
-            ->get();
 
 
 
