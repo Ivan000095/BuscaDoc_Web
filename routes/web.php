@@ -100,7 +100,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/citas/{id}/estado', [CitaController::class, 'updateStatus'])->name('citas.status');
 
     // Comentarios y Respuestas
-    Route::post('/comentarios', [ComentarioController::class, 'store'])->name('comentarios.save');
+    Route::post('/comentarios', [ComentarioController::class, 'store'])->name('comentarios.store');
     Route::post('/respuestas', [RespuestaController::class, 'store'])->name('respuestas.store');
 
     // Reportes de usuario
