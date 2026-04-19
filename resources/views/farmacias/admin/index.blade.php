@@ -148,7 +148,13 @@
                     language: {
                         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
                         search: "_INPUT_",
-                        searchPlaceholder: "Buscar farmacia..."
+                        searchPlaceholder: "Buscar farmacia...",
+                        processing: `
+                            <div class="d-flex flex-column align-items-center justify-content-center" style="color: #0d2e4e;">
+                                <div class="spinner-border mb-2" role="status" style="width: 2rem; height: 2rem;"></div>
+                                <span class="fw-semibold small">Procesando...</span>
+                            </div>
+                        `,
                     },
                     dom: '<"d-flex justify-content-between align-items-center p-3"f>rt<"d-flex justify-content-between align-items-center p-3"ip>'
                 });
