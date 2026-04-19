@@ -1,22 +1,22 @@
-        <div class="modal fade" id="modalSolicitarCambio{{$user->id}}" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="modalSolicitarCambio{{$cita->id}}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <div class="modal-header bg-navy text-white border-0">
                         <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Nueva Propuesta</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <form id="formSolicitarCambio{{$user->id}}" action="{{ route('citas.solicitar-cambio', $cita->id) }}" method="POST">
+                    <form id="formSolicitarCambio" action="{{ route('citas.solicitar-cambio', $cita->id) }}" method="POST">
                         @csrf
                         <div class="modal-body p-4">
                         <div class="mb-4">
                             <label class="small fw-bold text-navy mb-1">1. Selecciona el día</label>
-                            <input type="date" name="nueva_fecha" id="nuevaFechaCambio" class="form-control form-control-pill" min="{{ date('Y-m-d') }}" required>
+                            <input type="date" name="nueva_fecha" id="nuevaFechaCambio{{$cita->id}}" class="form-control form-control-pill" min="{{ date('Y-m-d') }}" required>
                         </div>
 
-                        <div class="mb-4" id="seccionHorarios2" style="display:none;">
+                        <div class="mb-4" id="seccionHorarios{{$cita->id}}" style="display:none;">
                             <label class="small fw-bold text-navy mb-2">2. Horarios disponibles</label>
-                            <div id="containerSlots2" class="d-flex flex-wrap gap-2"></div>
-                            <input type="hidden" name="nueva_hora" id="nuevaHoraCambio" required>
+                            <div id="containerSlots{{$cita->id}}" class="d-flex flex-wrap gap-2"></div>
+                            <input type="hidden" name="nueva_hora" id="nuevaHoraCambio{{$cita->id}}" required>
                         </div>
 
                             <div class="mb-3">
@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modalRechazarCambio{{$user->id}}" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="modalRechazarCambio{{$cita->id}}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <div class="modal-body p-4 text-center">
@@ -45,7 +45,7 @@
                        
 
 
-                        <form id="formRechazarCambio{{$user->id}}" action="{{ route('citas.responder-cambio', $cita->id) }}" method="POST">
+                        <form id="formRechazarCambio{{$cita->id}}" action="{{ route('citas.responder-cambio', $cita->id) }}" method="POST">
                             @csrf
                             <input type="hidden" name="accion" value="rechazar">
                             <textarea name="motivo_rechazo" class="form-control rounded-3 mb-3" rows="3" placeholder="Ej: Ya tengo el horario ocupado..." required></textarea>
@@ -68,10 +68,10 @@
 
 
 
-                document.getElementById('nuevaFechaCambio').addEventListener('change', function() {
+                document.getElementById('nuevaFechaCambio{{$cita->id}}').addEventListener('change', function() {
                     const fecha = this.value;
-                    const container = document.getElementById('containerSlots2');
-                    const seccionHorarios = document.getElementById('seccionHorarios2');
+                    const container = document.getElementById('containerSlots{{$cita->id}}');
+                    const seccionHorarios = document.getElementById('seccionHorarios{{$cita->id}}');
                     
                     container.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
                     seccionHorarios.style.display = 'block';
@@ -96,7 +96,7 @@
                     if(e.target.classList.contains('btn-slot')) {
                         document.querySelectorAll('.btn-slot').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
                         e.target.classList.replace('btn-outline-primary', 'btn-primary');
-                        document.getElementById('nuevaHoraCambio').value = e.target.dataset.hora;
+                        document.getElementById('nuevaHoraCambio{{$cita->id}}').value = e.target.dataset.hora;
                         
                     }
                 });

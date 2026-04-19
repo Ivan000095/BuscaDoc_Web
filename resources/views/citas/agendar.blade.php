@@ -1,42 +1,68 @@
-<div class="modal fade" id="agendarCitaModal" tabindex="-1" aria-labelledby="agendarCitaModalLabel" aria-hidden="true">
-    
+    @php
+    $user = Auth::user();
+    @endphp
+
+<div class="modal fade" id="agendarCitaModal{{$user->id}}" tabindex="-1" aria-labelledby="agendarCitaModalLabel" aria-hidden="true">
+
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             
             <div class="modal-header border-0 pb-0">
+                @if($user->role == 'paciente')
                 <h5 class="modal-title fw-bold text-navy" id="agendarCitaModalLabel">
                     Agendar con {{ $doctor->user->name }}
                 </h5>
+                @else
+                <h5 class="modal-title fw-bold text-navy" id="agendarCitaModalLabel">
+                    Programar cita
+                </h5>
+                @endif
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            @php
+            if($user->role == 'doctor'){
+                $doctor = $user->doctor;
+            }
+            @endphp
 
-            <form action="{{ route('citas.store', $doctor->id) }}" method="POST" id="formAgendar">
+
+            <form action="{{ route('citas.store', $doctor->id) }}" method="POST" id="formAgendar{{$user->id}}">
                 @csrf
                 <div class="modal-body">
                     
                     <div class="mb-4">
-                        <label class="small fw-bold text-navy mb-1">1. Selecciona el día</label>
-                        <input type="date" name="fecha" id="fechaCita" class="form-control form-control-pill" min="{{ date('Y-m-d') }}" required>
+                        <label class="small fw-bold text-navy mb-1">1. Selecciona el día </label>
+                        <input type="date" name="fecha" id="fechaCita{{$user->id}}" class="form-control form-control-pill" min="{{ date('Y-m-d') }}" required>
                     </div>
 
-                    <div class="mb-4" id="seccionHorarios" style="display:none;">
+                    <div class="mb-4" id="seccionHorarios{{$user->id}}" style="display:none;">
                         <label class="small fw-bold text-navy mb-2">2. Horarios disponibles</label>
-                        <div id="containerSlots" class="d-flex flex-wrap gap-2"></div>
-                        <input type="hidden" name="hora_inicio" id="horaSeleccionada" required>
+                        <div id="containerSlots{{$user->id}}" class="d-flex flex-wrap gap-2"></div>
+                        <input type="hidden" name="hora_inicio" id="horaSeleccionada{{$user->id}}" required>
                     </div>
 
-                    <div class="mb-4" id="seccionExpediente" style="display:none;">
+                    <div class="mb-4" id="seccionExpediente{{$user->id}}" style="display:none;">
                         <label class="small fw-bold text-navy mb-1">3. ¿Para quién es la cita?</label>
                         <select name="expediente_id" id="selectExpediente" class="form-select form-control-pill mb-3" required>
                             <option value="" disabled selected>Selecciona un paciente</option>
                             @foreach(Auth::user()->expedientes as $exp)
                                 <option value="{{ $exp->id }}">{{ $exp->nombre_completo }} ({{ $exp->parentesco }})</option>
                             @endforeach
+                            @if($user->role == 'paciente' )
                             <option value="nuevo_familiar" class="fw-bold text-primary">+ Agregar nuevo familiar...</option>
+                            @elseif($user->role == 'doctor')
+                            <option value="nuevo_familiar" class="fw-bold text-primary">+ Agregar nuevo paciente...</option>
+                            @endif
                         </select>
 
-                        <div id="formNuevoFamiliar" class="bg-light p-3 rounded-4 mb-3" style="display:none;">
+                        <div id="formNuevoFamiliar{{$user->id}}" class="bg-light p-3 rounded-4 mb-3" style="display:none;">
+                            @if($user->role == 'paciente' )
+
                             <h6 class="small fw-bold text-navy mb-3"><i class="bi bi-file-earmark-medical me-1"></i> Ficha Médica del Familiar</h6>
+                            @elseif($user->role == 'doctor')
+                            <h6 class="small fw-bold text-navy mb-3"><i class="bi bi-file-earmark-medical me-1"></i> Ficha Médica del Paciente</h6>
+                            @endif
+                            
                             <div class="row g-2">
                                 <div class="col-12 mb-2">
                                     <input type="text" name="nuevo_nombre" class="form-control form-control-pill" placeholder="Nombre completo">
@@ -53,6 +79,10 @@
                                         
                                     </select>
                                 </div>
+                            @if(Auth::user()->role == 'doctor')
+
+                                    <input type="hidden" name="nuevo_parentesco" value="Paciente">
+                            @else
                                 <div class="col-6 mb-2">
                                     <select name="nuevo_parentesco" class="form-select form-control-pill">
                                         <option value="">Cual es el parentesco?</option>
@@ -63,6 +93,7 @@
                                         <option value="Otro">Otro</option>
                                     </select>
                                 </div>
+                            @endif
                                 <div class="col-6 mb-2">
                                     <select name="nuevo_tipo_sangre" class="form-select form-control-pill">
                                         <option value="">Tipo de Sangre</option>
@@ -88,7 +119,7 @@
                                 </div>
                             </div>
                         </div>
-                    <div class="mb-2" id="seccionMotivo" style="display:none;">
+                    <div class="mb-2" id="seccionMotivo{{$user->id}}" style="display:none;">
                         <label class="small fw-bold text-navy mb-1">4. Motivo de consulta</label>
                         <textarea name="motivo_consulta" class="form-control rounded-4" rows="2" placeholder="Describe brevemente..." required></textarea>
                         <div class="d-grid mt-4">
@@ -104,15 +135,16 @@
 
 <script>
     // JS para manejar la interactividad
-    document.getElementById('fechaCita').addEventListener('change', function() {
+    document.getElementById('fechaCita{{$user->id}}').addEventListener('change', function() {
         const fecha = this.value;
-        const container = document.getElementById('containerSlots');
-        const seccionHorarios = document.getElementById('seccionHorarios');
+        const container = document.getElementById('containerSlots{{$user->id}}');
+        const seccionHorarios = document.getElementById('seccionHorarios{{$user->id}}');
         
         container.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
         seccionHorarios.style.display = 'block';
 
         fetch(`/api/disponibilidad/{{ $doctor->id }}?fecha=${fecha}`)
+
             .then(res => res.json())
             .then(data => {
                 container.innerHTML = '';
@@ -132,14 +164,14 @@
         if(e.target.classList.contains('btn-slot')) {
             document.querySelectorAll('.btn-slot').forEach(b => b.classList.replace('btn-primary', 'btn-outline-primary'));
             e.target.classList.replace('btn-outline-primary', 'btn-primary');
-            document.getElementById('horaSeleccionada').value = e.target.dataset.hora;
-            document.getElementById('seccionExpediente').style.display = 'block';
+            document.getElementById('horaSeleccionada{{$user->id}}').value = e.target.dataset.hora;
+            document.getElementById('seccionExpediente{{$user->id}}').style.display = 'block';
         }
     });
 
     document.getElementById('selectExpediente').addEventListener('change', function() {
-        const subForm = document.getElementById('formNuevoFamiliar');
+        const subForm = document.getElementById('formNuevoFamiliar{{$user->id}}');
         subForm.style.display = (this.value === 'nuevo_familiar') ? 'block' : 'none';
-        document.getElementById('seccionMotivo').style.display = 'block';
+        document.getElementById('seccionMotivo{{$user->id}}').style.display = 'block';
     });
 </script>

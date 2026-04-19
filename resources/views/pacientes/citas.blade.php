@@ -42,10 +42,40 @@
                                 {{-- Columna Derecha: Estado --}}
                                 <div
                                     class="col-12 col-md-3 bg-white border-start d-flex flex-column align-items-center justify-content-center p-4 gap-3">
-                                        @if($solicitudPendiente)
+
+                                    @if(in_array($cita->estado, ['cancelada', 'rechazada', 'finalizada']))
+                                        <form action="{{ route('citas.destroy', $cita->id) }}" method="POST" 
+                                            class="position-absolute" style="top: 10px; right: 10px; z-index: 10;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm border-0" 
+                                                    onclick="return confirm('¿Deseas eliminar esta cita de tu vista?')"
+                                                    style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-x-lg text-danger" style="font-size: 0.8rem;"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+
+
+                                    @if($cita->estado == 'pendiente' && !$cita->reprogramada)
+                                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#reprogramarLibreModal{{ $cita->id }}">
+                                            <i class="bi bi-calendar-event me-1"></i> Reagendar (1 vez)
+                                        </button>
+                                    @elseif($cita->reprogramada && $cita->estado == 'pendiente')
+                                        <span class="badge bg-light text-muted border rounded-pill">
+                                            <i class="bi bi-info-circle me-1"></i> Cambio ya realizado
+                                        </span>
+                                    @endif
+
+
+
+                                        @if($solicitudPendiente && $cita->estado != 'finalizada')
                                             <div class="alert alert-warning border-0 rounded-4 small p-2 mt-2">
                                                 <strong>¡Solicitud de cambio!</strong><br>
-                                                Propuesta: {{ $solicitudPendiente->nueva_fecha }} a las {{ $solicitudPendiente->nueva_hora }}
+                                                Propuesta: {{ $solicitudPendiente->nueva_fecha }} a las {{ $solicitudPendiente->nueva_hora }} <br>
+                                                Motivo: {{ $solicitudPendiente->motivo }}
                                                 <div class="d-flex gap-2 mt-2">
                                                     <form action="{{ route('citas.responder-cambio', $cita->id) }}" method="POST">
                                                         @csrf
@@ -55,7 +85,7 @@
                                                     
                                                     <button type="button" 
                                                     class="btn btn-xs btn-danger rounded-pill " data-bs-toggle="modal"
-                                                    data-bs-target="#modalRechazarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    data-bs-target="#modalRechazarCambio{{$cita->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
                                                          Rechazar  
                                                     </button>
                                                 </div>
@@ -152,7 +182,7 @@
 
                                             <button type="button" 
                                                     class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-2" data-bs-toggle="modal"
-                                                    data-bs-target="#modalSolicitarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    data-bs-target="#modalSolicitarCambio{{$cita->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
                                                 <i class="bi bi-calendar-event me-1"></i> Solicitar Cambio  
                                             </button>
                                         @elseif($solicitudEnviada)
@@ -180,7 +210,7 @@
                                                 <div class="text-end mt-2">
                                                     <button class="btn btn-sm btn-outline-danger rounded-pill" 
                                                             data-bs-toggle="modal"
-                                                    data-bs-target="#modalSolicitarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    data-bs-target="#modalSolicitarCambio{{ $cita->id }}" data-bs-config='{"backdrop":true, "keyboard":true}'>
                                                         Intentar otro horario
                                                     </button>
                                                 </div>
@@ -191,7 +221,7 @@
                                         @if($solicitudAceptada && !$solicitudEnviada && !$solicitudConfirmada && $cita->estado != 'finalizada')
                                         <span
                                             class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-1 py-2">
-                                            La solicitud fue aceptada con exito!
+                                            Tu solicitud fue aceptada con exito!
                                         </span>
                                         @endif
 
@@ -206,6 +236,7 @@
                                         </form>
 
                                     @elseif($cita->estado == 'cancelada')
+
                                         <span
                                             class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2">
                                             <i class="bi bi-x-circle me-1"></i> Cancelada
@@ -235,6 +266,58 @@
                      @include('users.modal_reagendar')
                      @endpush
 
+
+
+                <div class="modal fade" id="reprogramarLibreModal{{ $cita->id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg rounded-4">
+                            <div class="modal-header border-0 pb-0">
+                                <h5 class="fw-bold text-navy">Reagendar Cita</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            
+                            <form action="{{ route('citas.reprogramarLibre', $cita->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-body">
+                                    <div class="alert alert-info border-0 rounded-4 small mb-4">
+                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                        Esta es tu **única oportunidad** para cambiar la fecha de esta cita sin previa autorización del médico.
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="small fw-bold text-navy mb-2">1. Selecciona la nueva fecha</label>
+                                        <input type="date" 
+                                            name="nueva_fecha" 
+                                            id="fechaReprogramar{{ $cita->id }}" 
+                                            class="form-control rounded-pill border-0 bg-light input-fecha-reprogramar" 
+                                            data-cita-id="{{ $cita->id }}"
+                                            data-doctor-id="{{ $cita->doctor_id }}"
+                                            min="{{ date('Y-m-d') }}" 
+                                            required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="small fw-bold text-navy mb-2">2. Horarios disponibles</label>
+                                        <div id="slotsContainer{{ $cita->id }}" class="d-flex flex-wrap gap-2">
+                                            <span class="text-muted small italic">Selecciona una fecha para ver horarios...</span>
+                                        </div>
+                                        <input type="hidden" name="nueva_hora" id="horaSeleccionada{{ $cita->id }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer border-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" id="btnConfirmar{{ $cita->id }}" class="btn btn-navy rounded-pill px-4" disabled>
+                                        Confirmar Cambio
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+
                  @empty
                     <div class="text-center py-5">
                         <img src="https://illustrations.popsy.co/gray/calendar.svg" alt="Empty"
@@ -257,5 +340,69 @@
 
 
 
+
+
+
+
+<script>
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('input-fecha-reprogramar')) {
+        const citaId = e.target.dataset.citaId;
+        const doctorId = e.target.dataset.doctorId;
+        const fecha = e.target.value;
+        const container = document.getElementById(`slotsContainer${citaId}`);
+        const btnConfirmar = document.getElementById(`btnConfirmar${citaId}`);
+        const inputHora = document.getElementById(`horaSeleccionada${citaId}`);
+
+        // Limpiar contenedor y resetear hora
+        container.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div> <span class="small ms-2">Buscando...</span>';
+        inputHora.value = '';
+        btnConfirmar.disabled = true;
+
+        fetch(`/api/disponibilidad/{{ $cita->doctor->id }}?fecha=${fecha}`)
+            .then(response => response.json())
+            .then(data => {
+                container.innerHTML = '';
+                if (data.slots && data.slots.length > 0) {
+                    data.slots.forEach(hora => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'btn btn-outline-primary btn-sm rounded-pill btn-slot-repro';
+                        btn.textContent = hora;
+                        btn.dataset.hora = hora;
+                        btn.dataset.citaId = citaId;
+                        container.appendChild(btn);
+                    });
+                } else {
+                    container.innerHTML = `<span class="text-danger small"><i class="bi bi-x-circle me-1"></i> ${data.mensaje || 'No hay horarios disponibles.'}</span>`;
+                }
+            })
+            .catch(error => {
+                container.innerHTML = '<span class="text-danger small">Error al cargar horarios.</span>';
+            });
+    }
+});
+
+// Manejar el clic en los botones de hora (slots)
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('btn-slot-repro')) {
+        const citaId = e.target.dataset.citaId;
+        const hora = e.target.dataset.hora;
+        const container = document.getElementById(`slotsContainer${citaId}`);
+        const inputHora = document.getElementById(`horaSeleccionada${citaId}`);
+        const btnConfirmar = document.getElementById(`btnConfirmar${citaId}`);
+
+        // Desmarcar otros botones en este modal
+        container.querySelectorAll('.btn-slot-repro').forEach(btn => {
+            btn.classList.replace('btn-primary', 'btn-outline-primary');
+        });
+
+        // Marcar el seleccionado
+        e.target.classList.replace('btn-outline-primary', 'btn-primary');
+        inputHora.value = hora;
+        btnConfirmar.disabled = false;
+    }
+});
+</script>
 
 </x-layout>

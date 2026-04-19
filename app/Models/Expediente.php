@@ -32,4 +32,9 @@ class Expediente extends Model
     {
         return $this->hasMany(NotaMedica::class);
     }
+
+// En ExpedienteController.php
+
+
+
 }

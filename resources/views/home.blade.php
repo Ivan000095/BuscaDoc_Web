@@ -228,6 +228,20 @@
                                 </div>
                             </a>
                         </div>
+
+                        <div class="col-md-6">
+                            <a href="{{ route('expedientes.index') }}" class="text-decoration-none">
+                                <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-center">
+                                    <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                        style="width: 60px; height: 60px;">
+                                        <i class="bi bi-person-heart  fs-3" ></i>
+                                        
+                                    </div>
+                                    <h6 class="fw-bold text-dark">Gestionar Pacientes</h6>
+                                </div>
+                            </a>
+                        </div>
+
                     </div>
 
                     <h5 class="fw-bold text-navy mb-3">Resumen</h5>
@@ -696,6 +710,25 @@
                                 </div>
                             </a>
                         </div>
+
+                        
+                        <div class="col-md-4">
+                            <a href="{{ route('expedientes.index') }}" class="text-decoration-none">
+                                <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-scale text-center">
+                                    <div class="bg-navy-subtle text-navy rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                        style="width: 60px; height: 60px;">
+                                        <i class="bi bi-clipboard2-pulse fs-3"></i>
+                                        
+                                    </div>
+                                    <h6 class="fw-bold text-dark">Mis Expedientes</h6>
+                                    <small class="text-muted">Gestiona Tus Expedientes</small>
+                                </div>
+                            </a>
+                        </div>
+
+
+
+
                     </div>
                 </div>
 
@@ -714,7 +747,7 @@
 
                             @php
                                 // Obtenemos el expediente marcado como 'Propio' para este paciente
-                                $expedientePropio = Auth::user()->expedientes()->where('parentesco', 'Propio')->first();
+                                $expedientePropio = Auth::user()->expedientes()->where('parentesco', 'Expediente Propio')->first();
                             @endphp
 
                             @if($expedientePropio)

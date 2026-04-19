@@ -20,10 +20,12 @@ class Cita extends Model
         'doctor_id',
         'fecha',
         'hora_inicio',
+        
        
         'motivo_consulta',
        
         'estado',
+        'reprogramada',
     ];
 
     protected function casts(): array

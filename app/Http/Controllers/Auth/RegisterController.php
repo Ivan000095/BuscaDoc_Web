@@ -126,7 +126,7 @@ class RegisterController extends Controller
                             'nombre_completo' => $user->name,
                             'fecha_nacimiento' => $user->f_nacimiento,
                             'genero' => $data['genero'],
-                            'parentesco' => 'Propio', // Identificador de que es el titular
+                            'parentesco' => 'Expediente Propio', // Identificador de que es el titular
                             'tipo_sangre' => $data['tipo_sangre'] ?? null,
                             'alergias' => $data['alergias'] ?? 'Ninguna',
                             'padecimientos_cronicos' => $data['padecimientos_cronicos'] ?? 'Ninguno',

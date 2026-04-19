@@ -1,18 +1,34 @@
 <x-layout>
+    @php
+
+    $user = Auth::user();
+
+    @endphp
+
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="fw-bold text-navy">Gestión de Citas</h2>
                 <p class="text-muted">Administra tu agenda y revisa las fichas médicas.</p>
             </div>
+            <button type="button" class="btn btn-navy rounded-pill px-4 " data-bs-toggle="modal"
+                data-bs-target="#agendarCitaModal{{Auth::user()->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                <i class="bi bi-calendar-event-fill"></i>  Programar cita
+            </button>
+
             <div class="bg-white p-2 rounded-pill shadow-sm d-flex align-items-center px-3">
                 <i class="bi bi-calendar-check text-navy me-2"></i>
                 <span class="fw-bold">{{ now()->translatedFormat('l d \d\e F') }}</span>
             </div>
         </div>
+        
+
+
 
         <div class="row g-4">
             @forelse($citas as $cita)
+
+
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden hover-scale">
                             @if(in_array($cita->estado, ['cancelada', 'rechazada', 'finalizada']))
@@ -69,7 +85,7 @@
 
                                 @php
 
-                                $user = Auth::user();
+                                
                                     // Buscamos si esta cita tiene una solicitud pendiente donde el usuario actual es el solicitado
                                     $solicitudPendiente = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
                                                         ->where('solicitado_id', Auth::id())
@@ -107,7 +123,7 @@
                                    
                                                        
 
-                                   @if($ultimoRechazo && !$solicitudEnviada && !$solicitudConfirmada)
+                                   @if($ultimoRechazo && !$solicitudEnviada && !$solicitudAceptada && $user->id != $cita->expediente->user_id)
                                             <div class="alert alert-danger border-0 shadow-sm rounded-4 small p-2 mt-2">
                                                 <center><i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i></center>
                                                 <div class="d-flex align-items-center">
@@ -123,17 +139,17 @@
                                                 <div class="text-center mt-2">
                                                     <button class="btn btn-sm btn-outline-danger rounded-pill" 
                                                             data-bs-toggle="modal"
-                                                    data-bs-target="#modalSolicitarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    data-bs-target="#modalSolicitarCambio{{$cita->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
                                                         Intentar otro horario
                                                     </button>
                                                 </div>
                                                 @endif
                                             </div>
                                         @endif
-                                        @if($solicitudAceptada && !$solicitudEnviada && !$solicitudConfirmada && $cita->estado != 'finalizada')
+                                        @if($solicitudAceptada && !$solicitudEnviada && !$solicitudConfirmada && $cita->estado != 'finalizada' && $user->id != $cita->expediente->user_id)
                                         <span
                                             class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-1 py-2">
-                                            La solicitud fue aceptada con exito!
+                                            Tu solicitud fue aceptada con exito!
                                         </span>
                                         @endif
 
@@ -147,7 +163,7 @@
                                 @endphp
 
                                 
-                                        @if($solicitudPendiente && !$esPasada)
+                                        @if($solicitudPendiente && !$esPasada && $user->id != $cita->expediente->user_id)
                                             <div class="alert alert-warning border-0 rounded-4 small p-2 mt-2">
                                                 <strong>¡Solicitud de cambio!</strong><br>
                                                 Propuesta: {{ $solicitudPendiente->nueva_fecha }} a las {{ $solicitudPendiente->nueva_hora }}
@@ -160,7 +176,7 @@
                                                     
                                                     <button type="button" 
                                                     class="btn btn-xs btn-danger rounded-pill " data-bs-toggle="modal"
-                                                    data-bs-target="#modalRechazarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    data-bs-target="#modalRechazarCambio{{$cita->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
                                                          Rechazar  
                                                     </button>
                                                 </div>
@@ -172,13 +188,13 @@
 
 
                                 
-                                @if(in_array($cita->estado, ['pendiente', 'confirmada']) && !$solicitudEnviada && !$esPasada && !$solicitudPendiente)
+                                @if(in_array($cita->estado, ['pendiente', 'confirmada']) && !$solicitudEnviada && !$esPasada && !$solicitudPendiente && $user->id != $cita->expediente->user_id)
                                             <button type="button" 
                                                     class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-2" data-bs-toggle="modal"
-                                                    data-bs-target="#modalSolicitarCambio{{$user->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    data-bs-target="#modalSolicitarCambio{{$cita->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
                                                 <i class="bi bi-calendar-event me-1"></i> Solicitar Cambio
                                             </button>
-                                @elseif($solicitudEnviada)
+                                @elseif($solicitudEnviada && $cita->estado != 'finalizada' && $cita->estado != 'cancelada')
                                         <div class="alert alert-warning border-0 rounded-4 small p-2 mt-2 text-center"> 
                                             <strong>¡Solicitud Enviada!</strong><br>
                                         </div>
@@ -218,8 +234,8 @@
                                             
                                                 @if($cita->estado == 'confirmada')
                                                 <button type="button" class="btn btn-sm btn-success rounded-pill" data-bs-toggle="modal"
-                                                    data-bs-target="#modalNotaMedica" data-bs-config='{"backdrop":true, "keyboard":true}'>
-                                                    <i class="bi bi-check2-circle me-1"></i> Finalizar Cita
+                                                    data-bs-target="#modalNotaMedica{{$cita->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
+                                                    <i class="bi bi-check2-circle me-1"></i> Finalizar Cita 
                                                 </button>
 
 
@@ -270,6 +286,11 @@
                         @push('modals')
                         @include('users.modal_reagendar')
                         @endpush
+
+                        @push('modals')
+                        @include('doctores.modal_nota_medica')
+                        @endpush
+
             @empty
                 <div class="col-12 text-center py-5">
                     <div class="bg-light rounded-circle d-inline-flex p-4 mb-3 text-muted">
@@ -281,7 +302,9 @@
         </div>
     </div>
 
-
+    @push('modals')
+        @include('citas.agendar')
+    @endpush
     <style>
         .hover-scale {
             transition: transform 0.2s;
@@ -293,8 +316,6 @@
     </style>
 
 
-                        @push('modals')
-                        @include('doctores.modal_nota_medica')
-                        @endpush
+
 
 </x-layout>

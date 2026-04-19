@@ -1,6 +1,6 @@
 
 
-<div class="modal fade" id="modalNotaMedica" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalNotaMedica{{$cita->id}}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-navy text-white border-0 py-3">

@@ -17,10 +17,7 @@ class CitaController extends Controller
 
     $user = Auth::user();
 
-        // 1. Verificación de seguridad: ¿El usuario tiene perfil de paciente?
-        if (!$user->paciente) {
-            return back()->with('error', 'Tu cuenta no tiene un perfil de paciente vinculado. Por favor, completa tu registro.');
-        }
+        
 
         // 2. Validación de reglas (la que ya teníamos)
         $rules = [
@@ -81,10 +78,12 @@ class CitaController extends Controller
                 })->exists();
 
             if ($existeCita) {
-                return back()->with('error', 'El horario acaba de ser ocupado.');
+                return redirect()->route('home')->with('error', 'El horario acaba de ser ocupado.');
+                
             }
 
             // 4. Crear Cita
+            if($user->role == 'paciente'){
             Cita::create([
                 'expediente_id' => $finalExpedienteId,
                 'doctor_id' => $doctor->id,
@@ -95,28 +94,86 @@ class CitaController extends Controller
                 'estado' => 'pendiente',
                 
             ]);
+            }elseif($user->role == 'doctor'){
 
-            return redirect()->route('home')->with('success', 'Solicitud enviada correctamente.');
+
+            Cita::create([
+                'expediente_id' => $finalExpedienteId,
+                'doctor_id' => $doctor->id,
+                'fecha' => $request->fecha,
+                'hora_inicio' => $horaInicio->format('H:i:s'),
+                
+                'motivo_consulta' => $request->motivo_consulta,
+                'estado' => 'confirmada',
+                
+            ]);
+
+            }
+
+            if($user->role == 'paciente'){
+            return redirect()->route('pacientes.citas')->with('success', 'Solicitud enviada correctamente!!');
+            } elseif($user->role == 'doctor'){
+            return redirect()->route('doctores.citas')->with('success', 'Cita programada correctamente!!');
+            }
+
+
         });
+
     }
+
+    public function reprogramarLibre(Request $request, $id)
+    {
+        $cita = Cita::findOrFail($id);
+
+        // Validaciones de seguridad
+        if ($cita->estado !== 'pendiente') {
+            return redirect()->route('pacientes.citas')->with('error', 'Solo puedes reagendar citas que aún están en espera.');
+            
+           
+        }
+
+        if ($cita->reprogramada) {
+            return redirect()->route('pacientes.citas')->with('error', 'Ya has agotado tu oportunidad de reprogramar esta cita.');
+
+            
+        }
+
+        $request->validate([
+            'nueva_fecha' => 'required|date|after_or_equal:today',
+            'nueva_hora' => 'required',
+        ]);
+
+        // Actualizamos la cita
+        $cita->update([
+            'fecha' => $request->nueva_fecha,
+            'hora_inicio' => $request->nueva_hora,
+            'reprogramada' => true // Bloqueamos futuros cambios
+        ]);
+
+        return redirect()->route('pacientes.citas')->with('success', 'Cita reprogramada con éxito. Recuerda que es el único cambio permitido.');
+        
+    }
+
+
+
+
 
     public function getDisponibilidad(Request $request, $doctorId)
     {
         try {
             $fecha = $request->query('fecha');
             $date = Carbon::parse($fecha);
-            
+            $esHoy = $date->isToday(); // Detectamos si la fecha consultada es hoy
+            $ahora = Carbon::now(); // Obtenemos la hora actual
 
             $diaNumero = $date->dayOfWeek; 
 
-            // Consulta usando el número del día
             $horariosLaborales = DB::table('doctor_disponibilidad')
                 ->where('doctor_id', $doctorId)
-                ->where('dia_semana', $diaNumero) // Aquí buscamos el número (0-6)
+                ->where('dia_semana', $diaNumero)
                 ->get();
 
             if ($horariosLaborales->isEmpty()) {
-                // Mapeo simple para el mensaje de error al usuario
                 $nombres = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
                 return response()->json([
                     'slots' => [],
@@ -141,10 +198,18 @@ class CitaController extends Controller
                 $fin = Carbon::parse($fecha . ' ' . $horario->hora_fin);
 
                 while ($inicio->lt($fin)) {
-                    $horaActual = $inicio->format('H:i');
-                    if (!in_array($horaActual, $citasOcupadas)) {
-                        $slots[] = $horaActual;
+                    $horaActualStr = $inicio->format('H:i');
+                    
+                    // VALIDACIÓN CRÍTICA:
+                    // 1. Que no esté ocupada por otra cita.
+                    // 2. Si es hoy, que la hora del slot sea mayor a la hora actual.
+                    $estaOcupada = in_array($horaActualStr, $citasOcupadas);
+                    $yaPaso = $esHoy && $inicio->lt($ahora);
+
+                    if (!$estaOcupada && !$yaPaso) {
+                        $slots[] = $horaActualStr;
                     }
+                    
                     $inicio->addMinutes($intervalo);
                 }
             }

@@ -89,6 +89,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/solicitudes-cambio/{id}/responder', [CitaController::class, 'responderCambio'])
         ->name('citas.responder-cambio');
 
+    Route::put('/citas/{id}/reprogramar-libre', [CitaController::class, 'reprogramarLibre'])
+         ->name('citas.reprogramarLibre');
+
+    // Ruta para mostrar el formulario de edición
+    Route::get('/expedientes/{id}/edit', [ExpedienteController::class, 'edit'])->name('expedientes.edit');
+
+    // Ruta para procesar la actualización (usa PUT o PATCH)
+    Route::put('/expedientes/{id}', [ExpedienteController::class, 'update'])->name('expedientes.update');
+
 
 });
 
@@ -133,7 +142,9 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 });
 
 Auth::routes();
-
+Route::get('/expedientes/crear', [ExpedienteController::class, 'create'])->name('expedientes.create');
+Route::post('/expedientes', [ExpedienteController::class, 'store'])->name('expedientes.store');
+Route::get('/mis-expedientes', [ExpedienteController::class, 'index'])->name('expedientes.index');
     Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
 Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
 
