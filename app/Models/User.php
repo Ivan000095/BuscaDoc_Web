@@ -60,7 +60,7 @@ class User extends Authenticatable
         return $this->hasOne(Doctor::class);
     }
 
-    public function patient(): HasOne
+    public function paciente(): HasOne
     {
         return $this->hasOne(Paciente::class);
     }
@@ -84,4 +84,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Cita::class);
     }
+
+    // Relación fundamental: Un paciente o doctor (usuario) puede gestionar varios expedientes
+    public function expedientes(): HasMany
+    {
+        return $this->hasMany(Expediente::class);
+    }
+
+
 }

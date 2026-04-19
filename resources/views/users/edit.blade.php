@@ -185,14 +185,129 @@ $isPatient = $user->role === 'paciente';
                                 <label class="text-label mb-2">Costo Consulta ($)</label>
                                 <input type="number" step="0.01" name="costo" class="form-control" value="{{ old('costo', optional($user->doctor)->costo) }}">
                             </div> --}}
-                            <div class="col-md-6">
-                                <label class="text-label mb-2">Horario Entrada</label>
-                                <input type="time" name="horario_entrada" class="form-control" value="{{ old('horario_entrada', optional($user->doctor)->horario_entrada) }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-label mb-2">Horario Salida</label>
-                                <input type="time" name="horario_salida" class="form-control" value="{{ old('horario_salida', optional($user->doctor)->horario_salida) }}">
-                            </div>
+                           
+                                {{-- CONFIGURACIÓN DE CITAS Y HORARIOS --}}
+                                @if($isDoctor)
+                                    @php
+                                        // 1. Verificación de seguridad: ¿Tiene citas pendientes o confirmadas?
+                                        $tieneCitasPendientes = isset($user->doctor) && $user->doctor->citas()
+                                            ->whereIn('estado', ['pendiente', 'confirmada'])
+                                            ->exists();
+
+                                        // 2. Cargar horarios existentes o uno por defecto
+                                        $horariosExistentes = isset($user->doctor) && $user->doctor->disponibilidades->count() > 0 
+                                            ? $user->doctor->disponibilidades->map(fn($h) => [
+                                                'dia' => (string)$h->dia_semana, 
+                                                'inicio' => substr($h->hora_inicio, 0, 5), 
+                                                'fin' => substr($h->hora_fin, 0, 5)
+                                            ])->toJson() 
+                                            : '[{dia: "1", inicio: "09:00", fin: "18:00"}]';
+
+                                        // 3. Estado inicial del switch de citas
+                                        $citasActivadasOriginal = (isset($user->doctor) && $user->doctor->citas) ? 'true' : 'false';
+                                    @endphp
+
+                                    <div class="col-12 mt-4" x-data="{ 
+                                        citasActivas: {{ $citasActivadasOriginal }},
+                                        bloqueado: {{ $tieneCitasPendientes ? 'true' : 'false' }},
+                                        horarios: {{ $horariosExistentes }},
+                                        
+                                        addHorario() { this.horarios.push({dia: '1', inicio: '09:00', fin: '18:00'}) },
+                                        removeHorario(index) { this.horarios.splice(index, 1) },
+                                        
+                                        intentarToggle() {
+                                            if (this.bloqueado && !this.citasActivas) {
+                                                alert('No puedes deshabilitar las citas porque tienes consultas pendientes en Ocosingo. Debes gestionarlas primero.');
+                                                this.citasActivas = true;
+                                            }
+                                        }
+                                    }">
+                                        
+                                        {{-- SWITCH DE HABILITAR CITAS --}}
+                                        <div class="col-12 mb-3">
+                                            <div class="bg-light p-3 rounded-pill border d-flex align-items-center justify-content-between px-4"
+                                                :class="bloqueado ? 'opacity-75' : ''">
+                                                
+                                                <div class="d-flex flex-column">
+                                                    <span class="small fw-bold text-navy">¿Habilitar recepción de citas en línea?</span>
+                                                    <template x-if="bloqueado">
+                                                        <span class="text-danger" style="font-size: 0.7rem;">
+                                                            <i class="bi bi-lock-fill"></i> Bloqueado: tienes citas pendientes
+                                                        </span>
+                                                    </template>
+                                                </div>
+
+                                                <div class="form-check form-switch mb-0">
+                                                    <input class="form-check-input" type="checkbox" name="citas" id="citasSwitch" 
+                                                        value="1" 
+                                                        x-model="citasActivas"
+                                                        @change="intentarToggle()"
+                                                        :disabled="bloqueado">
+                                                    <label class="form-check-label small text-muted" for="citasSwitch" x-text="citasActivas ? 'Activo' : 'Inactivo'"></label>
+                                                </div>
+                                            </div>
+                                            {{-- Respaldo de datos si el switch está deshabilitado --}}
+                                            <template x-if="bloqueado">
+                                                <input type="hidden" name="citas" value="1">
+                                            </template>
+                                        </div>
+
+                                        {{-- CONFIGURACIÓN DE AGENDA --}}
+                                        <div class="col-12 mt-4">
+                                            <h6 class="text-navy fw-bold small mb-3">
+                                                <i class="bi bi-calendar3 me-2"></i>CONFIGURACIÓN DE AGENDA SEMANAL
+                                            </h6>
+
+                                            {{-- DURACIÓN DE CITA (Solo visible si citasActivas es true) --}}
+                                            <div class="bg-light p-3 rounded-4 border mb-3" x-show="citasActivas" x-transition>
+                                                <label class="small text-muted fw-bold mb-2 d-block">Duración promedio de cada cita</label>
+                                                <select name="duracion_cita" class="form-select rounded-pill bg-white border-0 shadow-sm">
+                                                    @foreach([15, 20, 30, 45, 60] as $min)
+                                                        <option value="{{ $min }}" 
+                                                            {{ (optional($user->doctor)->duracion_cita == $min) ? 'selected' : ($min == 30 ? 'selected' : '') }}>
+                                                            {{ $min < 60 ? "$min minutos" : "1 hora" }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            {{-- LISTADO DINÁMICO DE HORARIOS --}}
+                                            <template x-for="(horario, index) in horarios" :key="index">
+                                                <div class="row g-2 mb-3 align-items-end bg-white p-3 rounded-4 border shadow-sm mx-0">
+                                                    <div class="col-md-4">
+                                                        <label class="small text-muted fw-bold ps-2">Día</label>
+                                                        <select :name="`horarios[${index}][dia]`" x-model="horario.dia" class="form-select rounded-pill border-0 bg-light">
+                                                            <option value="1">Lunes</option>
+                                                            <option value="2">Martes</option>
+                                                            <option value="3">Miércoles</option>
+                                                            <option value="4">Jueves</option>
+                                                            <option value="5">Viernes</option>
+                                                            <option value="6">Sábado</option>
+                                                            <option value="0">Domingo</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="small text-muted fw-bold ps-2">Entrada</label>
+                                                        <input type="time" :name="`horarios[${index}][inicio]`" x-model="horario.inicio" class="form-control rounded-pill border-0 bg-light">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="small text-muted fw-bold ps-2">Salida</label>
+                                                        <input type="time" :name="`horarios[${index}][fin]`" x-model="horario.fin" class="form-control rounded-pill border-0 bg-light">
+                                                    </div>
+                                                    <div class="col-md-2 text-center">
+                                                        <button type="button" @click="removeHorario(index)" class="btn btn-outline-danger border-0 rounded-circle" x-show="horarios.length > 1">
+                                                            <i class="bi bi-trash3-fill"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            <button type="button" @click="addHorario()" class="btn btn-sm btn-outline-navy rounded-pill mt-2">
+                                                <i class="bi bi-plus-circle me-1"></i> Añadir otro bloque de horario
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
                             <div class="col-12">
                                 <label class="text-label mb-2">Descripción Profesional</label>
                                 <textarea name="descripcion" class="form-control" rows="3">{{ old('descripcion', optional($user->doctor)->descripcion) }}</textarea>

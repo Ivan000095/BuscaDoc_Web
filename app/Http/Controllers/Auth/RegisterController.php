@@ -41,11 +41,17 @@ class RegisterController extends Controller
 
             'cedula' => [Rule::requiredIf($data['role'] == 'doctor')],
             'costo' => [Rule::requiredIf($data['role'] == 'doctor'), 'nullable', 'numeric'],
-            'horario_entrada_doc' => [Rule::requiredIf($data['role'] == 'doctor')],
-            'horario_salida_doc' => [Rule::requiredIf($data['role'] == 'doctor')],
+            'duracion_cita' => [Rule::requiredIf($data['role'] == 'doctor'), 'nullable', 'integer'],
+            'horarios' => [Rule::requiredIf($data['role'] == 'doctor'), 'array'],
+            'horarios.*.dia' => ['required_with:horarios', 'integer', 'between:0,6'],
+            'horarios.*.inicio' => ['required_with:horarios', 'date_format:H:i'],
+            'horarios.*.fin' => ['required_with:horarios', 'date_format:H:i'],
 
-            'tipo_sangre' => [Rule::requiredIf($data['role'] == 'paciente')],
-            'contacto_emergencia' => [Rule::requiredIf($data['role'] == 'paciente')],
+            'genero' => [Rule::requiredIf($data['role'] == 'paciente'), 'nullable', 'in:masculino,femenino,otro'],
+            'tipo_sangre' => ['nullable', 'string', 'max:5'],
+            'alergias' => ['nullable', 'string'],
+            'padecimientos_cronicos' => ['nullable', 'string'],
+            'habitos_salud' => ['nullable', 'string'],
 
             'nom_farmacia' => [Rule::requiredIf($data['role'] == 'farmacia')],
             'rfc' => [Rule::requiredIf($data['role'] == 'farmacia')],
@@ -87,27 +93,44 @@ class RegisterController extends Controller
                             'user_id' => $user->id,
                             'cedula' => $data['cedula'],
                             'costo' => $data['costo'],
-                            'horario_entrada' => $data['horario_entrada_doc'],
-                            'horario_salida' => $data['horario_salida_doc'],
-                            'idiomas' => $data['idiomas'] ?? 'Español',
-                            'descripcion' => $data['descripcion_doc'] ?? 'Sin descripción',
-                            'citas' => !empty($data['citas']) && $data['citas'] !== '0',
+                            'descripcion' => $data['descripcion_doc'] ?? null,
+                            'idiomas' => $data['idiomas'] ?? null,
+                            'citas' => isset($data['citas']) ? true : false,
+                            'duracion_cita' => $data['duracion_cita'] ?? 30, // Valor por defecto
                         ]);
 
                         if (isset($data['especialidades'])) {
                             $doctor->especialidades()->sync($data['especialidades']);
                         }
+                        // GUARDAR LOS HORARIOS MÚLTIPLES
+                        if (isset($data['horarios']) && is_array($data['horarios'])) {
+                            foreach ($data['horarios'] as $item) {
+                                $doctor->disponibilidades()->create([
+                                    'dia_semana' => $item['dia'],
+                                    'hora_inicio' => $item['inicio'],
+                                    'hora_fin'    => $item['fin'],
+                                ]);
+                            }
+                        }
                         break;
 
                     case 'paciente':
-                        Paciente::create([
+                    // 1. Crear el perfil de paciente
+                        $paciente = \App\Models\Paciente::create([
                             'user_id' => $user->id,
-                            'tipo_sangre' => $data['tipo_sangre'],
-                            'contacto_emergencia' => $data['contacto_emergencia'],
-                            'alergias' => $data['alergias'] ?? 'Sin alergias.',
-                            'cirugias' => $data['cirugias'] ?? 'No ha tenido cirugías',
-                            'padecimientos' => $data['padecimientos'] ?? 'No hay ningún padecimiento.',
-                            'habitos' => $data['habitos'] ?? 'No hay hábitos registrados.',
+                        ]);
+
+                        // 2. Crear automáticamente su primer EXPEDIENTE (el propio)
+                        \App\Models\Expediente::create([
+                            'user_id' => $user->id,
+                            'nombre_completo' => $user->name,
+                            'fecha_nacimiento' => $user->f_nacimiento,
+                            'genero' => $data['genero'],
+                            'parentesco' => 'Expediente Propio', // Identificador de que es el titular
+                            'tipo_sangre' => $data['tipo_sangre'] ?? null,
+                            'alergias' => $data['alergias'] ?? 'Ninguna',
+                            'padecimientos_cronicos' => $data['padecimientos_cronicos'] ?? 'Ninguno',
+                            'habitos_salud' => $data['habitos_salud'] ?? 'No registrados',
                         ]);
                         break;
 

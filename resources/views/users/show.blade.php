@@ -497,24 +497,64 @@ $isAdmin = $user->role === 'admin';
                                 <div class="info-row bg-white border shadow-sm p-3">
                                     <div class="info-icon-box bg-success-subtle text-success"><x-mcr-wallet class="icon-lg"/></div>
                                     <div>
-                                        <span class="fw-bold d-block text-navy">Costo Consulta</span>
-                                        <span class="text-success fs-4 fw-bold lh-1">${{ number_format($user->doctor->costo, 2) }}</span>
+                                        <span class="fw-bold d-block">Costo Estimado De Consulta</span>
+                                        <span
+                                            class="text-success fs-5 fw-bold">${{ number_format($user->doctor->costo, 2) }}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="info-row bg-white border shadow-sm p-3">
-                                    <div class="info-icon-box bg-info-subtle text-info"><x-mcr-clock class="icon-md"/></div>
-                                    <div>
-                                        <span class="fw-bold d-block text-navy">Horario</span>
-                                        <span class="text-muted fs-5 fw-bold lh-1">
-                                            {{ \Carbon\Carbon::parse($user->doctor->horario_entrada)->format('H:i') }} -
-                                            {{ \Carbon\Carbon::parse($user->doctor->horario_salida)->format('H:i') }}
-                                        </span>
+
+                            <div class="soft-card p-4 mb-4" x-data="{ diaSeleccionado: {{ now()->dayOfWeek }} }">
+                                    <h6 class="text-navy fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Disponibilidad Semanal</h6>
+                                    
+                                    {{-- Botones de días --}}
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        @foreach(['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] as $num => $nombre)
+                                            @php 
+                                                // Accedemos a través de la relación del usuario con el doctor
+                                                $tieneHorario = $user->doctor->disponibilidades->contains('dia_semana', $num); 
+                                            @endphp
+                                            <button @click="diaSeleccionado = {{ $num }}" 
+                                                type="button"
+                                                class="btn btn-sm rounded-pill px-3 fw-bold transition-all"
+                                                :class="diaSeleccionado == {{ $num }} ? 'btn-navy shadow' : 'btn-outline-secondary'"
+                                                {{ !$tieneHorario ? 'disabled style=opacity:0.3' : '' }}>
+                                                {{ $nombre }}
+                                            </button>
+                                        @endforeach
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+
+                                    {{-- Contenedor de Horarios --}}
+                                    <div class="bg-light p-3 rounded-4 border shadow-sm">
+                                        @foreach($user->doctor->disponibilidades->groupBy('dia_semana') as $dia => $bloques)
+                                            <div x-show="diaSeleccionado == {{ $dia }}" x-transition:enter.duration.400ms>
+                                                <div class="row g-2">
+                                                    @foreach($bloques as $bloque)
+                                                        <div class="col-md-6">
+                                                            <div class="d-flex align-items-center bg-white p-2 rounded-3 border">
+                                                                <i class="bi bi-alarm text-success me-2"></i>
+                                                                <span class="small fw-bold text-navy">
+                                                                    {{ \Carbon\Carbon::parse($bloque->hora_inicio)->format('g:i A') }} - 
+                                                                    {{ \Carbon\Carbon::parse($bloque->hora_fin)->format('g:i A') }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        
+                                        {{-- Mensaje si no hay horarios el día seleccionado --}}
+                                        <div x-show="!{{ $user->doctor->disponibilidades->pluck('dia_semana')->unique()->values()->toJson() }}.includes(diaSeleccionado)">
+                                            <p class="text-muted small mb-0 text-center py-2">
+                                                <i class="bi bi-info-circle me-2"></i>No hay consultas programadas.
+                                            </p>
+                                        </div>
+                                    
+                                    </div>
+                                
+                                 </div> 
+                        </div> 
                     </div>
                 @endif
 
@@ -536,6 +576,7 @@ $isAdmin = $user->role === 'admin';
     </div>
 
     <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         function initMap() {
             const position = { lat: <?php echo $lat; ?>, lng: <?php echo $lng; ?> };

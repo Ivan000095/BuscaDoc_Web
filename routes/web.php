@@ -27,6 +27,12 @@ use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\GoogleController;
 
 use App\Models\Especialidad;
+
+
+
+
+use App\Http\Controllers\RankingController;
+use App\Http\Controllers\ExpedienteController;
 use Illuminate\Support\Facades\Artisan;
 
 // --- RUTAS PÚBLICAS ---
@@ -69,6 +75,28 @@ Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback'])
 
 // --- RUTAS PROTEGIDAS (AUTH) ---
 Route::middleware(['auth'])->group(function () {
+    Route::get('/mi-farmacia', [FarmaciaController::class, 'miFarmacia'])->name('farmacias.mi');
+    Route::get('/mi-farmacia/editar', [FarmaciaController::class, 'editarMiFarmacia'])->name('farmacias.mi.editar');
+    Route::put('/mi-farmacia', [FarmaciaController::class, 'actualizarMiFarmacia'])->name('farmacias.mi.actualizar');
+
+// Ruta para que el solicitante cree la propuesta
+    Route::post('/citas/{id}/solicitar-cambio', [CitaController::class, 'solicitarCambio'])
+        ->name('citas.solicitar-cambio');
+
+    // Ruta para que el solicitado acepte o rechace
+    Route::post('/solicitudes-cambio/{id}/responder', [CitaController::class, 'responderCambio'])
+        ->name('citas.responder-cambio');
+
+    Route::put('/citas/{id}/reprogramar-libre', [CitaController::class, 'reprogramarLibre'])
+         ->name('citas.reprogramarLibre');
+
+    // Ruta para mostrar el formulario de edición
+    Route::get('/expedientes/{id}/edit', [ExpedienteController::class, 'edit'])->name('expedientes.edit');
+
+    // Ruta para procesar la actualización (usa PUT o PATCH)
+    Route::put('/expedientes/{id}', [ExpedienteController::class, 'update'])->name('expedientes.update');
+
+
     
     Route::match(['get', 'post'], 'logout', [LoginController::class, 'logout'])
         ->name('logout')
@@ -143,6 +171,130 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/farmacias/reporte-pdf', [FarmaciaController::class, 'generarReporte'])->name('admin.farmacias.reporte');
 });
 
+    Route::get("doctor/data", [DoctorController::class, "dataTable"])->name("doctor.data");
+    Route::get("doctores/agregar", [DoctorController::class, "create"])->name("doctores.agregar");
+    Route::get("doctores/{doctor}/download-image", [DoctorController::class, "downloadImage"])->name("doctor.download-image");
+    Route::resource("doctores", DoctorController::class)->except(['show']);
+    Route::resource('users', UserController::class);
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
+    
+    Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');
+    // Solo doctores con la opción "citas" activa podrán entrar aquí
+    Route::middleware(['auth', 'can.citas'])->group(function () {
+        Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
+        // ... otras rutas de citas
+    });
+    
+    Route::post('/doctor/{id}/agendar', [App\Http\Controllers\CitaController::class, 'store'])->name('citas.store');
+
+
+    Route::delete('/citas/{id}', [CitaController::class, 'destroy'])->name('citas.destroy');
+
+    Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
+    Route::get('/mensajes', [MensajeController::class, 'index'])->name('mensajes.index');
+    Route::get('/mensajes/{id}', [MensajeController::class, 'show'])->name('mensajes.show');
+    Route::post('/mensajes', [MensajeController::class, 'store'])->name('mensajes.store');
+    Route::get('/directorio-mapa', [App\Http\Controllers\HomeController::class, 'mostrarMapa'])->name('mapa.directorio');
+
+
+Auth::routes();
+Route::get('/expedientes/crear', [ExpedienteController::class, 'create'])->name('expedientes.create');
+Route::post('/expedientes', [ExpedienteController::class, 'store'])->name('expedientes.store');
+Route::get('/mis-expedientes', [ExpedienteController::class, 'index'])->name('expedientes.index');
+    Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('farmacias.detalle');
+Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+Route::get('google/redirect', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+Route::get('/directorio-medico', [DoctorController::class, 'vistageneral'])->name('doctores.vista');
+
+Route::post('/comentarios', [ComentarioController::class, 'store'])
+->middleware('auth')
+->name('comentarios.store');
+
+Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('farmacias.catalogo');
+
+Route::get('register', function () {
+    $especialidades = Especialidad::all();
+    return view('auth.register', compact('especialidades'));
+})->middleware('guest')->name('register');
+
+Route::post('register', [RegisterController::class, 'register']);
+
+Route::post('/notas-medicas/{cita}', [App\Http\Controllers\NotaMedicaController::class, 'store'])->name('notas.store');
+
+Route::resource('pacientes', App\Http\Controllers\PacienteController::class);
+
+Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
+
+Route::get('/expedientes/{id}', [ExpedienteController::class, 'show'])->name('expedientes.show')->middleware('auth');
+
+Route::get('/api/disponibilidad/{doctorId}', [App\Http\Controllers\CitaController::class, 'getDisponibilidad']);
+// Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+// Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+// Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+// Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+
+// Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+// Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+    
+// Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+// Route::resource('mensajes', App\Http\Controllers\MensajeController::class)->only('index', 'store');
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// Route::resource('doctors', App\Http\Controllers\DoctorController::class)->except('show');
+
+// Route::resource('comentarios', App\Http\Controllers\ComentarioController::class)->only('store', 'destroy');
+
+// Route::resource('respuestas', App\Http\Controllers\RespuestaController::class)->only('store');
+
+// cristian cristian
+
+// Route::resource("products", ProductController::class)->except([
+//     "show",
+//     "update",
+// ]);
+// Route::get("productos", [ProductController::class, "index"])->name(
+//     "products.index",
+// );
+// Route::get("productos/agregar", [ProductController::class, "create"])->name(
+//     "products.create",
+// );
+// Route::get("products/data", [ProductController::class, "dataTable"])->name(
+//     "products.data",
+// );
+// Route::get("products/{product}/download-image", [
+//     ProductController::class,
+//     "downloadImage",
+// ])->name("products.download-image");
+
+// Route::resource("doctores", DoctorController::class)->except([
+//     "show",
+//     // "update"
+
+// ]);
+// Route::get("doctores", [DoctorController::class, "index"])->name(
+//     "doctores.index"
+// );
+// Route::get("doctores/{doctor}", [DoctorController::class, "show"])->name("doctores.show");
+// Route::get("doctores/agregar", [DoctorController::class, "create"])->name(
+//     "doctores.create",
+// );
+// Route::get("doctor/data", [DoctorController::class, "dataTable"])->name(
+//     "doctor.data",
+// );
+// Route::get("doctores/{doctor}/download-image", [
+//     DoctorController::class,
+//     "downloadImage",
+// ])->name("doctor.download-image");
 // --- MANTENIMIENTO Y UTILIDADES ---
 Route::get('/correr-seeders', function () {
     try {

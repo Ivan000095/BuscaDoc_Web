@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,15 +9,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Cita extends Model
 {
     use HasFactory;
+    use SoftDeletes; // 2. Usar el trait
+
+    protected $dates = ['deleted_at']; // 3. Opcional (versiones antiguas)
 
     protected $table = 'citas';
 
     protected $fillable = [
-        'paciente_id',
+        'expediente_id', // Antes era paciente_id
         'doctor_id',
-        'fecha_hora',
-        'detalles',
+        'fecha',
+        'hora_inicio',
+        
+       
+        'motivo_consulta',
+       
         'estado',
+        'reprogramada',
     ];
 
     protected function casts(): array
@@ -25,8 +33,8 @@ class Cita extends Model
         return [
             'id'          => 'integer',
             'doctor_id'   => 'integer',
-            'paciente_id' => 'integer',
-            'fecha_hora'  => 'datetime',
+            'expediente_id' => 'integer',
+            'fecha'  => 'date',
         ];
     }
 
@@ -39,4 +47,10 @@ class Cita extends Model
     {
         return $this->belongsTo(Paciente::class);
     }
+
+    public function expediente(): BelongsTo
+    {
+        return $this->belongsTo(Expediente::class, 'expediente_id');
+    }
+
 }

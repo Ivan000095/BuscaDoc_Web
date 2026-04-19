@@ -19,6 +19,9 @@ return new class extends Migration {
             END $$;");
         });
 
+
+
+
         // 2. Tablas Base
         Schema::create('users', function (Blueprint $table) {
             $table->id();
@@ -48,23 +51,98 @@ return new class extends Migration {
             $table->string('idiomas', 100)->nullable();
             $table->text('descripcion')->nullable();
             $table->decimal('costo', 8, 2);
-            $table->time('horario_entrada')->nullable();
-            $table->time('horario_salida')->nullable();
+            $table->integer('duracion_cita')->default(30);
+
             $table->boolean('citas')->default(false);
             $table->timestamps();
         });
 
-        Schema::create('pacientes', function (Blueprint $table) {
+        Schema::create('doctor_disponibilidad', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('tipo_sangre', 5)->nullable();
-            $table->text('alergias')->nullable();
-            $table->text('cirugias')->nullable();
-            $table->text('padecimientos')->nullable();
-            $table->text('habitos')->nullable();
-            $table->string('contacto_emergencia', 14)->nullable(); 
+            $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
+            $table->unsignedTinyInteger('dia_semana'); // 0 (Dom) a 6 (Sáb)
+            $table->time('hora_inicio');
+            $table->time('hora_fin');
             $table->timestamps();
         });
+
+        Schema::create('doctor_excepciones', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
+                $table->date('fecha');
+                $table->boolean('trabaja')->default(false); // false = día libre
+                $table->time('hora_inicio')->nullable(); // Por si solo trabaja medio día
+                $table->time('hora_fin')->nullable();
+                $table->timestamps();
+            });
+
+            Schema::create('pacientes', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+                $table->timestamps();
+            });
+
+            Schema::create('expedientes', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+                
+                // Datos de identificación del paciente real
+                $table->string('nombre_completo', 80);
+                $table->date('fecha_nacimiento');
+                $table->enum('genero', ['masculino', 'femenino', 'otro']);
+                $table->string('parentesco', 30); // Ejemplo: 'Hijo', 'Padre', 'Yo mismo'
+                
+                // Información Clínica (Movida de la tabla pacientes)
+                $table->string('tipo_sangre', 5)->nullable();
+                $table->text('alergias')->nullable();
+                $table->text('padecimientos_cronicos')->nullable();
+                $table->text('habitos_salud')->nullable();
+                
+                $table->timestamps();
+            });
+
+            Schema::create('citas', function (Blueprint $table) {
+                $table->id();
+                
+                // RELACIONES PRINCIPALES
+                // Ya no usamos paciente_id, usamos expediente_id
+                $table->foreignId('expediente_id')->constrained('expedientes')->onDelete('cascade');
+                $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
+
+                // DATOS DE LA CITA
+                $table->date('fecha');
+                $table->time('hora_inicio');
+
+                
+                // ESTADO DE LA CITA (Usando tu tipo ENUM de PostgreSQL)
+                $table->timestamp('fecha_registro')->useCurrent();
+                $table->enum('estado', ['pendiente', 'confirmada', 'cancelada', 'finalizada'])
+                    ->default('pendiente');
+
+                // INFORMACIÓN ADICIONAL
+                $table->text('motivo_consulta')->nullable();
+               
+                
+                $table->timestamps();
+            });
+
+        // Vinculamos el tipo ENUM manualmente para evitar el error de Laravel
+        // DB::statement('ALTER TABLE citas ADD estado estado_cita DEFAULT \'pendiente\'');
+
+
+            Schema::create('notas_medicas', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('expediente_id')->constrained('expedientes')->onDelete('cascade');
+                $table->foreignId('doctor_id')->constrained('doctors');
+                $table->foreignId('cita_id')->constrained('citas'); // Para saber en qué cita ocurrió
+                
+                $table->text('diagnostico');
+                $table->text('tratamiento');
+                $table->text('nota_seguimiento')->nullable(); // Lo que leerá el próximo doctor
+                
+                $table->timestamps();
+            });
+
 
         Schema::create('farmacias', function (Blueprint $table) {
             $table->id();
@@ -85,15 +163,8 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::create('citas', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('doctor_id')->constrained('doctors')->restrictOnDelete();
-            $table->foreignId('paciente_id')->constrained('pacientes')->restrictOnDelete();
-            $table->timestamp('fecha_hora');
-            $table->text('detalles')->nullable();
-            $table->timestamps();
-        });
-        DB::statement('ALTER TABLE citas ADD estado estado_cita DEFAULT \'pendiente\'');
+
+
 
         Schema::create('comentarios', function (Blueprint $table) {
             $table->id();

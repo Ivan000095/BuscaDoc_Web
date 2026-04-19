@@ -708,6 +708,31 @@
                                     </div>
                                 </a>
                             </div>
+
+                            <div class="col-md-{{ Auth::user()->doctor->citas == true ? '7' : '12' }}">
+                                <a href="{{ route('expedientes.index') }}" class="text-decoration-none">
+                                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden"
+                                        style="background: linear-gradient(135deg, #00213D 0%, #0d2e4e 100%);">
+                                        {{-- Ícono de fondo marca de agua --}}
+                                        <div class="position-absolute"
+                                            style="right: -15px; top: -15px; opacity: 0.1; transform: rotate(-15deg);">
+                                            <x-mcr-chat-dots style="font-size: 8rem;" /</x></x>>
+                                        </div>
+                                        <div
+                                            class="position-relative z-1 d-flex align-items-center justify-content-between h-100">
+                                            <div>
+                                                <h5 class="fw-bold mb-1">Expedientes</h5>
+                                                <p class="mb-0 opacity-75 small">Gestiona los expedientes de tus pacientes</p>
+                                            </div>
+                                            <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                                style="width: 45px; height: 45px;">
+                                                <i class="bi bi-arrow-right text-navy fs-5"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
                         </div>
 
                         <h5 class="fw-bold text-navy mb-3">Resumen Reciente</h5>
@@ -727,20 +752,22 @@
                                             @if($proximaCitaDoctor)
                                                 <div class="p-3 bg-light rounded-3 border-start border-4 border-success">
                                                     <div class="d-flex align-items-center mb-3">
-                                                        <img src="{{ $proximaCitaDoctor->paciente->user->foto ? asset('storage/' . $proximaCitaDoctor->paciente->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCitaDoctor->paciente->user->name) }}"
+                                                        <img src="{{ $proximaCitaDoctor->expediente->user->foto ? asset('storage/' . $proximaCitaDoctor->expediente->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($proximaCitaDoctor->expediente->user->name) }}"
                                                             class="rounded-circle me-3 shadow-sm" width="45" height="45"
                                                             style="object-fit: cover;">
                                                         <div>
                                                             <span
-                                                                class="fw-bold text-dark d-block">{{ $proximaCitaDoctor->paciente->user->name }}</span>
+                                                                class="fw-bold text-dark d-block">{{ $proximaCitaDoctor->expediente->nombre_completo }}</span>
                                                             <small
-                                                                class="text-muted">{{ $proximaCitaDoctor->paciente->tipo_sangre ?? 'Paciente' }}</small>
+                                                                class="text-muted">{{ $proximaCitaDoctor->expediente->tipo_sangre ?? 'Paciente' }}</small>
                                                         </div>
                                                     </div>
                                                     <div class="d-flex align-items-center justify-content-between">
                                                         <span class="badge bg-white text-dark border shadow-sm">
                                                             <i class="bi bi-clock me-1 text-navy"></i>
-                                                            {{ $proximaCitaDoctor->fecha_hora->format('h:i A') }}
+                                                            
+                                                            {{ \Carbon\Carbon::parse($proximaCitaDoctor->fecha)->format('d/m/Y') }}, 
+                                                             {{ \Carbon\Carbon::parse($proximaCitaDoctor->hora_inicio)->format('g:i A') }}
                                                         </span>
                                                         <span
                                                             class="badge {{ $proximaCitaDoctor->estado == 'pendiente' ? 'bg-warning text-dark' : 'bg-success' }}">
@@ -811,7 +838,7 @@
 
                             <div class="border-top pt-3 mb-3">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted fw-bold">Costo Consulta</small>
+                                    <small class="text-muted fw-bold">Costo Promedio De Consulta</small>
                                     <span
                                         class="fs-5 fw-bold text-success">${{ number_format(Auth::user()->doctor->costo, 2) }}</span>
                                 </div>
@@ -821,10 +848,37 @@
                                 <small class="text-muted d-block fw-bold mb-1">Horario de Atención</small>
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-clock me-2 text-navy"></i>
-                                    <span class="small text-dark">
-                                        {{ \Carbon\Carbon::parse(Auth::user()->doctor->horario_entrada)->format('h:i A') }} -
-                                        {{ \Carbon\Carbon::parse(Auth::user()->doctor->horario_salida)->format('h:i A') }}
-                                    </span>
+                                        {{-- Horario --}}
+                                        @php
+                                            $hoy = now()->dayOfWeek; // 0 (Dom) a 6 (Sáb)
+                                            $horaActual = now()->format('H:i:s');
+                                            $disponibilidadHoy = Auth::user()->doctor->disponibilidades->where('dia_semana', $hoy);
+                                            $estaAbierto = false;
+                                            $rangoHoy = "Cerrado ahora";
+
+                                            foreach($disponibilidadHoy as $bloque) {
+                                                if($horaActual >= $bloque->hora_inicio && $horaActual <= $bloque->hora_fin) {
+                                                    $estaAbierto = true;
+                                                }
+                                            }
+                                        @endphp
+
+                                        
+                                            
+                                            @if($disponibilidadHoy->isEmpty())
+                                                <span class="badge bg-secondary rounded-pill">Sin consultas hoy</span>
+                                            @else
+                                                <span class="badge {{ $estaAbierto ? 'bg-success' : 'bg-danger' }} rounded-pill me-2">
+                                                    {{ $estaAbierto ? 'Abierto ahora' : 'Cerrado ahora' }}
+                                                </span>
+                                                <small class="text-muted">
+                                                    {{ \Carbon\Carbon::parse($disponibilidadHoy->first()->hora_inicio)->format('g:i A') }} - 
+                                                    {{ \Carbon\Carbon::parse($disponibilidadHoy->last()->hora_fin)->format('g:i A') }}
+                                                </small>
+                                            @endif
+                                
+                                
+                                
                                 </div>
                             </div>
 
@@ -1049,6 +1103,30 @@
                             </div>
                         </a>
 
+
+                        <a href="{{ route('expedientes.index') }}" class="text-decoration-none mb-4 d-block">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden" 
+                                 style="background: linear-gradient(135deg, #0d2e4e 0%, #00213D 100%);">
+                                <div class="position-absolute" style="right: -10px; top: -25px; opacity: 0.1; transform: scale(1.5);">
+                                    <x-mcf-chat-dots style="width: 8rem; height: 8rem;" />
+                                </div>
+                                <div class="position-relative z-1 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <x-mcf-chat-dots class="fs-4" />
+                                            
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-1">Mis Expedientes</h5>
+                                            <p class="mb-0 opacity-75 small">Gestiona los expedientes de tus familiares</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <i class="bi bi-arrow-right fs-4 opacity-75"></i>
+                                </div>
+                            </div>
+                        </a>
+
                         @if($proximaCita)
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                                 <div class="card-body p-0">
@@ -1057,8 +1135,11 @@
                                             <span class="fw-bold"><i class="bi bi-calendar-event me-2"></i>Tu próxima cita</span>
                                         </div>
                                         <div class="col-md-2 bg-light d-flex flex-column align-items-center justify-content-center py-4 border-end">
-                                            <span class="text-uppercase small fw-bold text-muted">{{ $proximaCita->fecha_hora->format('M') }}</span>
-                                            <span class="display-4 fw-bold text-navy lh-1">{{ $proximaCita->fecha_hora->format('d') }}</span>
+                                            <span
+                                                class="text-uppercase small fw-bold text-muted">{{ $proximaCita->fecha->format('M') }}</span>
+                                            <span
+                                                class="display-4 fw-bold text-navy lh-1">{{ $proximaCita->fecha->format('d') }}</span>
+                                            <span class="small text-muted">{{ $proximaCita->fecha->format('l') }}</span>
                                         </div>
                                         <div class="col-md-7 p-4 d-flex align-items-center">
                                             <div class="d-flex align-items-center">
@@ -1069,7 +1150,7 @@
                                                     <h5 class="fw-bold text-navy mb-1">Dr. {{ $proximaCita->doctor->user->name }}</h5>
                                                     <div class="d-flex align-items-center text-muted small">
                                                         <i class="bi bi-clock-fill me-1 text-warning"></i>
-                                                        <span class="fw-bold text-dark">{{ $proximaCita->fecha_hora->format('h:i A') }}</span>
+                                                        <span class="fw-bold text-dark">{{ \Carbon\Carbon::parse($proximaCita->hora_inicio)->format('h:i A') }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1190,25 +1271,44 @@
                                 </div>
                             </div>
 
-                            @if(Auth::user()->patient)
+                            @php
+                                // Obtenemos el expediente marcado como 'Propio' para este paciente
+                                $expedientePropio = Auth::user()->expedientes()->where('parentesco', 'Expediente Propio')->first();
+                            @endphp
+
+
+                            @if($expedientePropio)
                                 <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                                     <span class="text-muted small fw-bold">Mi tipo de sangre</span>
-                                    <span class="fw-bold text-danger bg-danger-subtle px-3 py-1 rounded-pill">{{ Auth::user()->patient->tipo_sangre ?? '--' }}</span>
+                                    <span class="fw-bold text-danger bg-danger-subtle px-3 py-1 rounded-pill">{{ $expedientePropio->tipo_sangre ?? 'No especificado' }}</span>
                                 </div>
                                 <div class="mb-3">
-                                    <span class="text-muted small fw-bold d-block mb-1">Mis alergias</span>
-                                    <span class="fw-medium text-dark small bg-light p-2 rounded d-block border">{{ Auth::user()->patient->alergias ?? 'Ninguna registrada' }}</span>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-warning bg-opacity-10 p-2 rounded-3 me-3">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-0">Alergias</p>
+                                            <p class="fw-bold text-navy mb-0 small">{{ Str::limit($expedientePropio->alergias, 40) }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <span class="text-muted small fw-bold d-block mb-1">Contacto de emergencia</span>
-                                    <div class="d-flex align-items-center text-navy fw-bold bg-light p-2 rounded border">
-                                        <i class="bi bi-telephone-fill me-2"></i>
-                                        {{ Auth::user()->patient->contacto_emergencia ?? '--' }}
+
+                                <div class="mb-0">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-info bg-opacity-10 p-2 rounded-3 me-3">
+                                            <i class="bi bi-heart-pulse-fill text-info"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-muted small mb-0">Padecimientos Crónicos</p>
+                                            <p class="fw-bold text-navy mb-0 small">{{ Str::limit($expedientePropio->padecimientos_cronicos, 40) }}</p>
+                                        </div>
                                     </div>
                                 </div>
                             @else
                                 <div class="alert alert-warning small border-0 rounded-3">
                                     <i class="bi bi-exclamation-circle-fill me-1"></i> Completa tu perfil médico para emergencias.
+                                    <a href="{{ route('expedientes.create') }}" class="btn btn-navy btn-sm rounded-pill">Crear Ficha</a>
                                 </div>
                             @endif
                         </div>

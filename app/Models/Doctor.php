@@ -23,9 +23,9 @@ class Doctor extends Model
         'descripcion',
         'costo',
         'especialidad',
-        'horario_entrada',
-        'horario_salida',
+        'duracion_cita',
         'citas',
+        
     ];
 
     /**
@@ -40,6 +40,7 @@ class Doctor extends Model
             'user_id' => 'integer',
             'costo' => 'decimal:2',
             'citas' => 'boolean',
+            'duracion_cita' => 'integer',
         ];
     }
 
@@ -63,6 +64,16 @@ class Doctor extends Model
     public function citas()
     {
         return $this->hasMany(Cita::class);
+    }
+
+    public function disponibilidades()
+    {
+        return $this->hasMany(DoctorDisponibilidad::class);
+    }
+
+    public function excepciones()
+    {
+        return $this->hasMany(DoctorExcepcion::class);
     }
 
     public function questions()
