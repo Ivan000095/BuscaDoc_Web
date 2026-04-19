@@ -14,7 +14,7 @@ use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 return [
 
     'backup' => [
-        'name' => 'public/backups',
+        'name' => 'backups',
 
         'source' => [
             'files' => [

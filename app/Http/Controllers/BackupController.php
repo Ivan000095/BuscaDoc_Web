@@ -12,24 +12,23 @@ class BackupController extends Controller
     public function index()
     {
         $disk = Storage::disk('local');
-        $files = $disk->files('public/backups');
+        $files = $disk->files('backups'); 
         $backups = [];
 
         foreach ($files as $file) {
             if (substr($file, -4) == '.zip' && $disk->exists($file)) {
                 $backups[] = [
                     'file_path' => $file,
-                    'file_name' => str_replace('public/backups/', '', $file),
+                    // Limpiamos el nombre de la ruta para la vista
+                    'file_name' => str_replace('backups/', '', $file), 
                     'file_size' => $this->humanFilesize($disk->size($file)),
                     'last_modified' => Carbon::createFromTimestamp($disk->lastModified($file))->format('Y-m-d H:i:s'),
                 ];
             }
         }
 
-        // Ordenar del más reciente al más antiguo
         $backups = array_reverse($backups);
-
-        return view('backups.index', compact('backups'));
+        return view('admin.backups.index', compact('backups'));
     }
 
     public function create()
@@ -47,7 +46,7 @@ class BackupController extends Controller
 
     public function download($file_name)
     {
-        $file = 'public/backups/' . $file_name;
+        $file = 'backups/' . $file_name;
         $disk = Storage::disk('local');
 
         if ($disk->exists($file)) {
@@ -59,7 +58,7 @@ class BackupController extends Controller
 
     public function destroy($file_name)
     {
-        $file = 'public/backups/' . $file_name;
+        $file = 'backups/' . $file_name;
         $disk = Storage::disk('local');
 
         if ($disk->exists($file)) {
@@ -70,7 +69,6 @@ class BackupController extends Controller
         return redirect()->back()->with('error', 'El archivo no existe.');
     }
 
-    // Función auxiliar para mostrar el peso en MB
     private function humanFilesize($bytes, $decimals = 2)
     {
         $size = array('B','kB','MB','GB','TB','PB','EB','ZB','YB');
