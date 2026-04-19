@@ -44,7 +44,7 @@
                                         class="btn btn-lg rounded-pill w-100 px-4 fw-bold d-flex align-items-center justify-content-center shadow-sm"
                                         type="submit"
                                         style="height: 48px; background-color: #0d2e4e; color: white; transition: all 0.3s;">
-                                        <x-mcr-search class="icon-white me-2" style="width: 1.2rem;" />
+                                        <x-mcl-search class="icon-white me-2" style="width: 1.2rem;" />
                                             Buscar
                                     </button>
                                 </div>
