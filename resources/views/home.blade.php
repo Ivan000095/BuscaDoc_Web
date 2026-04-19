@@ -708,6 +708,31 @@
                                     </div>
                                 </a>
                             </div>
+
+                            <div class="col-md-{{ Auth::user()->doctor->citas == true ? '7' : '12' }}">
+                                <a href="{{ route('expedientes.index') }}" class="text-decoration-none">
+                                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden"
+                                        style="background: linear-gradient(135deg, #00213D 0%, #0d2e4e 100%);">
+                                        {{-- Ícono de fondo marca de agua --}}
+                                        <div class="position-absolute"
+                                            style="right: -15px; top: -15px; opacity: 0.1; transform: rotate(-15deg);">
+                                            <x-mcr-chat-dots style="font-size: 8rem;" /</x></x>>
+                                        </div>
+                                        <div
+                                            class="position-relative z-1 d-flex align-items-center justify-content-between h-100">
+                                            <div>
+                                                <h5 class="fw-bold mb-1">Expedientes</h5>
+                                                <p class="mb-0 opacity-75 small">Gestiona los expedientes de tus pacientes</p>
+                                            </div>
+                                            <div class="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                                style="width: 45px; height: 45px;">
+                                                <i class="bi bi-arrow-right text-navy fs-5"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
                         </div>
 
                         <h5 class="fw-bold text-navy mb-3">Resumen Reciente</h5>
@@ -1073,6 +1098,30 @@
                                             <p class="mb-0 opacity-75 small">Continúa la conversación con tus médicos</p>
                                         </div>
                                     </div>
+                                    <i class="bi bi-arrow-right fs-4 opacity-75"></i>
+                                </div>
+                            </div>
+                        </a>
+
+
+                        <a href="{{ route('expedientes.index') }}" class="text-decoration-none mb-4 d-block">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden" 
+                                 style="background: linear-gradient(135deg, #0d2e4e 0%, #00213D 100%);">
+                                <div class="position-absolute" style="right: -10px; top: -25px; opacity: 0.1; transform: scale(1.5);">
+                                    <x-mcf-chat-dots style="width: 8rem; height: 8rem;" />
+                                </div>
+                                <div class="position-relative z-1 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <x-mcf-chat-dots class="fs-4" />
+                                            
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-1">Mis Expedientes</h5>
+                                            <p class="mb-0 opacity-75 small">Gestiona los expedientes de tus familiares</p>
+                                        </div>
+                                    </div>
+                                    
                                     <i class="bi bi-arrow-right fs-4 opacity-75"></i>
                                 </div>
                             </div>
