@@ -150,7 +150,7 @@
 
                                     <button type="submit" class="btn btn-navy rounded-circle shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" 
                                             style="width: 48px; height: 48px; transition: transform 0.2s;">
-                                        <x-mcf-send-right class="fs-5" style="margin-left: -2px; margin-top: 2px;"></x>
+                                        <x-mcf-send class="fs-5" style="margin-left: -2px; margin-top: 2px;"/>
                                     </button>
                                 </form>
                             </div>        
