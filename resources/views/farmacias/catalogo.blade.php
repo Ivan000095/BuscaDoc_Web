@@ -2,11 +2,46 @@
 use Carbon\Carbon;
 ?>
 <x-layout>
-    <div class="container py-5">
+    <div class="container">
         <div class="row mb-4">
             <div class="col-12 text-center">
                 <h2 class="fw-bold text-navy">Farmacias</h2>
                 <p class="text-muted">Encuentra la farmacia más cercana con horarios y servicios disponibles.</p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center position-relative z-3 mb-5 mt-4">
+            <div class="col-11 col-lg-8 col-xl-7">
+                <div class="card border-0 shadow-sm rounded-5 search-form-card" style="background-color: #f8f9fa;">
+                    <div class="card-body p-3 p-md-2">
+                        <form action="{{ route('farmacias.catalogo') }}" method="GET" id="searchPharmacyForm">
+                            <div class="row g-2 align-items-center">
+                                
+                                {{-- 1. Input de Texto --}}
+                                <div class="col-12 col-md">
+                                    <div class="input-group input-group-lg bg-white rounded-pill overflow-hidden border">
+                                        <span class="input-group-text bg-white border-0 ps-4">
+                                            <x-mcr-search class="text-muted" style="width: 1.2rem;"/>
+                                        </span>
+                                        <input type="text" name="search" class="form-control border-0 shadow-none ps-2"
+                                            placeholder="Buscar por nombre de la farmacia..." 
+                                            value="{{ request('search') }}">
+                                    </div>
+                                </div>
+
+                                {{-- 2. Botón Buscar --}}
+                                <div class="col-12 col-md-auto">
+                                    <button class="btn btn-lg rounded-pill w-100 px-4 fw-bold d-flex align-items-center justify-content-center shadow-sm"
+                                        type="submit" style="height: 48px; background-color: #0d2e4e; color: white; transition: all 0.3s;">
+                                        <x-mcl-search class="me-2 icon-white" style="width: 1.2rem; color: white;" />
+                                        Buscar
+                                    </button>
+                                </div>
+                                
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -76,9 +111,9 @@ use Carbon\Carbon;
                                 </div>
                             </div>
 
-                            <div class="card-footer bg-white border-0 pt-0">
+                            <div class="card-footer bg-white border-0 pt-0 pb-4 px-4">
                                 <a href="{{ route('farmacias.detalle', $f->id) }}"
-                                    class="btn btn-outline-navy w-100 rounded-pill">
+                                    class="btn btn-navy w-100 rounded-pill">
                                     Ver detalles
                                 </a>
                             </div>

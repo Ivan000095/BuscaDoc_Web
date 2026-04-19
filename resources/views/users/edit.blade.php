@@ -101,7 +101,6 @@ $isPatient = $user->role === 'paciente';
                         </div>
                     </div>
 
-                    {{-- Formulario específico para PACIENTES --}}
                     @if($isPatient)
                     <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
                         <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-person-vcard-fill me-2"></i>Ficha Médica</h4>

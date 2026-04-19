@@ -16,9 +16,20 @@ class FarmaciaController extends Controller
 {
 
     //1. Público: Catálogo de farmacias (pacientes/visitantes)
-    public function index()
+    public function index(Request $request)
     {
-        $farmacias = Farmacia::with('user')->get();
+        $query = Farmacia::with('user');
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nom_farmacia', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        $farmacias = $query->get();
+
         return view('farmacias.catalogo', compact('farmacias'));
     }
 
