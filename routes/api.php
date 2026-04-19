@@ -12,9 +12,9 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\MensajeriaController;
 use App\Http\Controllers\Api\EspecialidadController;
 use App\Http\Controllers\Api\SearchController;
-use App\Http\Controllers\API\DoctorController;
-use App\Http\Controllers\API\FarmaciaController;
-use App\Http\Controllers\API\PacienteController;
+use App\Http\Controllers\Api\DoctorController;
+use App\Http\Controllers\Api\FarmaciaController;
+use App\Http\Controllers\Api\PacienteController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ReplyController;
 
