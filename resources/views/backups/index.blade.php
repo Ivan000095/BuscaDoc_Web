@@ -101,10 +101,17 @@
         <script>
             $(document).ready(function () {
                 $('#backupsTable').DataTable({
+                    processing: true, 
                     language: {
                         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
                         search: "_INPUT_",
                         searchPlaceholder: "Buscar respaldo...",
+                        processing: `
+                            <div class="d-flex flex-column align-items-center justify-content-center" style="color: #0d2e4e;">
+                                <div class="spinner-border mb-2" role="status" style="width: 2rem; height: 2rem;"></div>
+                                <span class="fw-semibold small">Procesando...</span>
+                            </div>
+                        `,
                         emptyTable: `
                             <div class="d-flex flex-column align-items-center justify-content-center text-muted py-5">
                                 <i class="bi bi-inbox display-4 mb-3" style="font-size: 3rem;"></i>
