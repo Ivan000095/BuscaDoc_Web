@@ -41,24 +41,55 @@ class DoctorController extends Controller
         ]);
     }
 
-    public function vistageneral(Request $request)
+    public function vistageneral(Request $request) // O como se llame tu método actual
     {
-        $doctores = Doctor::with([
+        // Iniciamos la consulta con sus relaciones
+        $query = Doctor::with([
             'user',
             'especialidades',
             'reviews.autor',
             'questions.autor'
-        ])->get();
+        ]);
 
-        return view('doctores.vista', compact('doctores'));
+        // FILTRO 1: Búsqueda por nombre de doctor
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            // Buscamos dentro de la tabla 'users' relacionada
+            $query->whereHas('user', function($q) use ($searchTerm) {
+                $q->where('name', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // FILTRO 2: Búsqueda por especialidad
+        if ($request->filled('especialidad')) {
+            $especialidad = $request->especialidad;
+            // Buscamos dentro de la relación de especialidades
+            $query->whereHas('especialidades', function($q) use ($especialidad) {
+                $q->where('nombre', $especialidad);
+            });
+        }
+
+        // Ejecutamos la consulta ya filtrada
+        $doctores = $query->get();
+
+        // 1. Ordenamos por los mejores evaluados
+        $doctoresOrdenados = $doctores->sortByDesc('promedio_calificacion');
+
+        // 2. Agrupamos por la especialidad principal
+        $doctoresPorEspecialidad = $doctoresOrdenados->groupBy(function ($doctor) {
+            return $doctor->especialidades->first()->nombre ?? 'Médico General';
+        });
+
+        // Traemos todas las especialidades para llenar el <select> del buscador
+        $especialidades = Especialidad::all();
+
+        // Retornamos la MISMA vista con los resultados filtrados
+        return view('doctores.vista', compact('doctoresPorEspecialidad', 'especialidades'));
     }
 
 
     public function store(Request $request)
     {
-
-
-
         $validated = $request->validate([
             "name" => "required|string|max:100",
             "email" => "required|email|unique:users,email",
