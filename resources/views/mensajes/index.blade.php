@@ -117,7 +117,7 @@
                             <div class="p-3 bg-surface d-flex align-items-center justify-content-between" style="border-bottom: 1px solid rgba(17, 42, 70, 0.05); z-index: 10;">
                                 <div class="d-flex align-items-center">
                                     <img src="{{$usuarioActivo->foto ? asset('storage/' . $usuarioActivo->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($usuarioActivo->name)}}" 
-                                         class="rounded-circle me-3 shadow-sm" width="42" height="42" style="border: 2px solid var(--bg-app);">
+                                         class="rounded-circle me-3 shadow-sm object-fit-cover" width="42" height="42" style="border: 2px solid var(--bg-app);">
                                     <div>
                                         <h6 class="mb-0 fw-bold text-navy">{{$usuarioActivo->name}}</h6>
                                         <small class="text-muted d-flex align-items-center" style="font-size: 0.8rem;">
@@ -150,7 +150,7 @@
 
                                     <button type="submit" class="btn btn-navy rounded-circle shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" 
                                             style="width: 48px; height: 48px; transition: transform 0.2s;">
-                                        <i class="bi bi-send-fill fs-5" style="margin-left: -2px; margin-top: 2px;"></i>
+                                        <x-mcf-send-right class="fs-5" style="margin-left: -2px; margin-top: 2px;"></x>
                                     </button>
                                 </form>
                             </div>        
