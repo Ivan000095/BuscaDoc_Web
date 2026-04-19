@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Expediente;
 
+use App\Models\Especialidad;
+use Illuminate\Support\Facades\Auth;
 class HomeController extends Controller
 {
     /**
@@ -13,10 +15,6 @@ class HomeController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('auth')->except('top5');
-    }
 
     /**
      * Show the application dashboard.
@@ -25,32 +23,36 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
 
         $proximaCita = null;
         $proximaCitaDoctor = null;
         $ultimaReview = null;
         $ultimaQuestion = null;
         $rutas = [];
+        $doctores = [];
+
+        $especialidades = Especialidad::with(['doctors.user'])
+            ->has('doctors')
+            ->get();
 
         if ($user->role == 'paciente' && $user->paciente) {
             // Buscamos citas de cualquiera de sus expedientes
             $proximaCita = \App\Models\Cita::whereIn('expediente_id', $user->expedientes->pluck('id'))
                 ->with(['doctor.user', 'expediente']) // Cargamos el expediente para saber de quién es la cita
                 ->where(DB::raw("CONCAT(fecha, ' ', hora_inicio)"), '>=', now())
-                ->where('estado', '!=', 'cancelada')
-                ->orderBy('fecha', 'asc')
-                ->orderBy('hora_inicio', 'asc')
-                ->first();
 
-            $rutas = User::whereNotNull('latitud')
-                ->whereNotNull('longitud')
-                ->whereIn('role', ['doctor', 'farmacia']) 
-                ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
-                ->get();
+        $rutas = User::whereNotNull('latitud')
+            ->whereNotNull('longitud')
+            ->whereIn('role', ['doctor', 'farmacia']) 
+            ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
+            ->get();
+
+
+
         }
 
-        if ($user->role == 'doctor' && $user->doctor) {
+        if ($user && $user->role == 'doctor' && $user->doctor) {
             $proximaCitaDoctor = $user->doctor->citas()
                 ->with('expediente') // Importante: Saber a quién va a atender
                 ->where(DB::raw("CONCAT(fecha, ' ', hora_inicio)"), '>=', now())
@@ -63,7 +65,7 @@ class HomeController extends Controller
             $ultimaQuestion = $user->doctor->questions()->with('autor')->latest()->first();
         }
 
-        return view('home', compact('proximaCita', 'proximaCitaDoctor', 'ultimaReview', 'ultimaQuestion', 'rutas'));
+        return view('home', compact('proximaCita', 'proximaCitaDoctor', 'ultimaReview', 'ultimaQuestion', 'rutas', 'especialidades'));
     }
 
     public function mostrarMapa()

@@ -2,70 +2,151 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Mensaje;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Kreait\Laravel\Firebase\Facades\Firebase;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 
 class MensajeController extends Controller
 {
     public function index()
     {
-        $authId = Auth::id();
+        // CASTEO ESTRICTO: Obligamos a que siempre sea un número entero
+        $authId = (int) Auth::id(); 
+        $firebase = Firebase::database();
 
-        $enviados = Mensaje::where('id_remitente', $authId)->select('id_destinatario as contacto_id');
-        $recibidos = Mensaje::where('id_destinatario', $authId)->select('id_remitente as contacto_id')->union($enviados)->get();
+        $mensajesEnviados = $firebase->getReference('mensajes')
+            ->orderByChild('id_remitente')
+            ->equalTo($authId) // Ahora Firebase buscará un Entero sí o sí
+            ->getValue();
 
-        $idsContactos = $recibidos->pluck('contacto_id')->unique();
+        $mensajesRecibidos = $firebase->getReference('mensajes')
+            ->orderByChild('id_destinatario')
+            ->equalTo($authId)
+            ->getValue();
+
+        $idContactos = [];
+
+        if ($mensajesEnviados) {
+            foreach ($mensajesEnviados as $msg) {
+                $idContactos[] = (int) $msg['id_destinatario']; // Aseguramos enteros
+            }
+        }
+
+        if ($mensajesRecibidos) {
+            foreach ($mensajesRecibidos as $msg) {
+                $idContactos[] = (int) $msg['id_remitente']; // Aseguramos enteros
+            }
+        }
+
+        $idsContactos = array_unique($idContactos);
+        $idsContactos = array_diff($idsContactos, [$authId]);
+
+        // Si la lista de IDs está vacía, whereIn simplemente devuelve una colección vacía sin fallar
         $contactos = User::whereIn('id', $idsContactos)->get();
+        
         return view('mensajes.index', compact('contactos'));
     }
 
     public function show($id)
     {
-        $authId = Auth::id();
+        $authId = (int) Auth::id();
+        $destId = (int) $id;
+        $firebase = Firebase::database();
 
-        $enviados = Mensaje::where('id_remitente', $authId)->select('id_destinatario as contacto_id');
-        $recibidos = Mensaje::where('id_destinatario', $authId)->select('id_remitente as contacto_id')->union($enviados)->get();
+        $mensajesEnviados = $firebase->getReference('mensajes')
+            ->orderByChild('id_remitente')
+            ->equalTo($authId)
+            ->getValue();
 
-        $idsContactos = $recibidos->pluck('contacto_id')->unique();
+        $mensajesRecibidos = $firebase->getReference('mensajes')
+            ->orderByChild('id_destinatario')
+            ->equalTo($authId)
+            ->getValue();
+
+        $idContactos = [];
+
+        if ($mensajesEnviados) {
+            foreach ($mensajesEnviados as $msg) {
+                $idContactos[] = (int) $msg['id_destinatario'];
+            }
+        }
+
+        if ($mensajesRecibidos) {
+            foreach ($mensajesRecibidos as $msg) {
+                $idContactos[] = (int) $msg['id_remitente'];
+            }
+        }
+
+        $idsContactos = array_unique($idContactos);
+        // CORRECCIÓN DEL BUG DE LA 'S': Usamos $idsContactos en ambos lados
+        $idsContactos = array_diff($idsContactos, [$authId]); 
+
         $contactos = User::whereIn('id', $idsContactos)->get();
+        $usuarioActivo = User::findOrFail($destId);
 
-        $usuarioActivo = User::findOrFail($id);
+        $chatId = ($authId < $destId) ? "{$authId}_{$destId}" : "{$destId}_{$authId}";
+        $datosCrudos = $firebase->getReference('mensajes')
+            ->orderByChild('chat_id')
+            ->equalTo($chatId)
+            ->getValue();
 
-        $mensajes = Mensaje::where(function ($q) use ($id, $authId) {
-            $q->where('id_remitente', $authId)
-              ->where('id_destinatario', $id);
-        })
-        ->orWhere(function ($q) use ($id, $authId) {
-            $q->where('id_remitente', $id)
-              ->where('id_destinatario', $authId);
-        })
-        ->orderBy('created_at', 'asc')
-        ->get();
-
-            Mensaje::where('id_remitente', $id)
-                ->where('id_destinatario', $authId)
-                ->where('leido', false)
-                ->update(['leido' => true]);
+        $mensajes = [];
+        if ($datosCrudos) {
+            foreach ($datosCrudos as $fid => $msg) {
+                $msg['firebase_id'] = $fid;
+                $mensajes[] = $msg;
+            }
+            usort($mensajes, fn($a, $b) => strtotime($a['created_at']) <=> strtotime($b['created_at']));
+        }
 
         return view('mensajes.index', compact('contactos', 'usuarioActivo', 'mensajes'));
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
             'id_destinatario' => 'required|exists:users,id',
             'contenido' => 'required|string|max:1000',
         ]);
 
-        Mensaje::create([
-            'id_remitente' => Auth::id(),
-            'id_destinatario' => $request->id_destinatario,
+        $authId = (int) Auth::id(); // Aseguramos Entero
+        $destId = (int) $request->id_destinatario; // Aseguramos Entero
+        
+        // Al ser ambos enteros matemáticos, la lógica de '<' nunca fallará 
+        $chatId = ($authId < $destId) ? "{$authId}_{$destId}" : "{$destId}_{$authId}";
+
+        $nuevoMensaje = [
+            'id_remitente' => $authId,
+            'id_destinatario' => $destId,
+            'chat_id' => $chatId,
             'contenido' => $request->contenido,
             'leido' => false,
-        ]);
+            'created_at' => now()->toDateTimeString()
+        ];
 
-        return back();
+        Firebase::database()->getReference('mensajes')->push($nuevoMensaje);
+
+        $destinatario = User::find($destId);
+        
+        if ($destinatario && $destinatario->fcm_token) {
+            $messaging = Firebase::messaging();
+            
+            $notificacion = CloudMessage::new()
+                ->withNotification(Notification::create(
+                    'Nuevo mensaje de ' . Auth::user()->name, 
+                    $request->contenido
+                ))
+                ->withToken($destinatario->fcm_token);
+
+            try {
+                $messaging->send($notificacion);
+            } catch (\Exception $e) {
+                \Log::error('Error enviando push desde Web: ' . $e->getMessage());
+            }
+        }
+
+        return response()->json(['success' => true]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Providers;
 use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,5 +25,8 @@ class AppServiceProvider extends ServiceProvider
     
     // Opcional: Intentar setearlo a nivel sistema para PHP
     setlocale(LC_TIME, 'es_ES.UTF-8', 'es_ES', 'spanish');
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
     }
 }

@@ -3,92 +3,73 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\API\DoctorStoreRequest;
-use App\Http\Requests\API\DoctorUpdateRequest;
-use App\Http\Resources\API\DoctorResource;
 use App\Models\Doctor;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Http\JsonResponse;
-use Carbon\Carbon;
 use App\Models\User;
-use App\Models\Respuesta;
+use App\Models\Especialidad;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DoctorController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Listar doctores con filtros básicos
+     */
+    public function index(Request $request): JsonResponse
     {
         try {
-            $query = Doctor::with([
-                'user',
-                'especialidades',
-                'reviews.respuestas',
-                'reviews.autor',
-                'questions.respuestas',
-                'questions.autor'
-            ]);
+            $query = Doctor::with(['user', 'especialidades']);
 
+            // Búsqueda por nombre o descripción
             if ($request->has("search")) {
                 $search = $request->input("search");
                 $query->where(function ($q) use ($search) {
                     $q->whereHas('user', function ($userQuery) use ($search) {
                         $userQuery->where("name", "like", "%{$search}%");
                     })
-                        ->orWhere("descripcion", "like", "%{$search}%");
+                    ->orWhere("descripcion", "like", "%{$search}%");
                 });
             }
 
+            // Filtro por especialidad
+            if ($request->has("especialidad_id")) {
+                $query->whereHas('especialidades', function ($q) use ($request) {
+                    $q->where('especialidads.id', $request->input("especialidad_id"));
+                });
+            }
+
+            // Ordenamiento
             $sortBy = $request->input("sort_by", "created_at");
             $sortDirection = $request->input("sort_direction", "desc");
             $query->orderBy($sortBy, $sortDirection);
 
-            $perPage = $request->input("per_page", 15);
-            $perPage = min($perPage, 100);
+            // Paginación
+            $perPage = min($request->input("per_page", 15), 100);
             $doctors = $query->paginate($perPage);
 
+            // Transformación mínima de datos
             $doctors->getCollection()->transform(function ($doctor) {
-                $promedio = round($doctor->reviews->avg('calificacion') ?? 0, 1);
                 return [
                     "id" => $doctor->id,
+                    "user_id" => $doctor->user->id,
                     "name" => $doctor->user->name,
                     "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
-                    "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 30),
+                    "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 100),
                     "fecha" => $doctor->user->f_nacimiento,
-                    // Puse localhost, porque ando compartiendo el puerto a mi teléfono físico, pero después debería de tener el host de la página
-                    "image" => "http://localhost:8000/storage/" . $doctor->user->foto,
-                    "promedio" => $promedio,
+                    "image" => $doctor->user->foto 
+                        ? asset('storage/' . $doctor->user->foto) 
+                        : null,
+                    "promedio" => round($doctor->reviews->avg('calificacion') ?? 0, 1),
                     "cedula" => $doctor->cedula,
-                    "costos" => '$' . number_format($doctor->costo, 2),
+                    "role" => $doctor->user->role,
+                    "costos" => number_format($doctor->costo, 2),
                     "horarioentrada" => $doctor->horario_entrada,
                     "horariosalida" => $doctor->horario_salida,
-                    'citas' => $doctor->citas ? true : false,
+                    "idioma" => $doctor->idiomas,
                     "latitud" => $doctor->user->latitud,
                     "longitud" => $doctor->user->longitud,
-
-                    "comentarios" => $doctor->reviews->map(function ($review) {
-                        return [
-                            "id" => $review->id,
-                            "autor" => $review->autor ? $review->autor->name : 'Usuario Anónimo',
-                            "foto_autor" => 'http://localhost:8000/storage/' . $review->autor->foto ?? null,
-                            "contenido" => $review->contenido,
-                            "calificacion" => $review->calificacion,
-                            "fecha" => $review->created_at->format('d/m/Y'),
-                            "respuestas" => $review->respuestas
-                        ];
-                    }),
-
-                    "preguntas" => $doctor->questions->map(function ($question) {
-                        return [
-                            "id" => $question->id,
-                            "autor" => $question->autor ? $question->autor->name : 'Usuario Anónimo',
-                            "foto_autor" => 'http://localhost:8000/storage/' . $question->autor->foto ?? null,
-                            "contenido" => $question->contenido,
-                            "fecha" => $question->created_at->format('d/m/Y'),
-                            "respuestas" => $question->respuestas
-                        ];
-                    }),
                 ];
             });
 
@@ -100,13 +81,6 @@ class DoctorController extends Controller
                     "last_page" => $doctors->lastPage(),
                     "per_page" => $doctors->perPage(),
                     "total" => $doctors->total(),
-                    "from" => $doctors->firstItem(),
-                    "to" => $doctors->lastItem(),
-                ],
-                "meta" => [
-                    "search" => $request->input("search"),
-                    "sort_by" => $sortBy,
-                    "sort_direction" => $sortDirection,
                 ],
             ], 200);
 
@@ -119,17 +93,13 @@ class DoctorController extends Controller
         }
     }
 
+    /**
+     * Mostrar un doctor específico
+     */
     public function show($id): JsonResponse
     {
         try {
-            $doctor = Doctor::with([
-                'user',
-                'especialidades',
-                'reviews.respuestas',
-                'reviews.autor',
-                'questions.respuestas',
-                'questions.autor'
-            ])->find($id);
+            $doctor = Doctor::with(['user', 'especialidades'])->find($id);
 
             if (!$doctor) {
                 return response()->json([
@@ -138,44 +108,27 @@ class DoctorController extends Controller
                 ], 404);
             }
 
-            $promedio = round($doctor->reviews->avg('calificacion') ?? 0, 1);
-
             $data = [
                 "id" => $doctor->id,
+                "user_id" => $doctor->user->id,
                 "name" => $doctor->user->name ?? 'Sin nombre',
+                "email" => $doctor->user->email,
                 "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
                 "descripcion" => $doctor->descripcion,
-                "fecha" => $doctor->user->f_nacimiento ?? null,
-                "image" => $doctor->user->foto ? "10.0.2.2:8000/storage/" . $doctor->user->foto : null,
-                "promedio" => $promedio,
+                "fecha" => $doctor->user->f_nacimiento,
+                "image" => $doctor->user->foto 
+                    ? asset('storage/' . $doctor->user->foto) 
+                    : null,
+                "promedio" => round($doctor->reviews->avg('calificacion') ?? 0, 1),
                 "cedula" => $doctor->cedula,
-                "costos" => '$' . number_format($doctor->costo, 2),
+                "role" => $doctor->user->role,
+                "costos" => number_format($doctor->costo, 2),
                 "horarioentrada" => $doctor->horario_entrada,
                 "horariosalida" => $doctor->horario_salida,
-                'citas' => $doctor->citas ? true : false,
+                "idioma" => $doctor->idiomas,
                 "latitud" => $doctor->user->latitud,
                 "longitud" => $doctor->user->longitud,
-
-                "comentarios" => $doctor->reviews->map(function ($review) {
-                    return [
-                        "id" => $review->id,
-                        "autor" => $review->autor ? $review->autor->name : 'Usuario Anónimo',
-                        "contenido" => $review->contenido,
-                        "calificacion" => $review->calificacion,
-                        "fecha" => $review->created_at->format('d/m/Y'),
-                        "respuestas" => $review->respuestas
-                    ];
-                }),
-
-                "preguntas" => $doctor->questions->map(function ($question) {
-                    return [
-                        "id" => $question->id,
-                        "autor" => $question->autor ? $question->autor->name : 'Usuario Anónimo',
-                        "contenido" => $question->contenido,
-                        "fecha" => $question->created_at->format('d/m/Y'),
-                        "respuestas" => $question->respuestas
-                    ];
-                }),
+                "estado" => $doctor->user->estado,
             ];
 
             return response()->json([
@@ -192,22 +145,25 @@ class DoctorController extends Controller
         }
     }
 
+    /**
+     * Registrar nuevo doctor
+     */
     public function store(Request $request): JsonResponse
     {
         try {
-            $request->validate([
+            $validated = $request->validate([
                 "name" => "required|string|max:100",
                 "email" => "required|email|unique:users,email",
                 "password" => "required|min:8",
                 "fecha" => "required|date|before:-18 years",
-                "image" => "nullable|image|max:5120",
+                "image" => "nullable|image|mimes:jpg,jpeg,png|max:5120",
                 "especialidad_id" => "required|exists:especialidads,id",
-                "cedula" => "required|string|max:50",
+                "cedula" => "required|string|max:50|unique:doctors,cedula",
                 "descripcion" => "required|string|max:1000",
                 "costos" => "required|numeric|min:0",
-                "horarioentrada" => "required",
-                "horariosalida" => "required",
-                "idioma" => "nullable|string",
+                "horarioentrada" => "required|date_format:H:i",
+                "horariosalida" => "required|date_format:H:i",
+                "idioma" => "nullable|string|max:100",
                 "latitud" => "nullable|numeric",
                 "longitud" => "nullable|numeric",
             ]);
@@ -215,12 +171,13 @@ class DoctorController extends Controller
             $doctorRegistrado = null;
 
             DB::transaction(function () use ($request, &$doctorRegistrado) {
-
+                // Subir imagen si existe
                 $rutaFoto = null;
                 if ($request->hasFile("image")) {
                     $rutaFoto = $request->file("image")->store('users', 'public');
                 }
 
+                // Crear usuario
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
@@ -233,6 +190,7 @@ class DoctorController extends Controller
                     'longitud' => $request->longitud,
                 ]);
 
+                // Crear perfil de doctor
                 $doctor = Doctor::create([
                     'user_id' => $user->id,
                     'cedula' => $request->cedula,
@@ -241,40 +199,43 @@ class DoctorController extends Controller
                     'idiomas' => $request->idioma,
                     'horario_entrada' => $request->horarioentrada,
                     'horario_salida' => $request->horariosalida,
-                    'citas' => $request->has('citas') ? true : false,
+                    'citas' => $request->boolean('citas') ?? false,
                 ]);
 
+                // Relacionar especialidad
                 $doctor->especialidades()->attach($request->especialidad_id);
 
-                $doctor->load(['user', 'especialidades']);
-                $doctorRegistrado = $doctor;
+                $doctorRegistrado = $doctor->load(['user', 'especialidades']);
             });
 
             return response()->json([
                 "success" => true,
-                "message" => "Doctor registrado correctamente vía API.",
+                "message" => "Doctor registrado correctamente",
                 "data" => $doctorRegistrado
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 "success" => false,
-                "message" => "Error de validación en el formulario",
+                "message" => "Error de validación",
                 "errors" => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 "success" => false,
-                "message" => "Ocurrió un error crítico al registrar el doctor",
+                "message" => "Error al registrar el doctor",
                 "error" => $e->getMessage(),
             ], 500);
         }
     }
 
+    /**
+     * Actualizar doctor
+     */
     public function update(Request $request, $id): JsonResponse
     {
         try {
-            $doctor = Doctor::find($id);
+            $doctor = Doctor::with('user')->find($id);
 
             if (!$doctor) {
                 return response()->json([
@@ -283,16 +244,64 @@ class DoctorController extends Controller
                 ], 404);
             }
 
-            // Validamos los datos entrantes
-            $validatedData = $request->validate([
-                'cedula' => 'sometimes|string|max:255',
-                'descripcion' => 'sometimes|string',
-                'costo' => 'sometimes|numeric',
-                'horario_entrada' => 'sometimes',
-                'horario_salida' => 'sometimes',
+            $validated = $request->validate([
+                'cedula' => 'sometimes|string|max:50|unique:doctors,cedula,' . $doctor->id,
+                'descripcion' => 'sometimes|string|max:1000',
+                'costos' => 'sometimes|numeric|min:0',
+                'horarioentrada' => 'sometimes|date_format:H:i',
+                'horariosalida' => 'sometimes|date_format:H:i',
+                'idioma' => 'nullable|string|max:100',
+                'latitud' => 'nullable|numeric',
+                'longitud' => 'nullable|numeric',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+                // Datos del usuario relacionado
+                'name' => 'sometimes|string|max:100',
+                'email' => 'sometimes|email|unique:users,email,' . $doctor->user->id,
+                'password' => 'nullable|min:8',
+                'fecha' => 'sometimes|date|before:-18 years',
             ]);
 
-            $doctor->update($validatedData);
+            DB::transaction(function () use ($request, $doctor, $validated) {
+                // Actualizar imagen si se envía nueva
+                if ($request->hasFile("image")) {
+                    // Eliminar imagen anterior si existe
+                    if ($doctor->user->foto && Storage::disk('public')->exists($doctor->user->foto)) {
+                        Storage::disk('public')->delete($doctor->user->foto);
+                    }
+                    $rutaFoto = $request->file("image")->store('users', 'public');
+                    $doctor->user->foto = $rutaFoto;
+                }
+
+                // Actualizar datos del usuario
+                $doctor->user->update([
+                    'name' => $validated['name'] ?? $doctor->user->name,
+                    'email' => $validated['email'] ?? $doctor->user->email,
+                    'f_nacimiento' => $validated['fecha'] ?? $doctor->user->f_nacimiento,
+                    'latitud' => $validated['latitud'] ?? $doctor->user->latitud,
+                    'longitud' => $validated['longitud'] ?? $doctor->user->longitud,
+                ]);
+
+                // Actualizar contraseña si se proporciona
+                if (!empty($validated['password'])) {
+                    $doctor->user->password = Hash::make($validated['password']);
+                }
+
+                $doctor->user->save();
+
+                // Actualizar datos del doctor
+                $doctor->update([
+                    'cedula' => $validated['cedula'] ?? $doctor->cedula,
+                    'descripcion' => $validated['descripcion'] ?? $doctor->descripcion,
+                    'costo' => $validated['costos'] ?? $doctor->costo,
+                    'idiomas' => $validated['idioma'] ?? $doctor->idiomas,
+                    'horario_entrada' => $validated['horarioentrada'] ?? $doctor->horario_entrada,
+                    'horario_salida' => $validated['horariosalida'] ?? $doctor->horario_salida,
+                    'latitud' => $validated['latitud'] ?? $doctor->user->latitud,
+                    'longitud' => $validated['longitud'] ?? $doctor->user->longitud,
+                ]);
+            });
+
+            $doctor->refresh()->load(['user', 'especialidades']);
 
             return response()->json([
                 "success" => true,
@@ -315,10 +324,13 @@ class DoctorController extends Controller
         }
     }
 
+    /**
+     * Eliminar doctor
+     */
     public function destroy($id): JsonResponse
     {
         try {
-            $doctor = Doctor::find($id);
+            $doctor = Doctor::with('user')->find($id);
 
             if (!$doctor) {
                 return response()->json([
@@ -327,9 +339,19 @@ class DoctorController extends Controller
                 ], 404);
             }
 
-            $doctor->especialidades()->detach();
-            $doctor->delete();
-            $doctor->user->delete();
+            DB::transaction(function () use ($doctor) {
+                // Eliminar imagen del almacenamiento si existe
+                if ($doctor->user->foto && Storage::disk('public')->exists($doctor->user->foto)) {
+                    Storage::disk('public')->delete($doctor->user->foto);
+                }
+
+                // Desvincular especialidades
+                $doctor->especialidades()->detach();
+
+                // Eliminar doctor y usuario
+                $doctor->delete();
+                $doctor->user->delete();
+            });
 
             return response()->json([
                 "success" => true,

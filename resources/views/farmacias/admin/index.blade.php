@@ -1,19 +1,72 @@
 <x-layout>
+    <div class="modal fade" id="modalReporteFarmaciasPDF" tabindex="-1" aria-labelledby="modalReporteFarmaciasPDFLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-0 shadow-soft rounded-4 overflow-hidden">
+                <div class="modal-header bg-navy text-white border-0 px-4 py-3">
+                    <h5 class="modal-title fw-bold d-flex align-items-center" id="modalReporteFarmaciasPDFLabel">
+                        <x-mcl-file class="icon-white me-2"/> Configurar Reporte
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                
+                <form action="{{ route('admin.farmacias.reporte') }}" method="POST" target="_blank">
+                    @csrf
+                    <div class="modal-body p-4 text-main">
+                        <p class="text-muted small mb-4">Selecciona los filtros para personalizar el listado de farmacias que aparecerán en tu PDF.</p>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-navy small mb-1">Registradas desde</label>
+                                <input type="date" name="fecha_inicio" class="form-control bg-app border-0 shadow-none rounded-3 px-3 py-2 text-main">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-navy small mb-1">Hasta</label>
+                                <input type="date" name="fecha_fin" class="form-control bg-app border-0 shadow-none rounded-3 px-3 py-2 text-main" value="{{ date('Y-m-d') }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-bold text-navy small mb-1">Ordenar por</label>
+                            <select name="orden" class="form-select bg-app border-0 shadow-none rounded-3 px-3 py-2 text-main">
+                                <option value="recientes">Más recientes primero</option>
+                                <option value="antiguos">Más antiguas primero</option>
+                                <option value="nombre_asc">Nombre de Farmacia (A-Z)</option>
+                                <option value="nombre_desc">Nombre de Farmacia (Z-A)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer border-top-0 bg-app px-4 py-3">
+                        <button type="button" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-navy rounded-pill px-4 fw-bold shadow-sm d-flex align-items-center">
+                            <x-mcl-download class="icon-white me-2"/> Descargar PDF
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     @if(Auth::user() && Auth::user()->role == 'admin')
     <div class="container py-5">
-        {{-- Encabezado --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="fw-bold text-navy mb-0">Farmacias</h2>
                 <p class="text-muted small mb-0">Catálogo de sucursales registradas</p>
             </div>
-            <button class="btn btn-navy rounded-pill px-4 shadow-sm" 
-                onclick="execute('{{ route('admin.farmacias.create') }}')">
-                <i class="bi bi-plus-lg me-1"></i> Agregar Nueva
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-navy rounded-pill px-4 shadow-soft" data-bs-toggle="modal" data-bs-target="#modalReporteFarmaciasPDF">
+                    <x-mcl-chart-pie class="icon-white me-1"/> 
+                    <span class="d-none d-sm-inline">Generar reporte en PDF</span>
+                </button>
+
+                <button class="btn btn-navy rounded-pill px-4 shadow-sm" 
+                    onclick="execute('{{ route('admin.farmacias.create') }}')">
+                    <x-mcl-plus-circle class="icon-white me-1" /> Agregar Nueva
+                </button>
+            </div>
         </div>
 
-        {{-- Tabla --}}
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -95,18 +148,22 @@
                     language: {
                         url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
                         search: "_INPUT_",
-                        searchPlaceholder: "Buscar farmacia..."
+                        searchPlaceholder: "Buscar farmacia...",
+                        processing: `
+                            <div class="d-flex flex-column align-items-center justify-content-center" style="color: #0d2e4e;">
+                                <div class="spinner-border mb-2" role="status" style="width: 2rem; height: 2rem;"></div>
+                                <span class="fw-semibold small">Procesando...</span>
+                            </div>
+                        `,
                     },
                     dom: '<"d-flex justify-content-between align-items-center p-3"f>rt<"d-flex justify-content-between align-items-center p-3"ip>'
                 });
             });
 
-            // Función para redirigir
             function execute(url) {
                 window.location.href = url;
             }
 
-            // Función para eliminar con confirmación y CSRF
             function deleteRecord(url) {
                 if (confirm('¿Está seguro de eliminar esta farmacia y su usuario asociado? Esta acción no se puede deshacer.')) {
                     let form = document.createElement('form');
@@ -129,6 +186,13 @@
                     form.submit();
                 }
             }
+
+            document.addEventListener("DOMContentLoaded", function() {
+                const modalPDF = document.getElementById('modalReporteFarmaciasPDF');
+                if (modalPDF) {
+                    document.body.appendChild(modalPDF);
+                }
+            });
         </script>
     @endpush
 </x-layout>

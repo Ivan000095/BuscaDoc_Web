@@ -62,33 +62,37 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Actualizar estado</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.reportes.update', $reporte->id) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-
-                        <div class="mb-3">
-                            <label class="form-label">Estado actual</label>
-                            <select name="estado" class="form-select">
-                                <option value="pendiente" {{ $reporte->estado === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="en_proceso" {{ $reporte->estado === 'en_proceso' ? 'selected' : '' }}>En proceso</option>
-                                <option value="resuelto" {{ $reporte->estado === 'resuelto' ? 'selected' : '' }}>Resuelto</option>
-                                <option value="descartado" {{ $reporte->estado === 'descartado' ? 'selected' : '' }}>Descartado</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">
-                            Guardar cambios
-                        </button>
-                    </form>
-                </div>
-            </div>
+<div class="col-lg-4">
+    <div class="card shadow-sm" style="border-radius: 24px; overflow: hidden; border: none;">
+        <div class="card-header text-white" style="background-color: #00213d;">
+            <h5 class="mb-0">Actualizar estado</h5>
         </div>
+        <div class="card-body">
+            <form action="{{ route('admin.reportes.update', $reporte->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="mb-3">
+                    <label class="form-label">Estado actual</label>
+                    <select name="estado" class="form-select">
+                        <option value="pendiente" {{ $reporte->estado === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                        <option value="en_proceso" {{ $reporte->estado === 'en_proceso' ? 'selected' : '' }}>En proceso</option>
+                        <option value="resuelto" {{ $reporte->estado === 'resuelto' ? 'selected' : '' }}>Resuelto</option>
+                        <option value="descartado" {{ $reporte->estado === 'descartado' ? 'selected' : '' }}>Descartado</option>
+                    </select>
+                </div>
+
+                <!-- Botón: Azul marino con hover y bordes redondeados -->
+                <button type="submit" class="btn w-100 text-white" 
+                    style="background-color: #00213d; border-radius: 50px; padding: 12px; font-weight: 600; transition: all 0.3s ease;"
+                    onmouseover="this.style.backgroundColor='#00213d'" 
+                    onmouseout="this.style.backgroundColor='#00213d'">
+                    Guardar cambios
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 </x-layout>

@@ -1,168 +1,403 @@
 <x-layout>
     <style>
         body {
-            background-color: #f9fafb;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .login-container {
+            min-height: calc(100vh - 100px);
+            display: flex;
+            align-items: center;
+            padding: 3rem 1rem;
+        }
+
+        .login-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 4rem;
+            max-width: 1200px;
+            width: 100%;
+            align-items: center;
+            margin: 0 auto;
+        }
+
+        /* Left Side - Branding */
+        .brand-content {
+            padding: 2rem;
+        }
+
+        .brand-logo {
+            background: white;
+            padding: 2rem;
+            border-radius: 24px;
+            display: inline-block;
+            box-shadow: 0 10px 40px rgba(13, 46, 78, 0.12);
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo img {
+            max-width: 280px;
+            height: auto;
         }
 
         .brand-title {
-            font-size: 4rem;
+            font-size: 2.2rem;
             font-weight: 800;
-            line-height: 0.9;
-            color: #000;
+            color: #0d2e4e;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
         }
 
-        .brand-subtitle {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #000;
+        .brand-description {
+            font-size: 1.15rem;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
         }
 
-        .form-control-pill {
-            border-radius: 50px;
-            background-color: #f1f5f9;
-            border: 1px solid transparent;
-            padding: 12px 25px;
+        .features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .features li {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 0;
+            color: #2c3e50;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #0d2e4e 0%, #1a5f7a 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(13, 46, 78, 0.2);
+        }
+
+        .feature-icon i {
+            font-size: 1.3rem;
+        }
+
+        /* Right Side - Login Form */
+        .login-form-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(13, 46, 78, 0.15);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0d2e4e;
+            margin: 0;
+        }
+
+        .login-header p {
+            color: #64748b;
+            margin-top: 0.5rem;
             font-size: 0.95rem;
         }
 
-        .form-control-pill:focus {
-            background-color: #fff;
-            border-color: #0d2e4e;
-            box-shadow: 0 0 0 4px rgba(13, 46, 78, 0.1);
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .btn-navy {
-            background-color: #0d2e4e;
-            color: white;
-            border-radius: 50px;
-            padding: 12px;
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: #0d2e4e;
             font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 2px solid #e2e8f0;
+            border-radius: 50px;
+            font-size: 1rem;
             transition: all 0.3s;
+            background-color: #f8fafc;
         }
 
-        .btn-navy:hover {
-            background-color: #16436d;
+        .form-control-custom:focus {
+            outline: none;
+            border-color: #0d2e4e;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(13, 46, 78, 0.08);
+        }
+
+        .form-control-custom::placeholder {
+            color: #94a3b8;
+        }
+
+        .btn-primary-custom {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0d2e4e 0%, #1a5f7a 100%);
             color: white;
-            transform: translateY(-2px);
-        }
-
-        .login-card {
             border: none;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 15px rgba(13, 46, 78, 0.3);
         }
 
-        .separator {
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, #1a5f7a 0%, #0d2e4e 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(13, 46, 78, 0.35);
+        }
+
+        .btn-create {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0d2e4e 0%, #1a5f7a 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(13, 46, 78, 0.3);
+        }
+
+        .btn-create:hover {
+            background: linear-gradient(135deg, #1a5f7a 0%, #0d2e4e 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(13, 46, 78, 0.35);
+            color: white;
+        }
+
+        .error-message {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
-            text-align: center;
-            margin: 20px 0;
-            color: #aaa;
+            gap: 10px;
         }
 
-        .separator::before,
-        .separator::after {
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.75rem 0;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .divider::before,
+        .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px dashed #ccc;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
         }
 
-        .separator::before {
-            margin-right: .25em;
+        .divider span {
+            padding: 0 12px;
         }
 
-        .separator::after {
-            margin-left: .25em;
+        /* Responsive */
+        @media (max-width: 968px) {
+            .login-wrapper {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+                max-width: 500px;
+            }
+
+            .brand-content {
+                text-align: center;
+                padding: 0;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+            }
+
+            .features {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-form-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .brand-title {
+                font-size: 1.6rem;
+            }
         }
     </style>
 
-    <div class="container py-5">
-        <div class="row align-items-center justify-content-center" style="min-height: 80vh;">
-            <div class="col-md-6 text-center text-md-start mb-5 mb-md-0">
-                <div class="mb-4">
-                    <img src="{{ asset('images/logo_negro.png') }}" alt="">
+    <div class="login-container">
+        <div class="login-wrapper">
+            <!-- Left Side - Branding -->
+            <div class="brand-content">
+                <div class="brand-logo">
+                    <img src="{{ asset('images/logo_negro.png') }}" alt="BuscaDoc">
                 </div>
-                <p class="fs-4 text-muted">
-                    "Un lugar para todas tus necesidades"
+                <h1 class="brand-title">
+                    Conecta con los mejores<br>profesionales de la salud
+                </h1>
+                <p class="brand-description">
+                    Encuentra doctores, farmacias y agenda citas de manera rápida y segura.
                 </p>
+                <ul class="features">
+                    <li>
+                        <div class="feature-icon">
+                            <i class="bi bi-heart-pulse-fill"></i>
+                        </div>
+                        <span>Doctores certificados cerca de ti</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon">
+                            <i class="bi bi-shop-window"></i>
+                        </div>
+                        <span>Farmacias disponibles 24/7</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                        <span>Agenda citas en minutos</span>
+                    </li>
+                </ul>
             </div>
 
-            <div class="col-md-5 col-lg-4">
-                <div class="card login-card p-4 bg-white">
-                    <div class="card-body">
-                        <h3 class="text-center fw-bold mb-4">Iniciar sesión</h3>
-
-                        <form method="POST" action="{{ route('login') }}">
-                            @csrf
-
-                            <div class="mb-3">
-                                <label for="email" class="form-label text-muted small ps-3">Correo electrónico</label>
-                                <input id="email" type="email"
-                                    class="form-control form-control-pill @error('email') is-invalid @enderror"
-                                    name="email" value="{{ old('email') }}" required autocomplete="email" autofocus
-                                    placeholder="ejemplo@correo.com">
-
-                                @error('email')
-                                    <span class="invalid-feedback ps-3" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="password" class="form-label text-muted small ps-3">Contraseña</label>
-                                <input id="password" type="password"
-                                    class="form-control form-control-pill @error('password') is-invalid @enderror"
-                                    name="password" required autocomplete="current-password" placeholder="••••••••">
-
-                                @error('password')
-                                    <span class="invalid-feedback ps-3" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3 ps-3 form-check">
-                                <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                <label class="form-check-label small text-muted" for="remember">
-                                    Recordarme
-                                </label>
-                            </div>
-
-                            <div class="d-grid mb-4">
-                                <button type="submit" class="btn btn-navy shadow-sm">
-                                    {{ __('Iniciar sesión') }}
-                                </button>
-                            </div>
-
-                            <div class="separator small">o</div>
-                            <div class="d-flex justify-content-center gap-3 mb-4">
-                                <a href="{{ route('google.login') }}"
-                                    class="btn btn-outline-light border text-dark rounded-pill d-flex align-items-center gap-2 shadow-sm">
-                                    <i class="bi bi-google text-navy"></i> <span class="small">Google</span>
-                                </a>
-                            </div>
-
-                            <div class="text-center small">
-                                ¿Aún no tienes cuenta?
-                                <a href="{{ route('register') }}" class="fw-bold text-decoration-none"
-                                    style="color: #0d2e4e;">
-                                    Registrarme
-                                </a>
-                            </div>
-
-                            @if (Route::has('password.request'))
-                                <div class="text-center mt-2">
-                                    <a class="small text-muted text-decoration-none" href="{{ route('password.request') }}">
-                                        ¿Olvidaste tu contraseña?
-                                    </a>
-                                </div>
-                            @endif
-
-                        </form>
-                    </div>
+            <!-- Right Side - Login Form -->
+            <div class="login-form-container">
+                <div class="login-header">
+                    <h2>Iniciar sesión</h2>
+                    <p>Ingresa tus credenciales para continuar</p>
                 </div>
+
+                <form method="POST" action="{{ route('login') }}">
+                    @csrf
+
+                    @if ($errors->has('email') || $errors->has('password'))
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <span>Credenciales incorrectas. Intenta de nuevo.</span>
+                        </div>
+                    @endif
+
+                    <div class="form-group">
+                        <label for="email">Correo electrónico</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-control-custom" 
+                                placeholder="tu@email.com"
+                                value="{{ old('email') }}" 
+                                required 
+                                autocomplete="email" 
+                                autofocus
+                            >
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        @error('email')
+                            <span class="invalid-feedback d-block" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                class="form-control-custom" 
+                                placeholder="••••••••"
+                                required 
+                                autocomplete="current-password"
+                            >
+                            <i class="bi bi-lock-fill"></i>
+                        </div>
+                        @error('password')
+                            <span class="invalid-feedback d-block" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn-primary-custom">
+                        Iniciar sesión
+                    </button>
+
+                    <div class="divider">
+                        <span>¿No tienes cuenta?</span>
+                    </div>
+
+                    <a href="{{ route('register') }}" class="btn-create">
+                        Crear cuenta nueva
+                    </a>
+                </form>
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('.btn-primary-custom');
+
+            form.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Conectando...';
+                submitBtn.style.opacity = '0.8';
+                submitBtn.style.cursor = 'not-allowed';
+            });
+        });
+    </script>
 </x-layout>
