@@ -24,7 +24,6 @@ class HomeController extends Controller
     public function index()
     {
         $user = Auth::user();
-
         $proximaCita = null;
         $proximaCitaDoctor = null;
         $ultimaReview = null;
@@ -36,12 +35,22 @@ class HomeController extends Controller
             ->has('doctors')
             ->get();
 
-        if ($user->role == 'paciente' && $user->paciente) {
+
+        $rutas = User::whereNotNull('latitud')
+                ->whereNotNull('longitud')
+                ->whereIn('role', ['doctor', 'farmacia']) 
+                ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
+                ->get();
+
+        if ($user && $user->role == 'paciente' && $user->paciente) {
             // Buscamos citas de cualquiera de sus expedientes
             $proximaCita = \App\Models\Cita::whereIn('expediente_id', $user->expedientes->pluck('id'))
                 ->with(['doctor.user', 'expediente']) // Cargamos el expediente para saber de quién es la cita
                 ->where(DB::raw("CONCAT(fecha, ' ', hora_inicio)"), '>=', now())
-                ->get();
+                ->where('estado', '!=', 'cancelada')
+                ->orderBy('fecha', 'asc')
+                ->orderBy('hora_inicio', 'asc')
+                ->first();
 
 
 

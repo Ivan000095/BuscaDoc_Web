@@ -328,7 +328,7 @@ $lng = $doctor->user->longitud ?? -92.0946;
                     </div>
                 </div>
 
-                @if(Auth::user()->role == 'paciente')
+                @if(Auth::user()?->role == 'paciente')
                     <div class="d-flex gap-3 mb-5">
                         @if($doctor->citas == true)
                         <button type="button" class="btn btn-navy px-4 flex-grow-1" data-bs-toggle="modal"
@@ -624,11 +624,14 @@ $lng = $doctor->user->longitud ?? -92.0946;
             </div>
         </div>
     </div>
-    @if(Auth::user()->role == 'paciente')
+    @if(Auth::check() && Auth::user()->role == 'paciente')
     @push('modals')
         @include('citas.agendar')
     @endpush
     @endif
+
+</x-layout>
+ 
     <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
@@ -646,5 +649,3 @@ $lng = $doctor->user->longitud ?? -92.0946;
             });
         }
     </script>
-</x-layout>
- 
