@@ -9,6 +9,7 @@ use App\Models\Expediente;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class CitaController extends Controller
 {
@@ -116,7 +117,7 @@ public function store(Request $request): JsonResponse
                         ], 201);
                     });
 
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     return response()->json([
                         'success' => false, 
                         'message' => $e->getMessage()

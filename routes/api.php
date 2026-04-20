@@ -40,7 +40,7 @@ Route::get('/dashboard/especialidades', [EspecialidadController::class, 'apiDash
 Route::apiResource('doctors', DoctorController::class);
 Route::get('/statistics', [DoctorController::class, 'stats'])->name('api.doctors.stats');
 
-Route::apiResource('expedientes', App\Http\Controllers\Api\ExpedienteController::class);
+
 
 Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('api.farmacias.index');
 Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('api.farmacias.show');
@@ -59,8 +59,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::get('/tokens', [AuthController::class, 'tokens']);
         Route::delete('/tokens', [AuthController::class, 'revokeToken']);
+
     });
 
+    Route::apiResource('expedientes', App\Http\Controllers\Api\ExpedienteController::class);
 
     Route::get('/home-dashboard', [HomeController::class, 'getHomeData']);
 
