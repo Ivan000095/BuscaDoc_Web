@@ -5,30 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Obtener el perfil completo del usuario (Doctor o Paciente)
      */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(string $id): JsonResponse
     {
         try {
             $usuario = User::find($id);
@@ -40,286 +27,106 @@ class UserController extends Controller
                 ], 404);
             }
 
-            $data = [];
-
+            // Lógica según el rol definida para Buscadoc
             if ($usuario->role === 'doctor') {
                 $usuario->load([
                     'doctor.especialidades',
-                    'doctor.reviews.respuestas',
+                    'doctor.disponibilidades', // Nueva estructura de horarios
                     'doctor.reviews.autor',
-                    'doctor.questions.respuestas',
-                    'doctor.questions.autor'
                 ]);
-
-                $doctor = $usuario->doctor;
-
-                if (!$doctor) {
-                    return response()->json([
-                        "success" => false,
-                        "message" => "El perfil médico de este usuario no está configurado",
-                    ], 404);
-                }
-
-                $promedio = round($doctor->reviews->avg('calificacion') ?? 0, 1);
-
-                $data = [
-                    "id" => $usuario->id,
-                    "doctor_id" => $doctor->id,
-                    "role" => "doctor",
-                    "name" => $usuario->name ?? 'Sin nombre',
-                    "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
-                    "descripcion" => $doctor->descripcion,
-                    "fecha" => $usuario->f_nacimiento ?? null,
-                    "image" => $usuario->foto ? "http://127.0.0.1:8000/storage/" . $usuario->foto : null,
-                    "promedio" => $promedio,
-                    "cedula" => $doctor->cedula,
-                    "costos" => '$' . number_format($doctor->costo, 2),
-                    "horarioentrada" => $doctor->horario_entrada,
-                    "horariosalida" => $doctor->horario_salida,
-                    "latitud" => $usuario->latitud,
-                    "longitud" => $usuario->longitud,
-
-                    "comentarios" => $doctor->reviews->map(function ($review) {
-                        return [
-                            "id" => $review->id,
-                            "autor" => $review->autor ? $review->autor->name : 'Usuario Anónimo',
-                            "contenido" => $review->contenido,
-                            "calificacion" => $review->calificacion,
-                            "fecha" => $review->created_at->format('d/m/Y'),
-                            "respuestas" => $review->respuestas
-                        ];
-                    }),
-
-                    "preguntas" => $doctor->questions->map(function ($question) {
-                        return [
-                            "id" => $question->id,
-                            "autor" => $question->autor ? $question->autor->name : 'Usuario Anónimo',
-                            "contenido" => $question->contenido,
-                            "fecha" => $question->created_at->format('d/m/Y'),
-                            "respuestas" => $question->respuestas
-                        ];
-                    }),
-                ];
             } elseif ($usuario->role === 'paciente') {
-                $usuario->load(['patient']);
-
-                $data = [
-                    "id" => $usuario->id,
-                    "role" => "paciente",
-                    "name" => $usuario->name ?? 'Sin nombre',
-                    "email" => $usuario->email,
-                    "fecha" => $usuario->f_nacimiento ?? null,
-                    "image" => $usuario->foto ? "http://10.0.2.2:8000/storage/" . $usuario->foto : null,
-                    "latitud" => $usuario->latitud,
-                    "longitud" => $usuario->longitud,
-                    "tipo_sangre" => $usuario->patient->tipo_sangre,
-                    "alergias" => $usuario->patient->alergias,
-                    "cirugias" => $usuario->patient->cirugias,
-                    "padecimientos" => $usuario->patient->padecimientos,
-                    "habitos" => $usuario->patient->habitos,
-                    "contacto_emergencia" => $usuario->patient->contacto_emergencia,
-                ];
+                // Buscamos la información médica en el expediente propio vinculado al user_id
+                $usuario->load(['expedientes' => function($query) {
+                    $query->whereIn('parentesco', ['Propio', 'Expediente Propio']);
+                }]);
             }
 
-            // 4. Si es Admin u otro rol
-            else {
-                return response()->json([
-                    "success" => false,
-                    "message" => "El rol de este usuario no es válido para esta consulta",
-                ], 400);
-            }
-
-            // Devolvemos la data unificada
             return response()->json([
                 "success" => true,
-                "data" => $data
+                "data" => $usuario
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 "success" => false,
-                "message" => "Error al obtener la información del perfil",
+                "message" => "Error al obtener el perfil",
                 "error" => $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualizar datos comunes del usuario (FCM, Coordenadas, Estado)
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): JsonResponse
     {
-        DB::beginTransaction();
-
         try {
-            $usuario = User::find($id);
+            $usuario = User::findOrFail($id);
 
-            if (!$usuario) {
-                return response()->json([
-                    "success" => false,
-                    "message" => "Usuario no encontrado",
-                ], 404);
-            }
+            $validated = $request->validate([
+                'name' => 'sometimes|string|max:80',
+                'email' => 'sometimes|email|unique:users,email,' . $usuario->id,
+                'fcm_token' => 'nullable|string',
+                'latitud' => 'nullable|numeric',
+                'longitud' => 'nullable|numeric',
+                'f_nacimiento' => 'sometimes|date',
+                'foto' => 'nullable|image|max:5120',
+                'estado' => 'sometimes|boolean',
+            ]);
 
-            $usuario->name = $request->input('name', $usuario->name);
-            $usuario->email = $request->input('email', $usuario->email);
-
-            $usuario->save();
-
-            if ($usuario->role === 'doctor') {
-
-                $doctor = $usuario->doctor;
-
-                if (!$doctor) {
-                    DB::rollBack();
-                    return response()->json([
-                        "success" => false,
-                        "message" => "El perfil médico de este usuario no está configurado",
-                    ], 404);
+            DB::transaction(function () use ($request, $usuario, $validated) {
+                if ($request->hasFile('foto')) {
+                    if ($usuario->foto) Storage::disk('public')->delete($usuario->foto);
+                    $usuario->foto = $request->file('foto')->store('users', 'public');
                 }
 
-                $doctor->descripcion = $request->input('descripcion', $doctor->descripcion);
-                $doctor->cedula = $request->input('cedula', $doctor->cedula);
+                $usuario->update($request->only([
+                    'name', 'email', 'f_nacimiento', 'latitud', 'longitud', 'fcm_token', 'estado'
+                ]));
 
-                $costoFormato = str_replace(['$', ','], '', $request->input('costos', $doctor->costo));
-                $doctor->costo = floatval($costoFormato);
-
-                $doctor->horario_entrada = $request->input('horarioentrada', $doctor->horario_entrada);
-                $doctor->horario_salida = $request->input('horariosalida', $doctor->horario_salida);
-                $doctor->save();
-
-                if ($request->has('especialidad_id')) {
-                    $doctor->especialidades()->sync([$request->input('especialidad_id')]);
+                // Si es paciente, sincronizamos nombre y fecha en su expediente propio
+                if ($usuario->role === 'paciente') {
+                    DB::table('expedientes')
+                        ->where('user_id', $usuario->id)
+                        ->whereIn('parentesco', ['Propio', 'Expediente Propio'])
+                        ->update([
+                            'nombre_completo' => $usuario->name,
+                            'fecha_nacimiento' => $usuario->f_nacimiento,
+                        ]);
                 }
-
-            } elseif ($usuario->role === 'paciente') {
-
-                $paciente = $usuario->patient;
-
-                if (!$paciente) {
-                    $paciente = new \App\Models\Paciente();
-                    $paciente->user_id = $usuario->id;
-                }
-
-                $paciente->tipo_sangre = $request->input('tipo_sangre', $paciente->tipo_sangre);
-                $paciente->alergias = $request->input('alergias', $paciente->alergias);
-                $paciente->cirugias = $request->input('cirugias', $paciente->cirugias);
-                $paciente->padecimientos = $request->input('padecimientos', $paciente->padecimientos);
-                $paciente->habitos = $request->input('habitos', $paciente->habitos);
-                $paciente->contacto_emergencia = $request->input('contacto_emergencia', $paciente->contacto_emergencia);
-                $paciente->save();
-
-            } else {
-                DB::rollBack();
-                return response()->json([
-                    "success" => false,
-                    "message" => "El rol de este usuario no es válido para actualización",
-                ], 400);
-            }
-
-            DB::commit();
+            });
 
             return response()->json([
                 "success" => true,
-                "message" => "Perfil actualizado correctamente",
-                "data" => [
-                    "id" => $usuario->id,
-                    "name" => $usuario->name,
-                    "role" => $usuario->role
-                ]
-            ], 200);
-
+                "message" => "Usuario actualizado correctamente",
+                "data" => $usuario
+            ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                "success" => false,
-                "message" => "Error al actualizar la información del perfil",
-                "error" => $e->getMessage(),
-            ], 500);
+            return response()->json(["success" => false, "error" => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar cuenta y limpiar archivos del servidor Ubuntu
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
         try {
             $usuario = User::find($id);
 
             if (!$usuario) {
-                return response()->json([
-                    "success" => false,
-                    "message" => "Usuario no encontrado",
-                ], 404);
+                return response()->json(["success" => false, "message" => "Usuario no encontrado"], 404);
             }
 
-            if ($usuario->role === 'doctor') {
-                $doctor = DB::table('doctors')->where('user_id', $usuario->id)->first();
-                if ($doctor) {
-                    $citasPendientes = DB::table('citas')
-                        ->where('doctor_id', $doctor->id)
-                        ->where('estado', 'pendiente')
-                        ->exists();
-
-                    if ($citasPendientes) {
-                        return response()->json([
-                            "success" => false,
-                            "message" => "No se puede eliminar la cuenta. Tienes citas pendientes por atender.",
-                        ], 400);
-                    }
+            DB::transaction(function () use ($usuario) {
+                // 1. Limpiar foto del storage
+                if ($usuario->foto && Storage::disk('public')->exists($usuario->foto)) {
+                    Storage::disk('public')->delete($usuario->foto);
                 }
-            } elseif ($usuario->role === 'paciente') {
-                $paciente = DB::table('pacientes')->where('user_id', $usuario->id)->first();
-                if ($paciente) {
-                    $citasPendientes = DB::table('citas')
-                        ->where('paciente_id', $paciente->id)
-                        ->where('estado', 'pendiente')
-                        ->exists();
 
-                    if ($citasPendientes) {
-                        return response()->json([
-                            "success" => false,
-                            "message" => "No se puede eliminar la cuenta. Tienes citas pendientes programadas.",
-                        ], 400);
-                    }
-                }
-            }
-
-            DB::beginTransaction();
-
-            DB::table('reportes')->where('id_usr_reporte', $usuario->id)->orWhere('id_usr_reportado', $usuario->id)->delete();
-
-            DB::table('mensajes')->where('id_remitente', $usuario->id)->orWhere('id_destinatario', $usuario->id)->delete();
-
-            $misComentariosIds = DB::table('comentarios')->where('id_autor', $usuario->id)->orWhere('id_destinatario', $usuario->id)->pluck('id');
-            if ($misComentariosIds->isNotEmpty()) {
-                DB::table('respuestas')->whereIn('comentario_id', $misComentariosIds)->delete();
-            }
-
-            DB::table('respuestas')->where('id_respondedor', $usuario->id)->delete();
-
-            DB::table('comentarios')->where('id_autor', $usuario->id)->orWhere('id_destinatario', $usuario->id)->delete();
-
-            if ($usuario->role === 'doctor') {
-                $doctor = DB::table('doctors')->where('user_id', $usuario->id)->first();
-                if ($doctor) {
-                    DB::table('citas')->where('doctor_id', $doctor->id)->delete();
-                    DB::table('doctor__especialidads')->where('doctor_id', $doctor->id)->delete();
-                    DB::table('doctors')->where('id', $doctor->id)->delete();
-                }
-            } elseif ($usuario->role === 'paciente') {
-                $paciente = DB::table('pacientes')->where('user_id', $usuario->id)->first();
-                if ($paciente) {
-                    DB::table('citas')->where('paciente_id', $paciente->id)->delete();
-                    DB::table('pacientes')->where('id', $paciente->id)->delete();
-                }
-            }
-
-            $usuario->delete();
-
-            DB::commit();
+                // 2. Eliminar usuario (La cascada en DB debe limpiar Doctor/Paciente/Expedientes)
+                $usuario->delete();
+            });
 
             return response()->json([
                 "success" => true,
@@ -327,8 +134,6 @@ class UserController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json([
                 "success" => false,
                 "message" => "Error al intentar eliminar la cuenta.",
@@ -337,17 +142,19 @@ class UserController extends Controller
         }
     }
 
-    public function guardarFcmToken(Request $request)
+    /**
+     * Guardar o actualizar el token de Firebase
+     */
+    public function guardarFcmToken(Request $request): JsonResponse
     {
-        $request->validate([
-            'fcm_token' => 'required|string',
-        ]);
-
-        $user = $request->user();
+        $request->validate(['fcm_token' => 'required|string']);
         
-        $user->fcm_token = $request->fcm_token;
-        $user->save();
+        $user = $request->user(); // O buscar por ID si no usas auth sanctum aún
+        if ($user) {
+            $user->update(['fcm_token' => $request->fcm_token]);
+            return response()->json(['success' => true, 'message' => 'Token actualizado']);
+        }
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => false, 'message' => 'No autenticado'], 401);
     }
 }

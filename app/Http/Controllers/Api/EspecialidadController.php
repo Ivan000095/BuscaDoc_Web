@@ -22,7 +22,7 @@ class EspecialidadController extends Controller
                 return [
                     "id" => $especialidad->id,
                     "name" => $especialidad->nombre,
-                    "descripcion" => $especialidad->descripcion
+                    
                 ];
             });
 

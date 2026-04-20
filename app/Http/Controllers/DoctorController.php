@@ -162,63 +162,77 @@ class DoctorController extends Controller
         return redirect()->route("doctores.index")->with("success", "Doctor registrado correctamente.");
     }
 
-    public function update(Request $request, $id)
-    {
-        $doctor = Doctor::findOrFail($id);
-        $user = $doctor->user;
+        public function update(Request $request, $id)
+        {
+            $doctor = Doctor::findOrFail($id);
+            $user = $doctor->user;
 
-        $validated = $request->validate([
-            "name" => "required|string|max:100",
-            "email" => "required|email|unique:users,email," . $user->id,
-            "fecha" => "required|date|before:-18 years",
-            "especialidad_id" => "required|exists:especialidads,id",
-            "cedula" => "required|string",
-            "costos" => "required|numeric",
-            "horarioentrada" => "required",
-            "horariosalida" => "required",
-            "descripcion" => "nullable|string",
-            "latitud" => "nullable|numeric",
-            "longitud" => "nullable|numeric",
-            "image" => "nullable|image|max:5120",
-        ]);
-
-        DB::transaction(function () use ($request, $doctor, $user) {
-
-            $userData = [
-                'name' => $request->name,
-                'email' => $request->email,
-                'f_nacimiento' => $request->fecha,
-                'latitud' => $request->latitud,
-                'longitud' => $request->longitud,
-            ];
-
-            if ($request->hasFile("image")) {
-                if ($user->foto)
-                    Storage::disk('public')->delete($user->foto);
-                $userData['foto'] = $request->file("image")->store('users', 'public');
-            }
-            if ($request->hasFile("image")) {
-                $userData['foto'] = $request->file("image")->store('users', 'public');
-            }
-
-            $user->update($userData);
-
-            // Actualizar Doctor
-            $doctor->update([
-                'cedula' => $request->cedula,
-                'costo' => $request->costos,
-                'horario_entrada' => $request->horarioentrada,
-                'horario_salida' => $request->horariosalida,
-                'descripcion' => $request->descripcion,
-                'idiomas' => $request->idioma,
-                'citas' => $request->has('citas'),
+            $validated = $request->validate([
+                "name" => "required|string|max:100",
+                "email" => "required|email|unique:users,email," . $user->id,
+                "fecha" => "required|date|before:-18 years",
+                "especialidad_id" => "required|exists:especialidads,id",
+                "cedula" => "required|string|max:50",
+                "descripcion" => "required|string|max:1000",
+                "costos" => "required|numeric|min:0",
+                "duracion_cita" => "required|integer|min:15|max:120",
+                "horarios" => "required|array",
+                "horarios.*.dia" => "required|integer|between:0,6",
+                "horarios.*.inicio" => "required|date_format:H:i",
+                "horarios.*.fin" => "required|date_format:H:i|after:horarios.*.inicio",
+                "idioma" => "nullable|string",
+                "latitud" => "nullable|numeric",
+                "longitud" => "nullable|numeric",
+                "image" => "nullable|image|max:5120",
             ]);
 
-            $doctor->especialidades()->sync([$request->especialidad_id]);
-        });
+            DB::transaction(function () use ($request, $doctor, $user) {
+                // 1. Preparar datos del Usuario
+                $userData = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'f_nacimiento' => $request->fecha,
+                    'latitud' => $request->latitud,
+                    'longitud' => $request->longitud,
+                ];
 
-        return redirect()->route('doctores.index')->with('success', 'Doctor actualizado.');
-    }
+                // Manejo de la foto
+                if ($request->hasFile("image")) {
+                    if ($user->foto) {
+                        Storage::disk('public')->delete($user->foto);
+                    }
+                    $userData['foto'] = $request->file("image")->store('users', 'public');
+                }
+
+                $user->update($userData);
+
+                // 2. Actualizar datos del Doctor
+                $doctor->update([
+                    'cedula' => $request->cedula,
+                    'descripcion' => $request->descripcion,
+                    'costo' => $request->costos,
+                    'duracion_cita' => $request->duracion_cita,
+                    'idiomas' => $request->idioma,
+                    'citas' => $request->has('citas'),
+                ]);
+
+                // 3. Actualizar Especialidades
+                $doctor->especialidades()->sync([$request->especialidad_id]);
+
+                // 4. Actualizar Horarios (Disponibilidades)
+                // Eliminamos los anteriores y creamos los nuevos para simplificar la actualización
+                $doctor->disponibilidades()->delete();
+                foreach ($request->horarios as $bloque) {
+                    $doctor->disponibilidades()->create([
+                        'dia_semana' => $bloque['dia'],
+                        'hora_inicio' => $bloque['inicio'],
+                        'hora_fin' => $bloque['fin'],
+                    ]);
+                }
+            });
+
+            return redirect()->route('doctores.index')->with('success', 'Doctor actualizado correctamente.');
+        }
     public function edit($id)
     {
         $doctor = Doctor::findOrFail($id);
