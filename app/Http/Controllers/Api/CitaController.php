@@ -15,13 +15,16 @@ class CitaController extends Controller
     {
         try {
             $user = $request->user();
-            $citas = [];
+            
+            // 1. Inicializamos como Colección, no como arreglo normal '[]'
+            $citas = collect();
 
             if ($user->role == 'paciente') {
                 $expedientesIds = $user->expedientes->pluck('id');
                 
                 $citas = Cita::whereIn('expediente_id', $expedientesIds)
-                    ->with(['doctor.user', 'expediente'])
+                    // Importante: Traer especialidades del doctor para que Flutter no marque error al buscar [0]['nombre']
+                    ->with(['doctor.user', 'doctor.especialidades', 'expediente']) 
                     ->orderBy('fecha', 'desc')
                     ->orderBy('hora_inicio', 'desc')
                     ->get();
@@ -33,29 +36,32 @@ class CitaController extends Controller
                     ->get();
             }
 
-            // Anexar las solicitudes de cambio a cada cita para que Flutter las lea fácil
-            $citas->transform(function ($cita) use ($user) {
-                $cita->solicitud_recibida = SolicitudCambio::where('cita_id', $cita->id)
+            // 2. Usamos map() para forzar la inyección de los datos en el JSON
+            $data = $citas->map(function ($cita) use ($user) {
+                // Convertimos el modelo a Array para que acepte nuevos campos sin problemas
+                $citaArray = $cita->toArray();
+
+                $citaArray['solicitud_recibida'] = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
                     ->where('solicitado_id', $user->id)
                     ->where('estado', 'pendiente')->first();
                     
-                $cita->solicitud_enviada = SolicitudCambio::where('cita_id', $cita->id)
+                $citaArray['solicitud_enviada'] = \App\Models\SolicitudCambio::where('cita_id', $cita->id)
                     ->where('solicitante_id', $user->id)
                     ->where('estado', 'pendiente')->first();
                     
-                return $cita;
+                return $citaArray;
             });
 
             return response()->json([
                 'success' => true,
-                'data' => $citas
+                'data' => $data
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al cargar citas',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage() . ' en linea ' . $e->getLine()
             ], 500);
         }
     }

@@ -29,11 +29,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-Route::get('/citas', [CitaController::class, 'index']); // Obtener todas las citas
-    Route::patch('/citas/{id}/status', [CitaController::class, 'updateStatus']); // Cambiar estado (confirmada, cancelada, etc.)
-    Route::post('/citas/{id}/solicitar-cambio', [CitaController::class, 'solicitarCambio']); // Proponer nueva fecha/hora
-    Route::post('/citas/{id}/responder-cambio', [CitaController::class, 'responderCambio']); // Aceptar o rechazar propuesta
-    Route::delete('/citas/{id}', [CitaController::class, 'destroy']); // Ocultar cita del historial
+
 
 Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('api.especialidades.index');
 Route::get('/dashboard/especialidades', [EspecialidadController::class, 'apiDashboard']);
@@ -81,6 +77,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/comments', [CommentController::class, 'store']);
     Route::get('/users/{userId}/can-review', [CommentController::class, 'canReview']);
     Route::post('/comments/{commentId}/reply', [ReplyController::class, 'store']);
+
+    Route::get('/citas', [CitaController::class, 'index']);
+    Route::patch('/citas/{id}/status', [CitaController::class, 'updateStatus']);
+    Route::post('/citas/{id}/solicitar-cambio', [CitaController::class, 'solicitarCambio']);
+    Route::post('/citas/{id}/responder-cambio', [CitaController::class, 'responderCambio']);
+    Route::delete('/citas/{id}', [CitaController::class, 'destroy']);
 
 });
 
