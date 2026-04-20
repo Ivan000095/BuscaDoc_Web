@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\FarmaciaController;
 use App\Http\Controllers\Api\PacienteController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ReplyController;
+use App\Http\Controllers\Api\CitaController;
+
 
 Route::get('/status', function () {
     return response()->json([
@@ -38,6 +40,7 @@ Route::get('/dashboard/especialidades', [EspecialidadController::class, 'apiDash
 Route::apiResource('doctors', DoctorController::class);
 Route::get('/statistics', [DoctorController::class, 'stats'])->name('api.doctors.stats');
 
+Route::apiResource('expedientes', App\Http\Controllers\Api\ExpedienteController::class);
 
 Route::get('/farmacias', [FarmaciaController::class, 'index'])->name('api.farmacias.index');
 Route::get('/farmacias/{id}', [FarmaciaController::class, 'show'])->name('api.farmacias.show');
@@ -60,6 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::get('/home-dashboard', [HomeController::class, 'getHomeData']);
+
+    Route::post('citas/solicitar-cambio', [CitaController::class, 'solicitarCambio']);
+    Route::get('citas/solicitudes-pendientes', [CitaController::class, 'solicitudesPendientes']);
+    Route::put('citas/responder-solicitud/{id}', [CitaController::class, 'responderSolicitud']);
+
+    // Esta sola línea crea automáticamente: GET /citas, POST /citas, GET /citas/{id}, PUT /citas/{id}, DELETE /citas/{id}
+    Route::apiResource('citas', CitaController::class);
 
 
     Route::get('/user/{id}', [UserController::class, 'show'])->name('api.user.show');
