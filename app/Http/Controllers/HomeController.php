@@ -37,10 +37,10 @@ class HomeController extends Controller
 
 
         $rutas = User::whereNotNull('latitud')
-                ->whereNotNull('longitud')
-                ->whereIn('role', ['doctor', 'farmacia']) 
-                ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto') 
-                ->get();
+            ->whereNotNull('longitud')
+            ->whereIn('role', ['doctor', 'farmacia'])
+            ->select('id', 'name', 'role', 'latitud', 'longitud', 'foto')
+            ->get();
 
         if ($user && $user->role == 'paciente' && $user->paciente) {
             // Buscamos citas de cualquiera de sus expedientes
@@ -74,12 +74,12 @@ class HomeController extends Controller
     }
 
     public function mostrarMapa()
-        {
-            $rutas = User::whereNotNull('latitud')
-                        ->whereNotNull('longitud')
-                        ->whereIn('role', ['doctor', 'farmacia']) 
-                        ->select('id', 'name', 'role', 'latitud', 'longitud') 
-                        ->get();
-            return view('mapa.index', compact('rutas'));
-        }
+    {
+        $rutas = User::whereNotNull('latitud')
+            ->whereNotNull('longitud')
+            ->whereIn('role', ['doctor', 'farmacia'])
+            ->select('id', 'name', 'role', 'latitud', 'longitud')
+            ->get();
+        return view('mapa.index', compact('rutas'));
+    }
 }

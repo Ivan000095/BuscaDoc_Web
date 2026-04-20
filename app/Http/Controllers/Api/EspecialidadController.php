@@ -10,19 +10,23 @@ use Illuminate\Http\JsonResponse;
 class EspecialidadController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Devuelve una lista simple de especialidades (para selects/buscadores)
      */
     public function index(Request $request)
     {
         try {
-            $query = Especialidad::whereHas('doctors')->get();
-            $especialidades = $query;
-
-            $especialidades->transform(function ($especialidad) {
+            // Usamos map en lugar de transform para crear una nueva colección limpia
+            $especialidades = Especialidad::whereHas('doctors')->get()->map(function ($esp) {
                 return [
+<<<<<<< HEAD
                     "id" => $especialidad->id,
                     "name" => $especialidad->nombre,
                     
+=======
+                    "id" => $esp->id,
+                    "name" => $esp->nombre, // Mapeamos 'nombre' a 'name' para que tu modelo de Flutter (fromJson) lo entienda
+                    "descripcion" => $esp->descripcion ?? ''
+>>>>>>> main
                 ];
             });
 
@@ -40,34 +44,37 @@ class EspecialidadController extends Controller
         }
     }
 
+    /**
+     * Devuelve las especialidades con sus doctores anidados (Para la matriz de tarjetas en Flutter)
+     */
     public function apiDashboard()
     {
         try {
             $especialidades = Especialidad::with(['doctors.user'])
                 ->has('doctors')
-                ->get();
-
-            $data = $especialidades->map(function ($especialidad) {
-                return [
-                    'id' => $especialidad->id,
-                    'nombre' => $especialidad->nombre,
-                    'doctors' => $especialidad->doctors->map(function ($doctor) {
-                        return [
-                            'id' => $doctor->id,
-                            'costo' => $doctor->costo,
-                            'user' => [
-                                'id' => $doctor->user->id,
-                                'name' => $doctor->user->name,
-                                'foto' => $doctor->user->foto,
-                            ]
-                        ];
-                    })
-                ];
-            });
+                ->get()
+                ->map(function ($esp) {
+                    return [
+                        'id' => $esp->id,
+                        // Enviamos 'name' para ser consistentes con index() y tu modelo Flutter
+                        'name' => $esp->nombre, 
+                        'doctors' => $esp->doctors->map(function ($doctor) {
+                            return [
+                                'id' => $doctor->id,
+                                'costo' => $doctor->costo,
+                                'user' => [
+                                    'id' => $doctor->user->id ?? 0,
+                                    'name' => $doctor->user->name ?? 'Anónimo',
+                                    'foto' => $doctor->user->foto, // Esto puede ser nulo, Flutter lo maneja
+                                ]
+                            ];
+                        })
+                    ];
+                });
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $especialidades
             ], 200);
 
         } catch (\Exception $e) {
@@ -77,37 +84,5 @@ class EspecialidadController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
