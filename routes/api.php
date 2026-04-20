@@ -2,10 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-// ─────────────────────────────────────────────────────────────
-// IMPORTACIONES DE CONTROLADORES
-// ─────────────────────────────────────────────────────────────
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\HomeController;
@@ -17,6 +13,7 @@ use App\Http\Controllers\Api\FarmaciaController;
 use App\Http\Controllers\Api\PacienteController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ReplyController;
+use App\Http\Controllers\Api\CitaController;
 
 Route::get('/status', function () {
     return response()->json([
@@ -31,6 +28,12 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 });
+
+Route::get('/citas', [CitaController::class, 'index']); // Obtener todas las citas
+    Route::patch('/citas/{id}/status', [CitaController::class, 'updateStatus']); // Cambiar estado (confirmada, cancelada, etc.)
+    Route::post('/citas/{id}/solicitar-cambio', [CitaController::class, 'solicitarCambio']); // Proponer nueva fecha/hora
+    Route::post('/citas/{id}/responder-cambio', [CitaController::class, 'responderCambio']); // Aceptar o rechazar propuesta
+    Route::delete('/citas/{id}', [CitaController::class, 'destroy']); // Ocultar cita del historial
 
 Route::get('/especialidades', [EspecialidadController::class, 'index'])->name('api.especialidades.index');
 Route::get('/dashboard/especialidades', [EspecialidadController::class, 'apiDashboard']);
