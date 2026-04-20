@@ -1,156 +1,110 @@
 <x-layout>
     @push('styles')
     <style>
-        .bg-navy { background-color: #0d2e4e !important; }
-        .text-navy { color: #0d2e4e !important; }
+        /* Blindaje de colores y estilo BuscaDoc */
+        :root { --brand-navy: #0d2e4e; --brand-navy-light: #1a5f7a; }
+        .text-navy { color: var(--brand-navy) !important; }
+        .bg-navy { background-color: var(--brand-navy) !important; }
         
-        /* Estilos redondeados */
-        .form-control:focus, .form-select:focus {
-            border-color: #0d2e4e;
-            box-shadow: 0 0 0 0.25rem rgba(13, 46, 78, 0.15);
-        }
-        .input-group-text { background-color: #f8f9fa; border-right: 0; color: #6c757d; }
-        .form-control, .form-select { border-left: 0; }
-        .input-group .form-control:focus { z-index: 3; }
+        .form-control-pill { border-radius: 50px !important; padding-left: 1.5rem; padding-right: 1.5rem; border: 1px solid #e2e8f0; background-color: #f8fafc; transition: all 0.3s ease; }
+        .form-control-pill:focus { background-color: #fff; border-color: var(--brand-navy); box-shadow: 0 0 0 4px rgba(13, 46, 78, 0.1) !important; }
         
-        .card-header-icon {
-            width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; background-color: rgba(255,255,255,0.2);
-        }
-        .profile-upload:hover { transform: scale(1.1); cursor: pointer; }
-        .object-fit-cover { object-fit: cover; }
+        .input-group-custom { border-radius: 50px; overflow: hidden; border: 1px solid #e2e8f0; background-color: #f8fafc; display: flex; align-items: center; }
+        .input-group-custom .input-group-text { background: transparent; border: none; padding-left: 1.25rem; color: #94a3b8; }
+        .input-group-custom .form-control { border: none; background: transparent; padding-top: 0.75rem; padding-bottom: 0.75rem; }
+
+        .card-modern { border: none; border-radius: 2rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .schedule-row { transition: all 0.2s ease; border: 1px solid transparent; }
+        .schedule-row:hover { border-color: #e2e8f0; background-color: #fff !important; transform: translateX(5px); }
+        
+        .btn-navy { background-color: var(--brand-navy); color: white; border-radius: 50px; font-weight: 600; transition: all 0.3s; }
+        .btn-navy:hover { background-color: var(--brand-navy-light); color: white; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13, 46, 78, 0.2); }
+        
+        svg { fill: currentColor; }
     </style>
     @endpush
 
     @if(Auth::user() && Auth::user()->role == 'admin')
-        <div class="container py-5">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="container py-5" x-data="{ 
+            citasActivas: {{ (isset($doctor) && $doctor->citas) ? 'true' : 'false' }},
+            horarios: {{ isset($doctor) && $doctor->disponibilidades->count() > 0 
+                ? $doctor->disponibilidades->map(fn($h) => ['dia' => (string)$h->dia_semana, 'inicio' => substr($h->hora_inicio, 0, 5), 'fin' => substr($h->hora_fin, 0, 5)])->toJson() 
+                : '[{dia: \'1\', inicio: \'09:00\', fin: \'14:00\'}]' }},
+            addHorario() { this.horarios.push({dia: '1', inicio: '09:00', fin: '18:00'}) },
+            removeHorario(index) { this.horarios.splice(index, 1) }
+        }">
+            
+            {{-- HEADER --}}
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
                 <div>
-                    <h1 class="fw-bold text-navy mb-0">{{ isset($doctor) ? 'Editar Doctor' : 'Nuevo Doctor' }}</h1>
-                    <p class="text-muted small mb-0">Gestión de personal médico / {{ isset($doctor) ? $doctor->user->name : 'Registro' }}</p>
+                    <h1 class="fw-bold text-navy mb-1">{{ isset($doctor) ? 'Editar Especialista' : 'Registrar Nuevo Doctor' }}</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ route('doctores.index') }}" class="text-decoration-none text-muted">Panel Administrativo</a></li>
+                            <li class="breadcrumb-item active text-navy fw-bold">{{ isset($doctor) ? $doctor->user->name : 'Nuevo Registro' }}</li>
+                        </ol>
+                    </nav>
                 </div>
-                <a href="{{ route('doctores.index') }}" class="btn btn-outline-secondary rounded-pill px-4">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
+                <a href="{{ route('doctores.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm border">
+                    <x-mcr-angle-left class="mb-1"/> Volver al listado
                 </a>
             </div>
-
-            @if ($errors->any())
-                <div class="alert alert-danger shadow-sm border-0 rounded-4 mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-exclamation-octagon-fill fs-3 me-3 text-danger"></i>
-                        <div>
-                            <h6 class="fw-bold mb-1">Por favor corrige los siguientes errores:</h6>
-                            <ul class="mb-0 small text-muted">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
             <form method="POST"
                 action="{{ isset($doctor) ? route('doctores.update', $doctor->id) : route('doctores.store') }}"
                 class="needs-validation" novalidate enctype="multipart/form-data">
-
                 @csrf
-                @if(isset($doctor))
-                    @method('PUT')
-                @endif
+                @if(isset($doctor)) @method('PUT') @endif
 
                 <div class="row g-4">
-                    
+                    {{-- COLUMNA IZQUIERDA: DATOS PERSONALES --}}
                     <div class="col-lg-4">
-                        <div class="card border-0 shadow-sm rounded-5 h-100">
-                            <div class="card-header bg-navy text-white p-4 border-0 rounded-top-5">
+                        <div class="card card-modern h-100 overflow-hidden">
+                            <div class="bg-navy p-4 text-white">
                                 <div class="d-flex align-items-center">
-                                    <div class="card-header-icon me-3">
-                                        <i class="bi bi-person-badge-fill fs-5"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-0 fw-bold">Cuenta</h5>
-                                        <small class="opacity-75">Foto y credenciales</small>
-                                    </div>
+                                    <x-mcl-user-circle style="width: 1.5rem;" class="icon-white me-2"/>
+                                    <h5 class="mb-0 fw-bold">Datos de Usuario</h5>
                                 </div>
                             </div>
                             
                             <div class="card-body p-4">
-                                
-                                {{-- FOTO DE PERFIL --}}
+                                {{-- FOTO --}}
                                 <div class="text-center mb-4">
                                     <div class="position-relative d-inline-block">
-                                        <div class="rounded-circle overflow-hidden shadow-sm border border-4 border-white bg-light d-flex align-items-center justify-content-center" 
-                                            style="width: 130px; height: 130px;">
+                                        <div class="rounded-circle overflow-hidden shadow-sm border border-4 border-white bg-light" style="width: 140px; height: 140px;">
                                             <img id="profilePreview"
-                                                src="{{ isset($doctor) && $doctor->user->foto ? asset('storage/' . $doctor->user->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($doctor->user->name ?? 'Nuevo Doctor') . '&background=E6F0FF&color=0D2E4E' }}"
-                                                class="w-100 h-100 object-fit-cover"
-                                                alt="Foto de perfil">
+                                                src="{{ isset($doctor) && $doctor->user->foto ? asset('storage/' . $doctor->user->foto) : 'https://ui-avatars.com/api/?name=Doc&background=f1f5f9&color=0d2e4e&size=256' }}"
+                                                class="w-100 h-100 object-fit-cover">
                                         </div>
-                                        
-                                        <label for="fotoInput" class="position-absolute bottom-0 end-0 bg-navy text-white rounded-circle p-2 shadow-sm profile-upload" 
-                                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
-                                            <i class="bi bi-camera-fill"></i>
+                                        <label for="fotoInput" class="icon-white position-absolute bottom-0 end-0 bg-navy text-white rounded-circle p-2 shadow pointer-event" style="cursor:pointer; width: 42px; height: 42px; display: flex; align-items:center; justify-content:center;">
+                                            <x-mcl-camera style=" width: 1.2rem;"/>
                                         </label>
+                                        <input type="file" name="image" id="fotoInput" class="d-none" accept="image/*">
                                     </div>
-                                    <input type="file" name="image" id="fotoInput" class="d-none" accept="image/jpeg,image/png,image/jpg">
-                                    <div class="form-text small mt-2">Haga clic en la cámara para cambiar la foto.</div>
+                                    <p class="text-muted small mt-3">Sube una foto profesional en formato JPG o PNG.</p>
                                 </div>
 
-                                <hr class="text-muted opacity-25">
-
-                                {{-- NOMBRE --}}
-                                <div class="mb-4">
+                                {{-- CAMPOS DE CUENTA --}}
+                                <div class="mb-3">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Nombre Completo</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-person"></i></span>
-                                        <input type="text" name="name" class="form-control rounded-end-pill" 
-                                            value="{{ old('name', $doctor->user->name ?? '') }}" 
-                                            required minlength="3" maxlength="100" 
-                                            pattern="[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+"
-                                            title="Solo letras y espacios"
-                                            placeholder="Ej. Juan Pérez">
-                                        <div class="invalid-feedback">Ingrese un nombre válido (solo letras).</div>
-                                    </div>
+                                    <input type="text" name="name" class="form-control form-control-pill" value="{{ old('name', $doctor->user->name ?? '') }}" required placeholder="Nombre del médico">
                                 </div>
 
-                                {{-- FECHA DE NACIMIENTO --}}
-                                <div class="mb-4">
+                                <div class="mb-3">
                                     <label class="form-label small fw-bold text-muted text-uppercase">Fecha de Nacimiento</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-calendar-date"></i></span>
-                                        {{-- CORREGIDO: Formato Y-m-d para que el input type="date" lo lea --}}
-                                        <input type="date" name="fecha" class="form-control rounded-end-pill" 
-                                            value="{{ old('f_nacimiento', isset($doctor->user->f_nacimiento) ? \Carbon\Carbon::parse($doctor->user->f_nacimiento)->format('Y-m-d') : '') }}" 
-                                            required max="{{ date('Y-m-d', strtotime('-24 years')) }}">
-                                        <div class="invalid-feedback">Debe ser mayor de 24 años.</div>
-                                    </div>
+                                    <input type="date" name="fecha" class="form-control form-control-pill" 
+                                        value="{{ old('fecha', isset($doctor->user->f_nacimiento) ? \Carbon\Carbon::parse($doctor->user->f_nacimiento)->format('Y-m-d') : '') }}" 
+                                        required max="{{ date('Y-m-d', strtotime('-24 years')) }}">
                                 </div>
 
-                                {{-- EMAIL --}}
-                                <div class="mb-4">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Correo Electrónico</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-envelope"></i></span>
-                                        <input type="email" name="email" class="form-control rounded-end-pill" 
-                                            value="{{ old('email', $doctor->user->email ?? '') }}" required placeholder="correo@ejemplo.com">
-                                        <div class="invalid-feedback">Ingrese un correo válido.</div>
-                                    </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Email Institucional</label>
+                                    <input type="email" name="email" class="form-control form-control-pill" value="{{ old('email', $doctor->user->email ?? '') }}" required placeholder="doctor@buscadoc.com">
                                 </div>
 
-                                {{-- PASSWORD --}}
-                                <div class="mb-2">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">
-                                        Contraseña
-                                        @if(isset($doctor)) <span class="fw-normal text-lowercase">(opcional)</span> @endif
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-key"></i></span>
-                                        <input type="password" name="password" class="form-control rounded-end-pill" 
-                                            {{ isset($doctor) ? '' : 'required' }} minlength="8" placeholder="••••••••">
-                                        <div class="invalid-feedback">Mínimo 8 caracteres.</div>
-                                    </div>
+                                <div class="mb-0">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Contraseña @if(isset($doctor)) (Opcional) @endif</label>
+                                    <input type="password" name="password" class="form-control form-control-pill" {{ isset($doctor) ? '' : 'required' }} minlength="8" placeholder="••••••••">
                                 </div>
                             </div>
                         </div>
@@ -158,94 +112,76 @@
 
                     {{-- COLUMNA DERECHA: PERFIL PROFESIONAL --}}
                     <div class="col-lg-8">
-                        <div class="card border-0 shadow-sm rounded-5 h-100">
-                            <div class="card-header bg-white p-4 border-bottom rounded-top-5">
-                                <div class="d-flex align-items-center text-navy">
-                                    <i class="bi bi-briefcase-fill fs-3 me-3"></i>
-                                    <h5 class="mb-0 fw-bold">Perfil Profesional</h5>
+                        <div class="card card-modern border-0">
+                            <div class="card-body p-4 p-md-5">
+                                <div class="d-flex align-items-center mb-4 text-navy border-bottom pb-3">
+                                    <x-mcr-folder class="me-3" style="width: 2rem;"/>
+                                    <h4 class="mb-0 fw-bold">Información de Especialidad</h4>
                                 </div>
-                            </div>
 
-                            <div class="card-body p-4">
-                                
-                                <div class="row g-3 mb-4">
+                                <div class="row g-4">
                                     {{-- ESPECIALIDAD --}}
                                     <div class="col-md-6">
-                                        <label class="form-label small fw-bold text-muted">Especialidad</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text rounded-start-pill"><i class="bi bi-award"></i></span>
-                                            <select name="especialidad_id" class="form-select fw-bold text-navy rounded-end-pill" required>
-                                                <option value="" selected disabled>Seleccione...</option>
-                                                @foreach($especialidades as $esp)
-                                                    <option value="{{ $esp->id }}" {{ (isset($doctor) && $doctor->especialidades->contains($esp->id)) ? 'selected' : '' }}>
-                                                        {{ $esp->nombre }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            <div class="invalid-feedback">Seleccione una opción.</div>
-                                        </div>
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Especialidad Médica</label>
+                                        <select name="especialidad_id" class="form-select form-control-pill fw-bold text-navy" required>
+                                            <option value="" disabled selected>Selecciona especialidad...</option>
+                                            @foreach($especialidades as $esp)
+                                                <option value="{{ $esp->id }}" {{ (isset($doctor) && $doctor->especialidades->contains($esp->id)) ? 'selected' : '' }}>
+                                                    {{ $esp->nombre }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
+
                                     {{-- CÉDULA --}}
                                     <div class="col-md-6">
-                                        <label class="form-label small fw-bold text-muted">Cédula Profesional</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text rounded-start-pill"><i class="bi bi-card-heading"></i></span>
-                                            <input type="text" name="cedula" class="form-control rounded-end-pill" 
-                                                value="{{ old('cedula', $doctor->cedula ?? '') }}" 
-                                                required minlength="5" placeholder="Núm. de Cédula">
-                                            <div class="invalid-feedback">Obligatorio (min 5 caracteres).</div>
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Cédula Profesional</label>
+                                        <input type="text" name="cedula" class="form-control form-control-pill" value="{{ old('cedula', $doctor->cedula ?? '') }}" required placeholder="Ej. 12345678">
+                                    </div>
+
+                                    {{-- COSTO Y DURACIÓN --}}
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Costo de Consulta</label>
+                                        <div class="input-group-custom">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" name="costos" step="0.01" class="form-control" value="{{ old('costos', $doctor->costo ?? '') }}" required placeholder="0.00">
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="row g-3 mb-4">
-                                    {{-- COSTO --}}
-                                    <div class="col-md-4">
-                                        <label class="form-label small fw-bold text-muted">Costo Consulta</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text fw-bold text-success rounded-start-pill">$</span>
-                                            <input type="number" name="costos" step="0.01" min="0" class="form-control rounded-end-pill" 
-                                                value="{{ old('costos', $doctor->costo ?? '') }}" required placeholder="0.00">
-                                            <div class="invalid-feedback">Ingrese un monto válido.</div>
+                                    <div class="col-md-6" x-show="citasActivas">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Duración Estimada</label>
+                                        <select name="duracion_cita" class="form-select form-control-pill">
+                                            <option value="15" {{ (isset($doctor) && $doctor->duracion_cita == 15) ? 'selected' : '' }}>15 minutos</option>
+                                            <option value="30" {{ (!isset($doctor) || $doctor->duracion_cita == 30) ? 'selected' : '' }}>30 minutos</option>
+                                            <option value="45" {{ (isset($doctor) && $doctor->duracion_cita == 45) ? 'selected' : '' }}>45 minutos</option>
+                                            <option value="60" {{ (isset($doctor) && $doctor->duracion_cita == 60) ? 'selected' : '' }}>1 hora</option>
+                                        </select>
+                                    </div>
+
+                                    {{-- SWITCH CITAS --}}
+                                    <div class="col-12">
+                                        <div class="p-3 rounded-4 border bg-light d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <x-mcr-calendar class="text-navy me-3" style="width: 1.5rem;"/>
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold text-navy">Gestión de Agenda</h6>
+                                                    <p class="mb-0 text-muted small">Permite que los pacientes agenden citas desde la web.</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input shadow-none" type="checkbox" name="citas" id="citas" value="1" x-model="citasActivas" style="width: 3rem; height: 1.5rem;">
+                                            </div>
                                         </div>
                                     </div>
-                                    {{-- HORARIOS --}}
-                                    <div class="row g-3" x-data="{ 
-                                        citasActivas: {{ (isset($doctor) && $doctor->citas) ? 'true' : 'false' }},
-                                        horarios: {{ isset($doctor) && $doctor->disponibilidades->count() > 0 
-                                            ? $doctor->disponibilidades->map(fn($h) => ['dia' => (string)$h->dia_semana, 'inicio' => substr($h->hora_inicio, 0, 5), 'fin' => substr($h->hora_fin, 0, 5)])->toJson() 
-                                            : '[{dia: \'1\', inicio: \'09:00\', fin: \'18:00\'}]' }},
-                                        addHorario() { this.horarios.push({dia: '1', inicio: '09:00', fin: '18:00'}) },
-                                        removeHorario(index) { this.horarios.splice(index, 1) }
-                                    }">
-                                    {{-- TRABAJA CON CITAS? --}}
-                                        <div class="col-md-12 mb-2">
-                                            <div class="form-check form-switch bg-light p-3 rounded-4 border d-flex justify-content-between align-items-center px-4">
-                                                <label class="form-check-label fw-bold text-navy mb-0" for="citas">¿Habilitar citas en línea?</label>
-                                                <input class="form-check-input ms-0" type="checkbox" name="citas" id="citas" value="1" 
-                                                    x-model="citasActivas" {{ (isset($doctor) && $doctor->citas) ? 'checked' : '' }}>
-                                            </div>
-                                        </div>
 
-                                        <div class="col-md-12" x-show="citasActivas" x-transition>
-                                            <div class="input-group">
-                                                <span class="input-group-text rounded-start-pill"><i class="bi bi-hourglass-split"></i></span>
-                                                <select name="duracion_cita" class="form-select rounded-end-pill">
-                                                    <option value="15" {{ (isset($doctor) && $doctor->duracion_cita == 15) ? 'selected' : '' }}>15 minutos</option>
-                                                    <option value="30" {{ (!isset($doctor) || $doctor->duracion_cita == 30) ? 'selected' : '' }}>30 minutos</option>
-                                                    <option value="45" {{ (isset($doctor) && $doctor->duracion_cita == 45) ? 'selected' : '' }}>45 minutos</option>
-                                                    <option value="60" {{ (isset($doctor) && $doctor->duracion_cita == 60) ? 'selected' : '' }}>1 hora</option>
-                                                </select>
-                                            </div>
-                                            <small class="text-muted ps-3">Tiempo estimado por consulta médica.</small>
-                                        </div>
-
-                                        <div class="col-12 mt-3">
-                                            <label class="fw-bold text-navy small mb-2 ps-2">Agenda de Trabajo Semanal</label>
+                                    {{-- HORARIOS DINÁMICOS --}}
+                                    <div class="col-12 mt-4">
+                                        <label class="form-label fw-bold text-navy"><x-mcr-clock class="me-2" style="width: 1.2rem;"/>Disponibilidad Semanal</label>
+                                        <div class="bg-light p-3 rounded-4 border">
                                             <template x-for="(horario, index) in horarios" :key="index">
-                                                <div class="row g-2 mb-2 align-items-center bg-white p-2 rounded-4 border shadow-sm mx-0">
+                                                <div class="row g-2 mb-2 align-items-center bg-white p-3 rounded-4 border shadow-sm mx-0 schedule-row">
                                                     <div class="col-md-4">
-                                                        <select :name="`horarios[${index}][dia]`" x-model="horario.dia" class="form-select border-0 bg-light rounded-pill">
+                                                        <select :name="`horarios[${index}][dia]`" x-model="horario.dia" class="form-select border-0 bg-light rounded-pill small fw-bold">
                                                             <option value="1">Lunes</option><option value="2">Martes</option>
                                                             <option value="3">Miércoles</option><option value="4">Jueves</option>
                                                             <option value="5">Viernes</option><option value="6">Sábado</option>
@@ -253,124 +189,71 @@
                                                         </select>
                                                     </div>
                                                     <div class="col-md-3">
-                                                        <input type="time" :name="`horarios[${index}][inicio]`" x-model="horario.inicio" class="form-control border-0 bg-light rounded-pill">
+                                                        <input type="time" :name="`horarios[${index}][inicio]`" x-model="horario.inicio" class="form-control border-0 bg-light rounded-pill text-center">
                                                     </div>
                                                     <div class="col-md-3">
-                                                        <input type="time" :name="`horarios[${index}][fin]`" x-model="horario.fin" class="form-control border-0 bg-light rounded-pill">
+                                                        <input type="time" :name="`horarios[${index}][fin]`" x-model="horario.fin" class="form-control border-0 bg-light rounded-pill text-center">
                                                     </div>
                                                     <div class="col-md-2 text-center">
-                                                        <button type="button" @click="removeHorario(index)" class="btn btn-link text-danger p-0" x-show="horarios.length > 1">
+                                                        <button type="button" @click="removeHorario(index)" class="btn btn-outline-danger btn-sm rounded-circle border-0" x-show="horarios.length > 1">
                                                             <i class="bi bi-trash3-fill"></i>
                                                         </button>
                                                     </div>
                                                 </div>
                                             </template>
-                                            <button type="button" @click="addHorario()" class="btn btn-sm btn-outline-navy rounded-pill mt-1">
-                                                <i class="bi bi-plus-circle me-1"></i>Añadir turno
+                                            <button type="button" @click="addHorario()" class="btn btn-sm btn-navy rounded-pill px-4 mt-3 py-2">
+                                                <x-mcr-plus-circle class="icon-white me-2" style="width: 1rem;"/>Añadir Bloque de Horario
                                             </button>
                                         </div>
                                     </div>
 
-                                {{-- IDIOMAS --}}
-                                <div class="mb-4">
-                                    <label class="form-label small fw-bold text-muted">Idiomas</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text rounded-start-pill"><i class="bi bi-translate"></i></span>
-                                        <input type="text" name="idioma" class="form-control rounded-end-pill" 
-                                            value="{{ old('idioma', $doctor->idiomas ?? '') }}" 
-                                            placeholder="Ej. Español, Inglés"
-                                            pattern="[a-zA-ZñÑáéíóúÁÉÍÓÚ\s,]+">
-                                        <div class="invalid-feedback">Solo texto separado por comas.</div>
+                                    {{-- DESCRIPCIÓN --}}
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Descripción Profesional</label>
+                                        <textarea name="descripcion" class="form-control rounded-4 p-3 border shadow-sm" rows="4" required placeholder="Escriba la trayectoria y biografía del doctor...">{{ old('descripcion', $doctor->descripcion ?? '') }}</textarea>
+                                    </div>
+
+                                    {{-- MAPA --}}
+                                    <div class="col-12 mt-4">
+                                        <label class="form-label fw-bold text-navy mb-3"><x-mcr-location-pin class="me-2" style="width: 1.2rem;"/>Ubicación en Ocosingo</label>
+                                        <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud', $doctor->user->latitud ?? '') }}">
+                                        <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud', $doctor->user->longitud ?? '') }}">
+                                        <div class="rounded-4 overflow-hidden shadow-sm border" id="map" style="height: 350px; width: 100%;"></div>
+                                        <p class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i> Arrastre el marcador para fijar la ubicación del consultorio.</p>
                                     </div>
                                 </div>
-
-                                {{-- DESCRIPCIÓN --}}
-                                <div class="mb-4">
-                                    <div class="p-3 bg-light rounded-4 border">
-                                        <label class="form-label fw-bold text-navy"><i class="bi bi-file-person me-2"></i>Descripción / Biografía</label>
-                                        <textarea name="descripcion" class="form-control bg-white border-0 shadow-sm rounded-3" rows="3" 
-                                            required placeholder="Escriba una breve descripción profesional...">{{ old('descripcion', $doctor->descripcion ?? '') }}</textarea>
-                                    </div>
-                                </div>
-
-                                <hr class="text-muted opacity-25 mb-4">
-
-                                {{-- MAPA --}}
-                                <div class="mb-2">
-                                    <label class="form-label fw-bold text-navy mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Ubicación del Consultorio</label>
-                                    <input type="hidden" name="latitud" id="latitud" value="{{ old('latitud', $doctor->user->latitud ?? '') }}">
-                                    <input type="hidden" name="longitud" id="longitud" value="{{ old('longitud', $doctor->user->longitud ?? '') }}">
-                                    
-                                    <div class="shadow-sm rounded-4 overflow-hidden border border-light">
-                                        <div id="map" style="height: 300px; width: 100%;"></div>
-                                    </div>
-                                    <div class="form-text small mt-2"><i class="bi bi-info-circle me-1"></i> Arrastra el marcador rojo para indicar la ubicación exacta.</div>
-                                </div>
-
                             </div>
                             
-                            <div class="card-footer bg-white p-4 border-top rounded-bottom-5">
-                                <div class="d-flex justify-content-end gap-3">
-                                    <button type="submit" class="btn btn-navy px-5 py-2 rounded-pill fw-bold shadow">
-                                        <i class="bi bi-check-lg me-2"></i>
-                                        {{ isset($doctor) ? 'Actualizar Doctor' : 'Guardar Doctor' }}
-                                    </button>
-                                </div>
+                            <div class="card-footer bg-light p-4 border-top-0 rounded-bottom-5 text-end">
+                                <button type="submit" class="btn btn-navy px-5 py-3 shadow">
+                                    <x-mcl-check-circle class="icon-white me-2" style="width: 1.2rem;"/>
+                                    {{ isset($doctor) ? 'Actualizar Información' : 'Registrar Doctor en Sistema' }}
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
-    @else
-        <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 bg-light fade-in">
-            <div class="card border-0 shadow-lg rounded-5 p-5 text-center" style="max-width: 500px;">
-                <div class="mb-4">
-                    <div class="bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 100px; height: 100px;">
-                        <i class="bi bi-shield-lock-fill display-3"></i>
-                    </div>
-                </div>
-                <h2 class="fw-bold text-navy mb-3">Acceso Restringido</h2>
-                <p class="text-muted mb-4 fs-5">
-                    No tienes los permisos necesarios para acceder a esta sección. <i class="bi bi-emoji-frown-fill text-navy"></i>
-                </p>
-                <hr class="my-4 opacity-10">
-                <div class="py-2">
-                    <div class="d-flex align-items-center justify-content-center gap-3">
-                        <div class="spinner-border text-navy" role="status"
-                            style="width: 1.5rem; height: 1.5rem; border-width: 3px;">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <span class="fw-bold text-navy">Redirigiendo al inicio...</span>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <a href="{{ route('welcome') }}" class="btn btn-link text-muted text-decoration-none small">
-                        ¿No has sido redirigido? Haz clic aquí
-                    </a>
-                </div>
-            </div>
-        </div>
     @endif
 
     @push('scripts')
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.min.js"></script>
     <script>
+        // Previsualización de foto
         document.getElementById('fotoInput').onchange = evt => {
             const [file] = fotoInput.files
-            if (file) {
-                document.getElementById('profilePreview').src = URL.createObjectURL(file)
-            }
+            if (file) { document.getElementById('profilePreview').src = URL.createObjectURL(file) }
         }
 
+        // Validación nativa de Bootstrap
         (function () {
             'use strict';
             var forms = document.querySelectorAll('.needs-validation');
             Array.prototype.slice.call(forms).forEach(function (form) {
                 form.addEventListener('submit', function (event) {
                     if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
+                        event.preventDefault(); event.stopPropagation();
                     }
                     form.classList.add('was-validated')
                 }, false)
@@ -379,50 +262,30 @@
     </script>
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('API_KEY') }}&callback=initMap" async defer></script>
-
     <script>
-        let map;
-        let marker;
-
+        let map; let marker;
         function initMap() {
             const initialLat = parseFloat(document.getElementById('latitud').value) || 16.9080;
             const initialLng = parseFloat(document.getElementById('longitud').value) || -92.0946;
             const myLatLng = { lat: initialLat, lng: initialLng };
 
             map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 15,
-                center: myLatLng,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
+                zoom: 15, center: myLatLng, 
+                styles: [ { "featureType": "poi", "stylers": [{ "visibility": "off" }] } ]
             });
 
             marker = new google.maps.Marker({
-                position: myLatLng,
-                map: map,
-                draggable: true,
-                title: "Ubicación del Consultorio",
+                position: myLatLng, map: map, draggable: true,
                 animation: google.maps.Animation.DROP
             });
 
-            marker.addListener("dragend", function (event) {
-                updateInputs(event.latLng.lat(), event.latLng.lng());
-            });
-
-            map.addListener("click", function (event) {
-                marker.setPosition(event.latLng);
-                updateInputs(event.latLng.lat(), event.latLng.lng());
-            });
+            marker.addListener("dragend", function (event) { updateInputs(event.latLng.lat(), event.latLng.lng()); });
+            map.addListener("click", function (event) { marker.setPosition(event.latLng); updateInputs(event.latLng.lat(), event.latLng.lng()); });
         }
-
         function updateInputs(lat, lng) {
             document.getElementById('latitud').value = lat;
             document.getElementById('longitud').value = lng;
         }
-
-        @if(!(Auth::user() && Auth::user()->role == 'admin'))
-            setTimeout(function () {
-                window.location.href = "{{ route('welcome') }}";
-            }, 3000);
-        @endif
     </script>
     @endpush
 </x-layout>

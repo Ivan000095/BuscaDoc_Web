@@ -116,14 +116,19 @@ class UserController extends Controller
                     ]
                 );
             } elseif ($user->role === 'paciente') {
-                $user->patient()->updateOrCreate(
+                $user->paciente()->firstOrCreate(['user_id' => $user->id]);
+                $user->expedientes()->updateOrCreate(
                     ['user_id' => $user->id],
                     [
+                        'nombre_completo' => $request->nombre_completo ?? $user->name,
+                        'fecha_nacimiento' => $request->fecha_nacimiento ?? $user->f_nacimiento,
+                        'genero' => $request->genero ?? 'otro',
+                        'parentesco' => $request->parentesco ?? 'Yo mismo', 
+                        
                         'tipo_sangre' => $request->tipo_sangre,
                         'alergias' => $request->alergias,
-                        'padecimientos' => $request->padecimientos,
-                        'habitos' => $request->habitos, // Añadido
-                        'contacto_emergencia' => $request->contacto_emergencia,
+                        'padecimientos_cronicos' => $request->padecimientos,
+                        'habitos_salud' => $request->habitos,
                     ]
                 );
             } elseif ($user->role === 'farmacia') {
@@ -146,7 +151,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $user->role == 'doctor' ? $user->load('doctor') : ($user->role == 'farmacia' ? $user->load('farmacia') : $user->load('paciente') );
+        $user->role == 'doctor' ? $user->load('doctor') : ($user->role == 'farmacia' ? $user->load('farmacia') : $user->load('paciente'));
         return view('users.show', compact('user'));
 
     }

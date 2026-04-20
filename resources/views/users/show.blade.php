@@ -296,81 +296,61 @@ $isAdmin = $user->role === 'admin';
                             <h4 class="fw-bold text-navy mb-0">Ficha Médica Básica</h4>
                         </div>
 
-                        @if($user->patient)
+                        {{-- 1. Buscamos el expediente principal entre todos los que tenga el usuario --}}
+                        @php
+                            $expedientePrincipal = $user->expedientes ? $user->expedientes->where('parentesco', 'Yo mismo')->first() : null;
+                        @endphp
+
+                        {{-- 2. Validamos si encontró su expediente personal --}}
+                        @if($expedientePrincipal)
                             <div class="row g-3">
-                                {{-- 1. Tipo de Sangre --}}
+                                {{-- Tipo de Sangre --}}
                                 <div class="col-md-4">
                                     <div class="data-box bg-danger-subtle border border-danger-subtle">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="icon-circle text-danger"><x-mcr-test-tube class="icon-md"/></div>
                                             <div>
                                                 <small class="text-danger-emphasis fw-bold text-uppercase" style="font-size: 0.70rem;">Tipo de Sangre</small>
-                                                <div class="fs-4 fw-bold text-dark lh-1 mt-1">{{ $user->patient->tipo_sangre ?? '--' }}</div>
+                                                <div class="fs-4 fw-bold text-dark lh-1 mt-1">{{ $expedientePrincipal->tipo_sangre ?? '--' }}</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {{-- 2. Alergias --}}
+                                {{-- Alergias --}}
                                 <div class="col-md-8">
                                     <div class="data-box bg-warning-subtle border border-warning-subtle">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="icon-circle text-warning"><x-mcr-triangle-exclamation class="icon-md"/></div>
                                             <div>
                                                 <small class="text-warning-emphasis fw-bold text-uppercase" style="font-size: 0.70rem;">Alergias</small>
-                                                <div class="fw-medium text-dark lh-sm mt-1">{{ $user->patient->alergias ?? 'Ninguna alergia registrada.' }}</div>
+                                                <div class="fw-medium text-dark lh-sm mt-1">{{ $expedientePrincipal->alergias ?? 'Ninguna alergia registrada.' }}</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {{-- 3. Padecimientos --}}
+                                {{-- Padecimientos Crónicos (Nombre actualizado según migración) --}}
                                 <div class="col-md-6">
                                     <div class="data-box bg-info-subtle border border-info-subtle">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="icon-circle text-info"><x-mcr-heart class="icon-md"/></div>
                                             <div>
                                                 <small class="text-info-emphasis fw-bold text-uppercase" style="font-size: 0.70rem;">Padecimientos</small>
-                                                <div class="text-dark small lh-sm mt-1">{{ $user->patient->padecimientos ?? 'Sin padecimientos registrados.' }}</div>
+                                                <div class="text-dark small lh-sm mt-1">{{ $expedientePrincipal->padecimientos_cronicos ?? 'Sin padecimientos registrados.' }}</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {{-- 4. Cirugías --}}
-                                <div class="col-md-6">
-                                    <div class="data-box bg-primary-subtle border border-primary-subtle">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="icon-circle text-primary"><x-mcr-activity-circle class="icon-md"/></div>
-                                            <div>
-                                                <small class="text-primary-emphasis fw-bold text-uppercase" style="font-size: 0.70rem;">Cirugías Previas</small>
-                                                <div class="text-dark small lh-sm mt-1">{{ $user->patient->cirugias ?? 'Ninguna cirugía registrada.' }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- 5. Hábitos --}}
+                                {{-- Hábitos de Salud (Nombre actualizado según migración) --}}
                                 <div class="col-md-6">
                                     <div class="data-box bg-success-subtle border border-success-subtle">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="icon-circle text-success"><x-mcr-mug class="icon-md"/></div>
                                             <div>
                                                 <small class="text-success-emphasis fw-bold text-uppercase" style="font-size: 0.70rem;">Hábitos</small>
-                                                <div class="text-dark small lh-sm mt-1">{{ $user->patient->habitos ?? 'No especificados.' }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- 6. Contacto Emergencia --}}
-                                <div class="col-md-6">
-                                    <div class="data-box bg-secondary-subtle border border-secondary-subtle">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="icon-circle text-secondary"><x-mcr-phone class="icon-md"/></div>
-                                            <div>
-                                                <small class="text-secondary-emphasis fw-bold text-uppercase" style="font-size: 0.70rem;">Contacto Emergencia</small>
-                                                <div class="fs-5 fw-bold text-dark font-monospace lh-1 mt-1">{{ $user->patient->contacto_emergencia ?? '--' }}</div>
+                                                <div class="text-dark small lh-sm mt-1">{{ $expedientePrincipal->habitos_salud ?? 'No especificados.' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -381,7 +361,7 @@ $isAdmin = $user->role === 'admin';
                                 <x-mcr-exclamation-circle class="icon-lg text-muted me-3"/>
                                 <div>
                                     <strong class="d-block text-navy fs-5">Información pendiente</strong>
-                                    <span class="text-muted">El paciente aún no ha completado su ficha médica.</span>
+                                    <span class="text-muted">Aún no has completado tu ficha médica personal.</span>
                                 </div>
                             </div>
                         @endif

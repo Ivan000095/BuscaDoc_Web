@@ -10,9 +10,8 @@ class ExpedienteController extends Controller
 {
     /**
      * Muestra la ficha médica detallada.
-     * 
      */
-        public function create()
+    public function create()
     {
         // Solo retornamos la vista donde estará el formulario que hicimos antes
         return view('expedientes.create');
@@ -22,16 +21,16 @@ class ExpedienteController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Validación de los datos
+        // 1. Validación de los datos (Actualizamos los nombres de los request)
         $request->validate([
-            'nombre_completo'    => 'required|string|max:80',
-            'fecha_nacimiento'   => 'required|date|before_or_equal:today',
-            'genero'             => 'required|in:masculino,femenino',
-            'parentesco'         => 'required|string|max:30',
-            'tipo_sangre'        => 'nullable|string|max:5',
-            'alergias'           => 'nullable',
-            'padecimientos'      => 'nullable',
-            'habitos'            => 'nullable',
+            'nombre_completo'        => 'required|string|max:80',
+            'fecha_nacimiento'       => 'required|date|before_or_equal:today',
+            'genero'                 => 'required|in:masculino,femenino',
+            'parentesco'             => 'required|string|max:30',
+            'tipo_sangre'            => 'nullable|string|max:5',
+            'alergias'               => 'nullable',
+            'padecimientos_cronicos' => 'nullable', // <--- Nombre corregido
+            'habitos_salud'          => 'nullable', // <--- Nombre corregido
         ]);
 
         // 2. Creación del registro
@@ -46,12 +45,12 @@ class ExpedienteController extends Controller
             'alergias'               => is_array($request->alergias) 
                                         ? implode(', ', $request->alergias) 
                                         : $request->alergias,
-            'padecimientos_cronicos' => is_array($request->padecimientos) 
-                                        ? implode(', ', $request->padecimientos) 
-                                        : $request->padecimientos,
-            'habitos_salud'          => is_array($request->habitos) 
-                                        ? implode(', ', $request->habitos) 
-                                        : $request->habitos,
+            'padecimientos_cronicos' => is_array($request->padecimientos_cronicos) // <--- Nombre corregido
+                                        ? implode(', ', $request->padecimientos_cronicos) 
+                                        : $request->padecimientos_cronicos,
+            'habitos_salud'          => is_array($request->habitos_salud) // <--- Nombre corregido
+                                        ? implode(', ', $request->habitos_salud) 
+                                        : $request->habitos_salud,
         ]);
 
         // 3. Redirección con mensaje de éxito
@@ -70,7 +69,6 @@ class ExpedienteController extends Controller
         return view('expedientes.index', compact('expedientes'));
     }
 
-
     public function show($id)
     {
         // 1. Buscamos el expediente o lanzamos error 404 si no existe
@@ -83,7 +81,6 @@ class ExpedienteController extends Controller
         $expediente = Expediente::with(['notas' => function($query) {
             $query->orderBy('created_at', 'desc');
         }])->findOrFail($id);
-
 
         // 3. Retornamos la vista que creamos anteriormente
         return view('expedientes.show', compact('expediente'));
@@ -109,32 +106,36 @@ class ExpedienteController extends Controller
             return back()->with('error', 'Acción no autorizada.');
         }
 
+        // Validación (Actualizamos los nombres de los request)
         $request->validate([
-            'nombre_completo'    => 'required|string|max:80',
-            'fecha_nacimiento'   => 'required|date|before_or_equal:today',
-            'genero'             => 'required|in:masculino,femenino',
-            
-            'tipo_sangre'        => 'nullable|string|max:5',
-            'alergias'           => 'nullable',
-            'padecimientos'      => 'nullable',
-            'habitos'            => 'nullable',
+            'nombre_completo'        => 'required|string|max:80',
+            'fecha_nacimiento'       => 'required|date|before_or_equal:today',
+            'genero'                 => 'required|in:masculino,femenino',
+            'parentesco'             => 'required|string|max:30', // <--- Aseguramos que el parentesco también se valide en el update
+            'tipo_sangre'            => 'nullable|string|max:5',
+            'alergias'               => 'nullable',
+            'padecimientos_cronicos' => 'nullable', // <--- Nombre corregido
+            'habitos_salud'          => 'nullable', // <--- Nombre corregido
         ]);
 
+        // Actualización
         $expediente->update([
             'nombre_completo'        => $request->nombre_completo,
             'fecha_nacimiento'       => $request->fecha_nacimiento,
             'genero'                 => $request->genero,
             'parentesco'             => $request->parentesco,
             'tipo_sangre'            => $request->tipo_sangre,
-            'alergias'               => is_array($request->alergias) ? implode(', ', $request->alergias) : $request->alergias,
-            'padecimientos_cronicos' => is_array($request->padecimientos) ? implode(', ', $request->padecimientos) : $request->padecimientos,
-            'habitos_salud'          => is_array($request->habitos) ? implode(', ', $request->habitos) : $request->habitos,
+            'alergias'               => is_array($request->alergias) 
+                                        ? implode(', ', $request->alergias) 
+                                        : $request->alergias,
+            'padecimientos_cronicos' => is_array($request->padecimientos_cronicos) // <--- Nombre corregido
+                                        ? implode(', ', $request->padecimientos_cronicos) 
+                                        : $request->padecimientos_cronicos,
+            'habitos_salud'          => is_array($request->habitos_salud) // <--- Nombre corregido
+                                        ? implode(', ', $request->habitos_salud) 
+                                        : $request->habitos_salud,
         ]);
 
         return redirect()->route('expedientes.show', $id)->with('success', 'Expediente actualizado correctamente.');
     }
-
-
-
-
 }
