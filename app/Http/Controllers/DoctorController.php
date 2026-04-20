@@ -96,14 +96,12 @@ class DoctorController extends Controller
             "password" => "required|min:8",
             "fecha" => "required|date|before:-18 years",
             "image" => "nullable|image|max:5120",
-
             "especialidad_id" => "required|exists:especialidads,id",
-
             "cedula" => "required|string|max:50",
             "descripcion" => "required|string|max:1000",
             "costos" => "required|numeric|min:0",
-            "duracion_cita" => "required|integer|min:15|max:120", // Nuevo campo
-            "horarios" => "required|array", // Array de disponibilidad
+            "duracion_cita" => "required|integer|min:15|max:120",
+            "horarios" => "required|array",
             "horarios.*.dia" => "required|integer|between:0,6",
             "horarios.*.inicio" => "required|date_format:H:i",
             "horarios.*.fin" => "required|date_format:H:i|after:horarios.*.inicio",
@@ -114,11 +112,10 @@ class DoctorController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
+            $rutaFoto = $request->hasFile("image") 
+                ? $request->file("image")->store('users', 'public') 
+                : null;
 
-            $rutaFoto = null;
-            if ($request->hasFile("image")) {
-                $rutaFoto = $request->file("image")->store('users', 'public');
-            }
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -129,12 +126,7 @@ class DoctorController extends Controller
                 'f_nacimiento' => $request->fecha,
                 'latitud' => $request->latitud,
                 'longitud' => $request->longitud,
-                
             ]);
-
-
-
-
 
             $doctor = Doctor::create([
                 'user_id' => $user->id,
@@ -146,15 +138,14 @@ class DoctorController extends Controller
                 'citas' => $request->has('citas'),
             ]);
 
+            // Guardar disponibilidad en la nueva tabla
             foreach ($request->horarios as $bloque) {
-                        $doctor->disponibilidades()->create([
-                            'dia_semana' => $bloque['dia'],
-                            'hora_inicio' => $bloque['inicio'],
-                            'hora_fin' => $bloque['fin'],
-                        ]);
-                    }
-
-
+                $doctor->disponibilidades()->create([
+                    'dia_semana' => $bloque['dia'],
+                    'hora_inicio' => $bloque['inicio'],
+                    'hora_fin' => $bloque['fin'],
+                ]);
+            }
 
             $doctor->especialidades()->attach($request->especialidad_id);
         });
@@ -285,28 +276,22 @@ class DoctorController extends Controller
 
     public function dataTable(Request $request)
     {
-        $query = Doctor::with('user');
+        // Cargamos la relación 'disponibilidades' para el semáforo de horario
+        $query = Doctor::with(['user', 'especialidades', 'disponibilidades']);
+        
         $search = $request->input("search.value");
         if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('user', function ($subQ) use ($search) {
-                    $subQ->where('name', 'like', "%{$search}%");
-                })
-                    ->orWhere("cedula", "like", "%{$search}%")
-                    ->orWhere("descripcion", "like", "%{$search}%");
-            });
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })->orWhere("cedula", "like", "%{$search}%");
         }
+
         $totalRecords = Doctor::count();
         $recordsFiltered = $query->count();
-        $start = $request->input("start", 0);
-        $length = $request->input("length", 10);
-        $doctors = $query->skip($start)->take($length)->get();
-        $meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-        $data = $doctors->map(function ($doctor) use ($meses) {
+        $doctors = $query->skip($request->input("start", 0))->take($request->input("length", 10))->get();
 
-            $imageHtml = "";
-            $fotoPath = $doctor->user->foto;
-        // --- NUEVA LÓGICA DE HORARIO ---
+        $data = $doctors->map(function ($doctor) {
+            // Lógica de semáforo de horario (Abierto/Cerrado)
             $hoy = now()->dayOfWeek; 
             $horaActual = now()->format('H:i:s');
             $disponibilidadHoy = $doctor->disponibilidades->where('dia_semana', $hoy);
@@ -320,49 +305,38 @@ class DoctorController extends Controller
             }
 
             $horarioHtml = $disponibilidadHoy->isEmpty() 
-                ? '<span class="badge bg-secondary rounded-pill shadow-sm">Cerrado hoy</span>'
+                ? '<span class="badge bg-secondary rounded-pill">No labora hoy</span>'
                 : ($estaAbierto 
-                    ? '<span class="badge bg-success rounded-pill shadow-sm">Abierto ahora</span>' 
-                    : '<span class="badge bg-danger rounded-pill shadow-sm">Cerrado ahora</span>');
-            // ------------------------------
+                    ? '<span class="badge bg-success rounded-pill">Disponible</span>' 
+                    : '<span class="badge bg-danger rounded-pill">Fuera de horario</span>');
 
-
-            if ($fotoPath && Storage::disk("public")->exists($fotoPath)) {
-                $url = asset("storage/" . $fotoPath);
-                $imageHtml = "<img src='{$url}' class='img-thumbnail' style='width: 50px; height: 50px; object-fit: cover;'>";
-            } else {
-                $imageHtml = '<div class="bg-light..." ><i class="bi bi-person"></i></div>';
-            }
-            $fechaformato = "sin fecha";
-            if ($doctor->user->f_nacimiento) {
-                $fechaObj = Carbon::parse($doctor->user->f_nacimiento);
-                $fechaformato = $fechaObj->isoFormat('D [de] MMMM [del] YYYY');
-            }
             return [
                 "id" => $doctor->id,
                 "name" => $doctor->user->name,
                 "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
-                "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 30),
-                "fecha" => $fechaformato,
-                "image" => $imageHtml,
-                "cedula" => $doctor->cedula,
+                "cedula" => $doctor->cedula ?? 'N/A',
+                "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 40),
                 "costos" => '$' . number_format($doctor->costo, 2),
                 "horario" => $horarioHtml,
                 "citas" => $doctor->citas 
-                ? '<span class="badge bg-success rounded-pill px-3 py-2">Sí</span>' 
-                : '<span class="badge bg-secondary rounded-pill px-3 py-2">No</span>',
+                    ? '<span class="badge bg-success rounded-pill">Sí</span>' 
+                    : '<span class="badge bg-secondary rounded-pill">No</span>',
+                "fecha" => $doctor->user->f_nacimiento ? Carbon::parse($doctor->user->f_nacimiento)->isoFormat('LL') : 'N/A',
+                "image" => $doctor->user->foto 
+                    ? '<img src="'.asset('storage/'.$doctor->user->foto).'" class="rounded-circle" style="width:40px; height:40px; object-fit:cover;">'
+                    : '<div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:40px; height:40px;"><i class="bi bi-person"></i></div>',
                 "actions" => '
-                <div class="d-flex justify-content-end gap-2">
-                    <button class="btn btn-outline-navy btn-sm rounded-pill" onclick="execute(\'' . route('doctores.edit', $doctor->id) . '\')" title="Editar">
-                        <i class="bi bi-pencil-fill"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm rounded-pill shadow-sm" onclick="deleteRecord(\'' . route('doctores.destroy', $doctor->id) . '\')" title="Eliminar">
-                        <i class="bi bi-trash-fill"></i>
-                    </button>
-                </div>
-            ',
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-navy btn-sm rounded-pill" onclick="execute(\'' . route('doctores.edit', $doctor->id) . '\')">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm rounded-pill" onclick="deleteRecord(\'' . route('doctores.destroy', $doctor->id) . '\')">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>',
             ];
         });
+
         return response()->json([
             "draw" => (int) $request->input("draw"),
             "recordsTotal" => $totalRecords,
