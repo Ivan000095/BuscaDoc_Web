@@ -35,18 +35,15 @@
                         </div>
 
                         <div class="card-body px-4 pb-4 pt-1 d-flex flex-column">
-                            
-                            {{-- Info Principal --}}
                             <div class="d-flex align-items-center mb-4">
-                                {{-- Validamos si es el expediente propio y si el usuario tiene foto --}}
                                 @if($expediente->parentesco == 'Yo mismo' && Auth::user()->foto)
                                     <img src="{{ asset('storage/' . Auth::user()->foto) }}" 
                                         alt="{{ $expediente->nombre_completo }}" 
-                                        class="avatar-circle shadow-sm flex-shrink-0 me-3" 
-                                        style="object-fit: cover; border: 2px solid white;">
+                                        class="rounded-circle shadow-sm flex-shrink-0 me-3" 
+                                        style="width: 60px; height: 60px; object-fit: cover; border: 2px solid white;">
                                 @else
-                                    {{-- Diseño con iniciales para familiares o si no hay foto --}}
-                                    <div class="avatar-circle {{ $expediente->parentesco == 'Yo mismo' ? 'bg-navy text-white shadow-sm' : 'bg-light text-secondary border' }} flex-shrink-0 me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 me-3 {{ $expediente->parentesco == 'Yo mismo' ? 'bg-navy text-white shadow-sm' : 'bg-light text-secondary border' }}"
+                                        style="width: 60px; height: 60px; font-size: 1.2rem; font-weight: bold;">
                                         {{ strtoupper(substr($expediente->nombre_completo, 0, 1)) }}
                                     </div>
                                 @endif

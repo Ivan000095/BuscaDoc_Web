@@ -20,7 +20,22 @@ class DoctorController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Doctor::with(['user', 'especialidades']);
+            // 1. Obtenemos la fecha y día actual exactamente en Ocosingo
+            $hoy = \Carbon\Carbon::now('America/Mexico_City');
+            $diaSemana = $hoy->dayOfWeek; // 0 = Domingo, 1 = Lunes... 6 = Sábado
+            $fechaHoy = $hoy->toDateString();
+
+            // 2. Cargamos el doctor con sus relaciones, pero FILTRAMOS solo el horario de HOY
+            $query = Doctor::with([
+                'user', 
+                'especialidades',
+                'disponibilidades' => function($q) use ($diaSemana) {
+                    $q->where('dia_semana', $diaSemana);
+                },
+                'excepciones' => function($q) use ($fechaHoy) {
+                    $q->where('fecha', $fechaHoy);
+                }
+            ]);
 
             // Búsqueda por nombre o descripción
             if ($request->has("search")) {
@@ -40,17 +55,37 @@ class DoctorController extends Controller
                 });
             }
 
-            // Ordenamiento
+            // Ordenamiento y Paginación
             $sortBy = $request->input("sort_by", "created_at");
             $sortDirection = $request->input("sort_direction", "desc");
             $query->orderBy($sortBy, $sortDirection);
-
-            // Paginación
             $perPage = min($request->input("per_page", 15), 100);
             $doctors = $query->paginate($perPage);
 
-            // Transformación mínima de datos
+            // 3. Transformación de datos (Aquí calculamos el horario de HOY)
             $doctors->getCollection()->transform(function ($doctor) {
+                $entrada = null;
+                $salida = null;
+
+                // Revisamos si hay excepción hoy, si no, usamos la disponibilidad regular
+                $excepcion = $doctor->excepciones->first();
+                $disponibilidad = $doctor->disponibilidades->first();
+
+                if ($excepcion) {
+                    if ($excepcion->trabaja) {
+                        $entrada = $excepcion->hora_inicio;
+                        $salida = $excepcion->hora_fin;
+                    }
+                    // Si $excepcion->trabaja es false, se queda null (Día libre)
+                } elseif ($disponibilidad) {
+                    $entrada = $disponibilidad->hora_inicio;
+                    $salida = $disponibilidad->hora_fin;
+                }
+
+                // Formateamos a HH:MM (ej. 08:00) o mandamos un texto si no trabaja hoy
+                $horaEntrada = $entrada ? \Carbon\Carbon::parse($entrada)->format('H:i') : 'Descanso';
+                $horaSalida = $salida ? \Carbon\Carbon::parse($salida)->format('H:i') : '';
+
                 return [
                     "id" => $doctor->id,
                     "user_id" => $doctor->user->id,
@@ -58,15 +93,16 @@ class DoctorController extends Controller
                     "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
                     "descripcion" => \Illuminate\Support\Str::limit($doctor->descripcion, 100),
                     "fecha" => $doctor->user->f_nacimiento,
-                    "image" => $doctor->user->foto 
-                        ? asset('storage/' . $doctor->user->foto) 
-                        : null,
+                    "image" => $doctor->user->foto ? asset('storage/' . $doctor->user->foto) : null,
                     "promedio" => round($doctor->reviews->avg('calificacion') ?? 0, 1),
                     "cedula" => $doctor->cedula,
                     "role" => $doctor->user->role,
                     "costos" => number_format($doctor->costo, 2),
-                    "horarioentrada" => $doctor->horario_entrada,
-                    "horariosalida" => $doctor->horario_salida,
+                    
+                    // Mandamos las horas ya calculadas para HOY
+                    "horarioentrada" => $horaEntrada,
+                    "horariosalida" => $horaSalida,
+                    
                     "idioma" => $doctor->idiomas,
                     "latitud" => $doctor->user->latitud,
                     "longitud" => $doctor->user->longitud,
@@ -96,54 +132,28 @@ class DoctorController extends Controller
     /**
      * Mostrar un doctor específico
      */
-    public function show($id): JsonResponse
-    {
-        try {
-            $doctor = Doctor::with(['user', 'especialidades'])->find($id);
+   public function show($id)
+{
+    $doctor = Doctor::with(['user', 'especialidades', 'disponibilidades', 'excepciones'])
+              ->findOrFail($id);
 
-            if (!$doctor) {
-                return response()->json([
-                    "success" => false,
-                    "message" => "Doctor no encontrado",
-                ], 404);
-            }
+    // Mapeamos los días de la semana para que Flutter los entienda fácil
+    $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    $tablaHorarios = [];
 
-            $data = [
-                "id" => $doctor->id,
-                "user_id" => $doctor->user->id,
-                "name" => $doctor->user->name ?? 'Sin nombre',
-                "email" => $doctor->user->email,
-                "especialidad" => $doctor->especialidades->pluck('nombre')->join(', '),
-                "descripcion" => $doctor->descripcion,
-                "fecha" => $doctor->user->f_nacimiento,
-                "image" => $doctor->user->foto 
-                    ? asset('storage/' . $doctor->user->foto) 
-                    : null,
-                "promedio" => round($doctor->reviews->avg('calificacion') ?? 0, 1),
-                "cedula" => $doctor->cedula,
-                "role" => $doctor->user->role,
-                "costos" => number_format($doctor->costo, 2),
-                "horarioentrada" => $doctor->horario_entrada,
-                "horariosalida" => $doctor->horario_salida,
-                "idioma" => $doctor->idiomas,
-                "latitud" => $doctor->user->latitud,
-                "longitud" => $doctor->user->longitud,
-                "estado" => $doctor->user->estado,
-            ];
-
-            return response()->json([
-                "success" => true,
-                "data" => $data
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                "success" => false,
-                "message" => "Error al obtener el doctor",
-                "error" => $e->getMessage(),
-            ], 500);
-        }
+    foreach ($doctor->disponibilidades as $disp) {
+        $tablaHorarios[] = [
+            'dia' => $dias[$disp->dia_semana],
+            'rango' => \Carbon\Carbon::parse($disp->hora_inicio)->format('H:i') . ' - ' . \Carbon\Carbon::parse($disp->hora_fin)->format('H:i')
+        ];
     }
+
+    return response()->json([
+        'success' => true,
+        'data' => $doctor,
+        'horarios_semanales' => $tablaHorarios // Agregamos esto para la tabla
+    ]);
+}
 
     /**
      * Registrar nuevo doctor

@@ -61,10 +61,10 @@ class ExpedienteController extends Controller
     {
         $user = Auth::user();
         
-        // Obtenemos todos los expedientes ligados al usuario logueado
-        $expedientes = Expediente::where('user_id', $user->id)
-                        ->orderBy('nombre_completo', 'asc')
-                        ->get();
+       $expedientes = Expediente::where('user_id', $user->id)
+            ->orderByRaw("CASE WHEN LOWER(parentesco) = 'yo mismo' THEN 0 ELSE 1 END")
+            ->orderBy('nombre_completo', 'asc')
+            ->get();
 
         return view('expedientes.index', compact('expedientes'));
     }

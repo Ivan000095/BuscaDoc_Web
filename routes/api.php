@@ -84,6 +84,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/citas/{id}/responder-cambio', [CitaController::class, 'responderCambio']);
     Route::delete('/citas/{id}', [CitaController::class, 'destroy']);
 
+    Route::get('/mis-expedientes', function (Illuminate\Http\Request $request) {
+        return response()->json([
+            'success' => true,
+            'data' => $request->user()->expedientes()->select('id', 'nombre_completo')->get()
+        ]);
+    });
+
+    Route::post('/doctores/{id}/agendar', [App\Http\Controllers\Api\CitaController::class, 'store']);
+
+    Route::get('/expedientes', [App\Http\Controllers\Api\ExpedienteController::class, 'index']);
+    Route::post('/expedientes', [App\Http\Controllers\Api\ExpedienteController::class, 'store']);
+    Route::get('/expedientes/{id}', [App\Http\Controllers\Api\ExpedienteController::class, 'show']);
+    Route::put('/expedientes/{id}', [App\Http\Controllers\Api\ExpedienteController::class, 'update']);
+    
+    Route::post('/citas/{id}/finalizar', [App\Http\Controllers\Api\CitaController::class, 'finalizarConDiagnostico']);
+
 });
 
 
