@@ -415,7 +415,7 @@
                             <a href="/register" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-scale">Crear Cuenta</a>
                             
                             {{-- OPCIÓN 1: Botón de Descarga APK --}}
-                            <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
+                            <a href="https://drive.google.com/file/d/1IVoO93yy3TvKuCgitpE2eZoomy6qgu2u/view?usp=drive_link" class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
                                 <i class="bi bi-android2 me-2 fs-5"></i> Descargar App
                             </a>
                         </div>
@@ -1030,7 +1030,7 @@
                                     <small class="opacity-75">Citas más rápidas y notificaciones en tiempo real con nuestra app.</small>
                                 </div>
                             </div>
-                            <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
+                            <a href="https://drive.google.com/file/d/1IVoO93yy3TvKuCgitpE2eZoomy6qgu2u/view?usp=drive_link" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
                         </div>
 
                         <h2 class="fw-bold text-navy mb-2">Bienvenido a BuscaDoc, {{ Auth::user()->name }}</h2>
