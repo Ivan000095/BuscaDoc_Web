@@ -892,7 +892,7 @@
                                     class="btn btn-navy rounded-pill fw-bold shadow-sm py-2 transition-hover">
                                     <x-mcr-eye class="me-2" style="width: 1.1rem;" /> Perfil Público
                                 </a>
-                                <a href="{{ route('doctores.edit', Auth::user()->doctor->id) }}"
+                                <a href="{{ route('users.edit', Auth::user()->doctor->id) }}"
                                     class="btn btn-outline-navy rounded-pill fw-bold py-2 transition-hover">
                                     <x-mcr-settings class="me-2" style="width: 1.1rem;" /> Editar Info
                                 </a>

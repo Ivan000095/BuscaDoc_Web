@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Models\Especialidad;
+use App\Models\DoctorDisponibilidad;
 
 class UserController extends Controller
 {
@@ -62,18 +63,19 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'Usuario creado correctamente.');
     }
+
     public function edit($id)
     {
-        $user = User::with(['doctor', 'paciente', 'farmacia'])->findOrFail($id);
+        $user = User::with(['doctor.disponibilidades', 'paciente', 'farmacia'])->findOrFail($id);
 
-        // Verificamos que el usuario solo edite su propio perfil (Seguridad básica)
+        // Verificamos que el usuario solo edite su propio perfil
         if (auth()->id() !== $user->id && auth()->user()->role !== 'admin') {
             abort(403);
         }
 
-        $especialidades = Especialidad::all(); // Para el doctor
-        return view('users.edit', compact('user', 'especialidades'));
-    }
+    $especialidades = Especialidad::all();
+    return view('users.edit', compact('user', 'especialidades'));
+}
 
     // Guardar los cambios
     public function update(Request $request, $id)
@@ -104,18 +106,42 @@ class UserController extends Controller
                 'f_nacimiento' => $request->f_nacimiento,
             ]);
 
-            if ($user->role === 'doctor') {
-                $user->doctor()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    [
-                        'cedula' => $request->cedula,
-                        'descripcion' => $request->descripcion,
-                        'costo' => $request->costo,
-                        'horario_entrada' => $request->horario_entrada,
-                        'horario_salida' => $request->horario_salida,
-                    ]
-                );
-            } elseif ($user->role === 'paciente') {
+                if ($user->role === 'doctor') {
+                    $doctor = $user->doctor()->updateOrCreate(
+                        ['user_id' => $user->id],
+                        [
+                            'cedula'         => $request->cedula,
+                            'idiomas'        => $request->idiomas ?? '',
+                            'descripcion'    => $request->descripcion,
+                            'costo'          => $request->costo,
+                            'duracion_cita'  => $request->duracion_cita ?? 30,
+                            'citas'          => $request->has('citas') ? true : false,
+                        ]
+                    );
+
+                    // Sincronizar horarios (igual estructura que en show.blade.php)
+                    $doctor->disponibilidades()->delete();
+
+                    if ($request->filled('horarios') && is_array($request->horarios)) {
+                        $nuevosHorarios = [];
+                        foreach ($request->horarios as $h) {
+                            if (!empty($h['dia']) && !empty($h['inicio']) && !empty($h['fin'])) {
+                                $nuevosHorarios[] = [
+                                    'doctor_id'   => $doctor->id,
+                                    'dia_semana'  => (int) $h['dia'],
+                                    'hora_inicio' => $h['inicio'],
+                                    'hora_fin'    => $h['fin'],
+                                    'created_at'  => now(),
+                                    'updated_at'  => now(),
+                                ];
+                            }
+                        }
+                        if (!empty($nuevosHorarios)) {
+                            \App\Models\DoctorDisponibilidad::insert($nuevosHorarios);
+                        }
+                    }
+                }
+             elseif ($user->role === 'paciente') {
                 $user->paciente()->firstOrCreate(['user_id' => $user->id]);
                 $user->expedientes()->updateOrCreate(
                     ['user_id' => $user->id],
@@ -123,7 +149,7 @@ class UserController extends Controller
                         'nombre_completo' => $request->nombre_completo ?? $user->name,
                         'fecha_nacimiento' => $request->fecha_nacimiento ?? $user->f_nacimiento,
                         'genero' => $request->genero ?? 'otro',
-                        'parentesco' => $request->parentesco ?? 'Yo mismo', 
+                        'parentesco' => $request->parentesco ?? 'Expediente Propio', 
                         
                         'tipo_sangre' => $request->tipo_sangre,
                         'alergias' => $request->alergias,

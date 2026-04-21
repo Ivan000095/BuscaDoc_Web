@@ -89,10 +89,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/doctores/{id}/agendar', [CitaController::class, 'store'])->name('citas.store');
     Route::delete('/citas/{id}', [CitaController::class, 'destroy'])->name('citas.destroy');
     // CORRECCIÓN CLAVE AQUÍ: Se llama citas.updateStatus para que coincida con tu vista
-    Route::patch('/citas/{id}/estado', [CitaController::class, 'updateStatus'])->name('citas.updateStatus');
-    Route::post('/citas/{id}/solicitar-cambio', [CitaController::class, 'solicitarCambio'])->name('citas.solicitar-cambio');
-    Route::post('/solicitudes-cambio/{id}/responder', [CitaController::class, 'responderCambio'])->name('citas.responder-cambio');
-    Route::put('/citas/{id}/reprogramar-libre', [CitaController::class, 'reprogramarLibre'])->name('citas.reprogramarLibre');
+    
+// Ruta para que el solicitante cree la propuesta
+    Route::post('/citas/{id}/solicitar-cambio', [CitaController::class, 'solicitarCambio'])
+        ->name('citas.solicitar-cambio');
+
+    // Ruta para que el solicitado acepte o rechace
+    Route::post('/solicitudes-cambio/{id}/responder', [CitaController::class, 'responderCambio'])
+        ->name('citas.responder-cambio');
+
+    Route::put('/citas/{id}/reprogramar-libre', [CitaController::class, 'reprogramarLibre'])
+         ->name('citas.reprogramarLibre');
     Route::post('/notas-medicas/{cita}', [App\Http\Controllers\NotaMedicaController::class, 'store'])->name('notas.store');
 
     // Citas - Vistas por Rol
@@ -101,6 +108,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mis-citas-doc', [CitaController::class, 'index'])->name('doctores.citas');
     });
 
+    Route::patch('/citas/{id}/estado', [App\Http\Controllers\CitaController::class, 'updateStatus'])->name('citas.status');
     // Expedientes
     Route::get('/mis-expedientes', [ExpedienteController::class, 'index'])->name('expedientes.index');
     Route::get('/expedientes/crear', [ExpedienteController::class, 'create'])->name('expedientes.create');

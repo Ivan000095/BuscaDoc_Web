@@ -111,18 +111,43 @@
                                 </p>
 
                                 <div class="mt-auto">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-clock me-2 text-navy"></i>
+                                Horario:
+                                    {{-- Horario --}}
+                                @php
+                                    $hoy = now()->dayOfWeek; // 0 (Dom) a 6 (Sáb)
+                                    $horaActual = now()->format('H:i:s');
+                                    $disponibilidadHoy = $doctor->disponibilidades->where('dia_semana', $hoy);
+                                    $estaAbierto = false;
+                                    $rangoHoy = "Cerrado ahora";
+
+                                    foreach($disponibilidadHoy as $bloque) {
+                                        if($horaActual >= $bloque->hora_inicio && $horaActual <= $bloque->hora_fin) {
+                                            $estaAbierto = true;
+                                        }
+                                    }
+                                @endphp
+
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-clock me-2 text-navy"></i>
+                                    @if($disponibilidadHoy->isEmpty())
+                                        <span class="badge bg-secondary rounded-pill">Sin consultas hoy</span>
+                                    @else
+                                        <span class="badge {{ $estaAbierto ? 'bg-success' : 'bg-danger' }} rounded-pill me-2">
+                                            {{ $estaAbierto ? 'Abierto ahora' : 'Cerrado ahora' }}
+                                        </span>
                                         <small class="text-muted">
-                                            {{ \Carbon\Carbon::parse($doctor->horario_entrada)->format('h:i A') }} -
-                                            {{ \Carbon\Carbon::parse($doctor->horario_salida)->format('h:i A') }}
+                                            {{ \Carbon\Carbon::parse($disponibilidadHoy->first()->hora_inicio)->format('g:i A') }} - 
+                                            {{ \Carbon\Carbon::parse($disponibilidadHoy->last()->hora_fin)->format('g:i A') }}
                                         </small>
-                                    </div>
+                                    @endif
+                                </div>
 
                                     <div class="d-flex align-items-center">
                                         <i class="bi bi-cash-coin me-2 text-navy"></i>
+                                        Costo Promedio: 
+                                        
                                         <small class="fw-bold text-success">
-                                            ${{ number_format($doctor->costo, 2) }}
+                                            ${{   number_format($doctor->costo, 2) }}
                                         </small>
                                     </div>
                                 </div>
