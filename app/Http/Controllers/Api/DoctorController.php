@@ -25,13 +25,11 @@ class DoctorController extends Controller
             $diaSemana = $hoy->dayOfWeek; // 0 = Domingo, 1 = Lunes... 6 = Sábado
             $fechaHoy = $hoy->toDateString();
 
-            // 2. Cargamos el doctor con sus relaciones, pero FILTRAMOS solo el horario de HOY
+            // 2. Cargamos TODO (Quitamos el filtro de "hoy" para que lleguen todos los días)
             $query = Doctor::with([
                 'user', 
                 'especialidades',
-                'disponibilidades' => function($q) use ($diaSemana) {
-                    $q->where('dia_semana', $diaSemana);
-                },
+                'disponibilidades', // <-- Carga toda la semana
                 'excepciones' => function($q) use ($fechaHoy) {
                     $q->where('fecha', $fechaHoy);
                 }
@@ -62,24 +60,24 @@ class DoctorController extends Controller
             $perPage = min($request->input("per_page", 15), 100);
             $doctors = $query->paginate($perPage);
 
-            // 3. Transformación de datos (Aquí calculamos el horario de HOY)
-            $doctors->getCollection()->transform(function ($doctor) {
+            // 3. Transformación de datos
+            $doctors->getCollection()->transform(function ($doctor) use ($diaSemana) {
                 $entrada = null;
                 $salida = null;
 
-                // Revisamos si hay excepción hoy, si no, usamos la disponibilidad regular
                 $excepcion = $doctor->excepciones->first();
-                $disponibilidad = $doctor->disponibilidades->first();
+                
+                // Buscamos en la memoria la disponibilidad específica de HOY
+                $disponibilidadHoy = $doctor->disponibilidades->where('dia_semana', $diaSemana)->first();
 
                 if ($excepcion) {
                     if ($excepcion->trabaja) {
                         $entrada = $excepcion->hora_inicio;
                         $salida = $excepcion->hora_fin;
                     }
-                    // Si $excepcion->trabaja es false, se queda null (Día libre)
-                } elseif ($disponibilidad) {
-                    $entrada = $disponibilidad->hora_inicio;
-                    $salida = $disponibilidad->hora_fin;
+                } elseif ($disponibilidadHoy) {
+                    $entrada = $disponibilidadHoy->hora_inicio;
+                    $salida = $disponibilidadHoy->hora_fin;
                 }
 
                 // Formateamos a HH:MM (ej. 08:00) o mandamos un texto si no trabaja hoy
@@ -99,13 +97,16 @@ class DoctorController extends Controller
                     "role" => $doctor->user->role,
                     "costos" => number_format($doctor->costo, 2),
                     
-                    // Mandamos las horas ya calculadas para HOY
+                    // Horario de HOY
                     "horarioentrada" => $horaEntrada,
                     "horariosalida" => $horaSalida,
                     
                     "idioma" => $doctor->idiomas,
                     "latitud" => $doctor->user->latitud,
                     "longitud" => $doctor->user->longitud,
+
+                    // ¡AQUÍ ESTÁ LA SOLUCIÓN! Pasamos el arreglo completo a Flutter
+                    "disponibilidades" => $doctor->disponibilidades,
                 ];
             });
 
@@ -133,27 +134,27 @@ class DoctorController extends Controller
      * Mostrar un doctor específico
      */
    public function show($id)
-{
-    $doctor = Doctor::with(['user', 'especialidades', 'disponibilidades', 'excepciones'])
-              ->findOrFail($id);
+    {
+        $doctor = Doctor::with(['user', 'especialidades', 'disponibilidades', 'excepciones'])
+                ->findOrFail($id);
 
-    // Mapeamos los días de la semana para que Flutter los entienda fácil
-    $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    $tablaHorarios = [];
+        // Mapeamos los días de la semana para que Flutter los entienda fácil
+        $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        $tablaHorarios = [];
 
-    foreach ($doctor->disponibilidades as $disp) {
-        $tablaHorarios[] = [
-            'dia' => $dias[$disp->dia_semana],
-            'rango' => \Carbon\Carbon::parse($disp->hora_inicio)->format('H:i') . ' - ' . \Carbon\Carbon::parse($disp->hora_fin)->format('H:i')
-        ];
+        foreach ($doctor->disponibilidades as $disp) {
+            $tablaHorarios[] = [
+                'dia' => $dias[$disp->dia_semana],
+                'rango' => \Carbon\Carbon::parse($disp->hora_inicio)->format('H:i') . ' - ' . \Carbon\Carbon::parse($disp->hora_fin)->format('H:i')
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $doctor,
+            'horarios_semanales' => $tablaHorarios // Agregamos esto para la tabla
+        ]);
     }
-
-    return response()->json([
-        'success' => true,
-        'data' => $doctor,
-        'horarios_semanales' => $tablaHorarios // Agregamos esto para la tabla
-    ]);
-}
 
     /**
      * Registrar nuevo doctor

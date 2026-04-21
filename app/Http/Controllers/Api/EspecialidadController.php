@@ -44,23 +44,29 @@ class EspecialidadController extends Controller
     public function apiDashboard()
     {
         try {
-            $especialidades = Especialidad::with(['doctors.user'])
+            $especialidades = Especialidad::with(['doctors.user', 'doctors.disponibilidades', 'doctors.reviews'])
                 ->has('doctors')
                 ->get()
                 ->map(function ($esp) {
                     return [
                         'id' => $esp->id,
-                        // Enviamos 'name' para ser consistentes con index() y tu modelo Flutter
                         'name' => $esp->nombre, 
                         'doctors' => $esp->doctors->map(function ($doctor) {
                             return [
                                 'id' => $doctor->id,
                                 'costo' => $doctor->costo,
+                                'descripcion' => $doctor->descripcion, // Útil para el perfil rápido
+                                'promedio' => round($doctor->reviews->avg('calificacion') ?? 0, 1),
                                 'user' => [
                                     'id' => $doctor->user->id ?? 0,
                                     'name' => $doctor->user->name ?? 'Anónimo',
-                                    'foto' => $doctor->user->foto, // Esto puede ser nulo, Flutter lo maneja
-                                ]
+                                    'foto' => $doctor->user->foto,
+                                    'f_nacimiento' => $doctor->user->f_nacimiento,
+                                    'latitud' => $doctor->user->latitud,
+                                    'longitud' => $doctor->user->longitud,
+                                ],
+                                // ¡CLAVE!: Enviamos la relación de disponibilidades
+                                'disponibilidades' => $doctor->disponibilidades, 
                             ];
                         })
                     ];

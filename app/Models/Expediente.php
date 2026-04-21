@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Expediente extends Model
 {
     protected $fillable = [
+        'id',
         'user_id',
         'nombre_completo',
         'fecha_nacimiento',
