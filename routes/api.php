@@ -113,8 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/update-profile', [AuthController::class, 'updateProfile']);
     
-    // Rutas de expedientes
-    Route::apiResource('expedientes', \App\Http\Controllers\Api\ExpedienteController::class);
+
 });
 
 Route::fallback(function () {
