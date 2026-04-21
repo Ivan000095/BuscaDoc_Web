@@ -231,7 +231,11 @@ $lng = $doctor->user->longitud ?? -92.0946;
                         </span>
                     </div>
                     <div class="mt-2">
-                        <span class="badge bg-light text-dark border rounded-pill">{{ $doctor->idiomas ?? 'Español' }}</span>
+                        <span class="text-label">Idiomas:</span>
+                        <span class="text-muted">
+                        {{ $doctor->idiomas ?? 'Español' }}
+                        </span>
+                        
                     </div>
 
                     <div class="mt-4 pt-3 border-top text-center">
