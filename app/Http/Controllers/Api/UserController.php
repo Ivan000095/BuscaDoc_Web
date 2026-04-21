@@ -14,7 +14,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
-            $usuario = User::with(['doctor.especialidades', 'patient'])->findOrFail($id);
+            $usuario = User::with(['doctor.especialidades', 'paciente'])->findOrFail($id);
 
             $data = match ($usuario->role) {
                 'doctor' => $this->formatDoctorData($usuario),
@@ -95,8 +95,8 @@ class UserController extends Controller
             if ($usuario->role === 'doctor' && $usuario->doctor) {
                 $usuario->doctor->especialidades()->detach();
                 $usuario->doctor->delete();
-            } elseif ($usuario->role === 'paciente' && $usuario->patient) {
-                $usuario->patient->delete();
+            } elseif ($usuario->role === 'paciente' && $usuario->paciente) {
+                $usuario->paciente->delete();
             }
 
             // Eliminar foto si existe
@@ -165,7 +165,7 @@ class UserController extends Controller
 
     private function formatPacienteData(User $user): array
     {
-        $paciente = $user->patient;
+        $paciente = $user->paciente;
         
         return [
             'id' => $user->id,
@@ -214,7 +214,7 @@ class UserController extends Controller
 
     private function updatePacienteProfile(User $user, Request $request): void
     {
-        $paciente = $user->patient ?? new Paciente(['user_id' => $user->id]);
+        $paciente = $user->paciente ?? new Paciente(['user_id' => $user->id]);
         
         $paciente->fill([
             'tipo_sangre' => $request->input('tipo_sangre'),
@@ -259,9 +259,9 @@ class UserController extends Controller
                 ->exists();
         }
         
-        if ($user->role === 'paciente' && $user->patient) {
+        if ($user->role === 'paciente' && $user->paciente) {
             return !DB::table('citas')
-                ->where('paciente_id', $user->patient->id)
+                ->where('paciente_id', $user->paciente->id)
                 ->where('estado', 'pendiente')
                 ->exists();
         }
