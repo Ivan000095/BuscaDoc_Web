@@ -415,7 +415,7 @@
                             <a href="/register" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-scale">Crear Cuenta</a>
                             
                             
-                            <a href="https://drive.google.com/uc?export=download&id=1IVoO93yy3TvKuCgitpE2eZoomy6qgu2u" class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
+                            <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
                                 <i class="bi bi-android2 me-2 fs-5"></i> Descargar App
                             </a>
                         </div>
@@ -906,7 +906,7 @@
                                     class="btn btn-navy rounded-pill fw-bold shadow-sm py-2 transition-hover">
                                     <x-mcr-eye class="me-2" style="width: 1.1rem;" /> Perfil Público
                                 </a>
-                                <a href="{{ route('doctores.edit', Auth::user()->doctor->id) }}"
+                                <a href="{{ route('users.edit', Auth::user()->doctor->id) }}"
                                     class="btn btn-outline-navy rounded-pill fw-bold py-2 transition-hover">
                                     <x-mcr-settings class="me-2" style="width: 1.1rem;" /> Editar Info
                                 </a>
@@ -1030,7 +1030,8 @@
                                     <small class="opacity-75">Citas más rápidas y notificaciones en tiempo real con nuestra app.</small>
                                 </div>
                             </div>
-                            <a href="https://drive.google.com/uc?export=download&id=1IVoO93yy3TvKuCgitpE2eZoomy6qgu2u" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
+                            {{-- <a href="https://www.dropbox.com/scl/fi/0ji277sj9ezscpzzezhot/buscadoc.apk?rlkey=6pcetenwkjrbrwpweqz81kxg3&st=68c5459l&dl=1" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>--}}
+                            <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
                         </div>
 
                         <h2 class="fw-bold text-navy mb-2">Bienvenido a BuscaDoc, {{ Auth::user()->name }}</h2>

@@ -174,9 +174,9 @@
                                         </div>
                                     </div>
 
-                                    {{-- HORARIOS DINÁMICOS --}}
+                                                        {{-- HORARIOS DINÁMICOS --}}
                                     <div class="col-12 mt-4">
-                                        <label class="form-label fw-bold text-navy"><x-mcr-clock class="me-2" style="width: 1.2rem;"/>Disponibilidad Semanal</label>
+                    <label class="form-label fw-bold text-navy"><x-mcr-clock class="me-2" style="width: 1.2rem;"/>Disponibilidad Semanal</label>
                                         <div class="bg-light p-3 rounded-4 border">
                                             <template x-for="(horario, index) in horarios" :key="index">
                                                 <div class="row g-2 mb-2 align-items-center bg-white p-3 rounded-4 border shadow-sm mx-0 schedule-row">
