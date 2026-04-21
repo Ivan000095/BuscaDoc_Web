@@ -792,9 +792,10 @@
                                                             width="45" height="45" style="object-fit: cover;">
                                                         <div>
                                                             <span
-                                                                class="fw-bold text-dark d-block">{{ Str::limit($proximaCitaDoctor->expediente->nombre_completo, 20) }}</span>
-                                                            <span class="badge bg-white text-navy border small"
-                                                                style="font-size: 0.65rem;">{{ \Carbon\Carbon::parse($proximaCitaDoctor->hora_inicio)->format('g:i A') }}</span>
+                                                                class="fw-bold text-dark d-block"><h4>{{ Str::limit($proximaCitaDoctor->expediente->nombre_completo, 20) }} </h4></span>
+                                                                <i class="bi bi-clock-fill me-2 text-navy"> Cita programada para el:</i>
+                                                                {{ $proximaCitaDoctor->fecha->format('d/m/Y') }} —
+                                                                <strong class="text-dark ms-1">{{ $proximaCitaDoctor->hora_inicio }}</strong>
                                                         </div>
                                                     </div>
                                                     <div class="text-end">
