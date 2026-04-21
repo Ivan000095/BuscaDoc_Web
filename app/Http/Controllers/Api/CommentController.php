@@ -7,7 +7,7 @@ use App\Models\Comentario;
 use App\Models\User;
 use App\Models\Doctor;
 use App\Models\Cita;
-use App\Models\Paciente;
+use App\Models\Expediente;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -32,12 +32,10 @@ class CommentController extends Controller
                 ], 404);
             }
 
-            // Query base
             $query = Comentario::where('id_destinatario', $userId)
                 ->with(['autor:id,name,foto'])
                 ->whereIn('tipo', ['resena', 'pregunta']);
 
-            // 🔹 Filtro opcional por tipo (resena o pregunta)
             $tipo = $request->input('tipo');
             if ($tipo && in_array($tipo, ['resena', 'pregunta'])) {
                 $query->where('tipo', $tipo);
@@ -45,7 +43,6 @@ class CommentController extends Controller
 
             $comments = $query->latest()->paginate(10);
 
-            // Calcular promedio SOLO de reseñas con calificación
             $promedio = null;
             if (!$tipo || $tipo === 'resena') {
                 $promedio = round(
@@ -57,7 +54,6 @@ class CommentController extends Controller
                 );
             }
 
-            // Contar por tipo
             $totalResenas = Comentario::where('id_destinatario', $userId)
                 ->where('tipo', 'resena')
                 ->count();
@@ -99,14 +95,12 @@ class CommentController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            // Validaciones base
             $validator = Validator::make($request->all(), [
                 'destinatario_id' => 'required|exists:users,id',
                 'tipo'            => 'required|in:resena,pregunta',
                 'contenido'       => 'required|string|max:500',
             ]);
 
-            // Validación condicional: rating solo obligatorio para reseñas
             if ($request->tipo === 'resena') {
                 $validator->addRules([
                     'rating' => 'required|integer|min:1|max:5'
@@ -121,7 +115,6 @@ class CommentController extends Controller
                 ], 422);
             }
 
-            // 🔹 Verificar autenticación
             $user = Auth::user();
             if (!$user) {
                 return response()->json([
@@ -139,37 +132,32 @@ class CommentController extends Controller
                     ], 403);
                 }
 
-                // 🔹 VALIDACIÓN: Verificar cita previa
                 $destinatarioId = $request->destinatario_id;
-                $patient = $user->patient;
+                
+                // 🔹 Solo validar cita si el destinatario es DOCTOR
+                $doctor = Doctor::where('user_id', $destinatarioId)->first();
+                
+                if ($doctor) {
+                    // Validar cita previa solo si el doctor la requiere
+                    if ($doctor->citas != false) {
+                        // ✅ MISMA LÓGICA QUE TU VISTA: Expedientes por user_id
+                        $misExpedientesIds = Expediente::where('user_id', $user->id)->pluck('id');
 
-                if ($patient) {
-                    $doctor = Doctor::where('user_id', $destinatarioId)->first();
-                    
-                    if ($doctor) {
-                        if ($doctor->citas == false) {
-                            // Permitir reseña sin verificar cita
-                        } else {
-                            $citaExistente = Cita::where('paciente_id', $patient->id)
-                                ->where('doctor_id', $doctor->id)
-                                ->where('estado', 'finalizada')
-                                ->exists();
+                        $citaExistente = Cita::whereIn('expediente_id', $misExpedientesIds)
+                            ->where('doctor_id', $doctor->id)
+                            ->where('estado', 'finalizada')
+                            ->exists();
 
-                            if (!$citaExistente) {
-                                return response()->json([
-                                    'success' => false,
-                                    'message' => 'Solo puedes reseñar a doctores con los que hayas tenido una cita finalizada',
-                                    'error_code' => 'CITA_REQUERIDA'
-                                ], 403);
-                            }
+                        if (!$citaExistente) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'Solo puedes reseñar a doctores con los que hayas tenido una cita finalizada (tú o tus dependientes)',
+                                'error_code' => 'CITA_REQUERIDA'
+                            ], 403);
                         }
                     }
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Perfil de paciente incompleto'
-                    ], 400);
                 }
+                // ✅ Si es farmacia: NO se valida cita
             }
 
             // ✅ Crear comentario/pregunta
@@ -222,7 +210,7 @@ class CommentController extends Controller
     }
 
     /**
-     * Verificar si el usuario autenticado puede reseñar a este doctor
+     * Verificar si el usuario autenticado puede reseñar
      * GET /api/users/{userId}/can-review
      */
     public function canReview(Request $request, $userId): JsonResponse
@@ -238,43 +226,40 @@ class CommentController extends Controller
                 ], 200);
             }
 
-            $patient = $user->patient;
-            if (!$patient) {
-                return response()->json([
-                    'success' => true,
-                    'can_review' => false,
-                    'message' => 'Perfil de paciente incompleto'
-                ], 200);
-            }
-
             $doctor = Doctor::where('user_id', $userId)->first();
-            if (!$doctor) {
-                return response()->json([
-                    'success' => false,
-                    'can_review' => false,
-                    'message' => 'Doctor no encontrado'
-                ], 404);
-            }
+            
+            if ($doctor) {
+                // Si el doctor no requiere cita, permitir reseña
+                if ($doctor->citas == false) {
+                    return response()->json([
+                        'success' => true,
+                        'can_review' => true,
+                        'message' => 'Este doctor no requiere cita previa para reseñar'
+                    ], 200);
+                }
 
-            if ($doctor->citas == false) {
+                // ✅ MISMA LÓGICA QUE TU VISTA: Expedientes por user_id
+                $misExpedientesIds = Expediente::where('user_id', $user->id)->pluck('id');
+
+                $citaExistente = Cita::whereIn('expediente_id', $misExpedientesIds)
+                    ->where('doctor_id', $doctor->id)
+                    ->where('estado', 'finalizada')
+                    ->exists();
+
                 return response()->json([
                     'success' => true,
-                    'can_review' => true,
-                    'message' => 'Este doctor no requiere cita previa para reseñar'
+                    'can_review' => $citaExistente,
+                    'message' => $citaExistente 
+                        ? 'Puede reseñar (cita encontrada)' 
+                        : 'Requiere cita finalizada para reseñar'
                 ], 200);
             }
 
-            $citaExistente = Cita::where('paciente_id', $patient->id)
-                ->where('doctor_id', $doctor->id)
-                ->where('estado', 'finalizada')
-                ->exists();
-
+            // ✅ Si no es doctor (ej. farmacia), permitir reseña
             return response()->json([
                 'success' => true,
-                'can_review' => $citaExistente,
-                'message' => $citaExistente 
-                    ? 'Puede reseñar' 
-                    : 'Requiere cita finalizada para reseñar'
+                'can_review' => true,
+                'message' => 'Puede reseñar esta farmacia'
             ], 200);
 
         } catch (\Exception $e) {

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\DB;
+use App\Models\Expediente; 
 use App\Models\Doctor;
 use App\Models\Paciente;
 use Illuminate\Support\Facades\Storage;
@@ -79,16 +80,22 @@ class AuthController extends Controller
                             $doctor->especialidades()->sync($validated['especialidades']);
                         }
                     break;
-
                     case 'paciente':
-                        Paciente::create([
+                        // ✅ CREAR EXPEDIENTE AUTOMÁTICO
+                        Expediente::create([
                             'user_id' => $user->id,
+                            'nombre_completo' => $validated['name'],
+                            'fecha_nacimiento' => $validated['f_nacimiento'],
+                            
+                            // ✅ AQUÍ ESTÁ EL CAMBIO: strtolower() convierte a minúsculas
+                            'genero' => strtolower($request->input('genero', 'masculino')), 
+                            
+                            'parentesco' => $request->input('parentesco', 'Expediente Propio'),
                             'tipo_sangre' => $validated['tipo_sangre'],
                             'contacto_emergencia' => $validated['contacto_emergencia'],
-                            'alergias' => $request->input('alergias', 'Sin alergias.'),
-                            'cirugias' => $request->input('cirugias', 'No ha tenido cirugías'),
-                            'padecimientos' => $request->input('padecimientos', 'No hay ningún padecimiento.'),
-                            'habitos' => $request->input('habitos', 'No hay hábitos registrados.'),
+                            'alergias' => $request->input('alergias'),
+                            'padecimientos_cronicos' => $request->input('padecimientos'),
+                            'habitos_salud' => $request->input('habitos'),
                         ]);
                     break;
                 }
