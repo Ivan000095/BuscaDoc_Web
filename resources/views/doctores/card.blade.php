@@ -349,8 +349,11 @@ $lng = $doctor->user->longitud ?? -92.0946;
 
                 @php
                     $puedoResenar = false;
-                    if (Auth::check() && Auth::user()->role == 'paciente' && Auth::user()->patient) {
-                        $puedoResenar = \App\Models\Cita::where('paciente_id', Auth::user()->patient->id)
+                    if (Auth::check() && Auth::user()->role == 'paciente') {
+    
+                        $misExpedientesIds = \App\Models\Expediente::where('user_id', Auth::id())->pluck('id');
+
+                        $puedoResenar = \App\Models\Cita::whereIn('expediente_id', $misExpedientesIds)
                             ->where('doctor_id', $doctor->id)
                             ->where('estado', 'finalizada')
                             ->exists();
