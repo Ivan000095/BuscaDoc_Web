@@ -114,7 +114,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/update-profile', [AuthController::class, 'updateProfile']);
     
     // Rutas de expedientes
-    Route::apiResource('expedientes', \App\Http\Controllers\Api\ExpedienteController::class);
+   
 });
 
 Route::fallback(function () {
