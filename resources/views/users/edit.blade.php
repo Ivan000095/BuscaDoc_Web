@@ -70,10 +70,7 @@ $isPatient = $user->role === 'paciente';
 
                     <div class="soft-card p-4">
                         <h5 class="fw-bold text-navy mb-4">Credenciales</h5>
-                        <div class="mb-3">
-                            <label class="text-label mb-2">Correo Electrónico</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
-                        </div>
+
                         <div class="mb-0">
                             <label class="text-label mb-2">Nueva Contraseña</label>
                             <input type="password" name="password" class="form-control" placeholder="Dejar en blanco para mantener">
@@ -102,6 +99,11 @@ $isPatient = $user->role === 'paciente';
                     </div>
 
                     @if($isPatient)
+
+                           {{-- 1. Buscamos el expediente principal entre todos los que tenga el usuario --}}
+                        @php
+                            $expedientePrincipal = $user->expedientes ? $user->expedientes->where('parentesco', 'Expediente Propio')->first() : null;
+                        @endphp
                     <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
                         <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-person-vcard-fill me-2"></i>Ficha Médica</h4>
                         <div class="row g-3">
@@ -109,25 +111,22 @@ $isPatient = $user->role === 'paciente';
                                 <label class="text-label mb-2">Tipo de Sangre</label>
                                 <select name="tipo_sangre" class="form-select">
                                     @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $tipo)
-                                        <option value="{{ $tipo }}" {{ (optional($user->patient)->tipo_sangre == $tipo) ? 'selected' : '' }}>{{ $tipo }}</option>
+                                        <option value="{{ $tipo }}" {{ ($expedientePrincipal->tipo_sangre == $tipo) ? 'selected' : '' }}>{{ $tipo }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-8">
-                                <label class="text-label mb-2">Contacto de Emergencia</label>
-                                <input type="text" name="contacto_emergencia" class="form-control" value="{{ old('contacto_emergencia', optional($user->patient)->contacto_emergencia) }}">
-                            </div>
+
                             <div class="col-12">
                                 <label class="text-label mb-2">Alergias</label>
-                                <textarea name="alergias" class="form-control" rows="2">{{ old('alergias', optional($user->patient)->alergias) }}</textarea>
+                                <textarea name="alergias" class="form-control" rows="2">{{ old('alergias', $expedientePrincipal->alergias) }}</textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-label mb-2">Padecimientos</label>
-                                <textarea name="padecimientos" class="form-control" rows="2">{{ old('padecimientos', optional($user->patient)->padecimientos) }}</textarea>
+                                <textarea name="padecimientos" class="form-control" rows="2">{{ old('padecimientos_cronicos', $expedientePrincipal->padecimientos_cronicos) }}</textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-label mb-2">Hábitos</label>
-                                <textarea name="habitos" class="form-control" rows="2">{{ old('habitos', optional($user->patient)->habitos) }}</textarea>
+                                <textarea name="habitos" class="form-control" rows="2">{{ old('habitos', $expedientePrincipal->habitos_salud) }}</textarea>
                             </div>
                         </div>
                     </div>
