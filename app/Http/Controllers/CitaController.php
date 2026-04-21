@@ -5,16 +5,40 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\Doctor;
-use App\Models\DoctorDisponibilidad;
 use App\Models\Expediente;
+use App\Models\SolicitudCambio;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+
 class CitaController extends Controller
 {
+    public function index()
+    {
+        $user = Auth::user();
+        
+        if ($user->role == 'paciente') {
+            $expedientesIds = $user->expedientes->pluck('id');
+            $citas = Cita::whereIn('expediente_id', $expedientesIds)
+                ->with(['doctor.user', 'expediente'])
+                ->orderBy('fecha', 'desc')
+                ->get();
+            return view('pacientes.citas', compact('citas'));
+        }
+
+        if ($user->role == 'doctor') {
+            $citas = Cita::where('doctor_id', $user->doctor->id)
+                ->with('expediente')
+                ->orderBy('fecha', 'desc')
+                ->get();
+            return view('doctores.citas', compact('citas'));
+        }
+    }
+
     public function store(Request $request, $id)
     {
-    $user = Auth::user();
+        $user = Auth::user();
         $rules = [
             'fecha' => 'required|date|after_or_equal:today',
             'hora_inicio' => 'required',
@@ -22,7 +46,6 @@ class CitaController extends Controller
             'motivo_consulta' => 'required|string|max:500',
         ];
 
-    // Reglas adicionales si se crea un nuevo familiar
         if ($request->expediente_id === 'nuevo_familiar') {
             $rules['nuevo_nombre'] = 'required|string|max:80';
             $rules['nuevo_fecha_nacimiento'] = 'required|date';
@@ -35,34 +58,27 @@ class CitaController extends Controller
         }
 
         $request->validate($rules);
-
         $doctor = Doctor::findOrFail($id);
 
         return DB::transaction(function () use ($request, $doctor, $user) {
-            
             $finalExpedienteId = $request->expediente_id;
 
-        // 2. Creación del Expediente Completo
-        if ($finalExpedienteId === 'nuevo_familiar') {
-            $nuevoExpediente = Expediente::create([
-                'user_id'           => $user->id,
-                'nombre_completo'       => (string) $request->nuevo_nombre,
-                'fecha_nacimiento'      => $request->nuevo_fecha_nacimiento,
-                'genero'                => (string) $request->nuevo_genero,
-                'parentesco'            => (string) $request->nuevo_parentesco,
-                'tipo_sangre'           => (string) $request->nuevo_tipo_sangre,
-                // Usamos null coalescing para asegurar que si viene vacío sea null y no un array vacío
-                'alergias'              => is_array($request->nuevo_alergias) ? implode(', ', $request->nuevo_alergias) : $request->nuevo_alergias,
-                'padecimientos_cronicos' => is_array($request->nuevo_padecimientos) ? implode(', ', $request->nuevo_padecimientos) : $request->nuevo_padecimientos,
-                'habitos_salud'         => is_array($request->nuevo_habitos) ? implode(', ', $request->nuevo_habitos) : $request->nuevo_habitos,
-            ]);
-            $finalExpedienteId = $nuevoExpediente->id;
-        }
+            if ($finalExpedienteId === 'nuevo_familiar') {
+                $nuevoExpediente = Expediente::create([
+                    'user_id' => $user->id,
+                    'nombre_completo' => (string) $request->nuevo_nombre,
+                    'fecha_nacimiento' => $request->nuevo_fecha_nacimiento,
+                    'genero' => (string) $request->nuevo_genero,
+                    'parentesco' => (string) $request->nuevo_parentesco,
+                    'tipo_sangre' => (string) $request->nuevo_tipo_sangre,
+                    'alergias' => is_array($request->nuevo_alergias) ? implode(', ', $request->nuevo_alergias) : $request->nuevo_alergias,
+                    'padecimientos_cronicos' => is_array($request->nuevo_padecimientos) ? implode(', ', $request->nuevo_padecimientos) : $request->nuevo_padecimientos,
+                    'habitos_salud' => is_array($request->nuevo_habitos) ? implode(', ', $request->nuevo_habitos) : $request->nuevo_habitos,
+                ]);
+                $finalExpedienteId = $nuevoExpediente->id;
+            }
 
-            // 3. Lógica de tiempos y traslapes (Igual que antes)
-            $duracion = $doctor->duracion_cita ?? 30;
             $horaInicio = Carbon::parse($request->fecha . ' ' . $request->hora_inicio);
-           // $horaFin = $horaInicio->copy()->addMinutes($duracion);
 
             $existeCita = Cita::where('doctor_id', $doctor->id)
                 ->where('fecha', $request->fecha)
@@ -74,63 +90,124 @@ class CitaController extends Controller
 
             if ($existeCita) {
                 return redirect()->route('home')->with('error', 'El horario acaba de ser ocupado.');
-                
-            }
-
-            // 4. Crear Cita
-            if($user->role == 'paciente'){
-            Cita::create([
-                'expediente_id' => $finalExpedienteId,
-                'doctor_id' => $doctor->id,
-                'fecha' => $request->fecha,
-                'hora_inicio' => $horaInicio->format('H:i:s'),
-                
-                'motivo_consulta' => $request->motivo_consulta,
-                'estado' => 'pendiente',
-                
-            ]);
-            }elseif($user->role == 'doctor'){
-
-
-            Cita::create([
-                'expediente_id' => $finalExpedienteId,
-                'doctor_id' => $doctor->id,
-                'fecha' => $request->fecha,
-                'hora_inicio' => $horaInicio->format('H:i:s'),
-                
-                'motivo_consulta' => $request->motivo_consulta,
-                'estado' => 'confirmada',
-                
-            ]);
-
             }
 
             if($user->role == 'paciente'){
-            return redirect()->route('pacientes.citas')->with('success', 'Solicitud enviada correctamente!!');
-            } elseif($user->role == 'doctor'){
-            return redirect()->route('doctores.citas')->with('success', 'Cita programada correctamente!!');
+                $cita = Cita::create([
+                    'expediente_id' => $finalExpedienteId,
+                    'doctor_id' => $doctor->id,
+                    'fecha' => $request->fecha,
+                    'hora_inicio' => $horaInicio->format('H:i:s'),
+                    'motivo_consulta' => $request->motivo_consulta,
+                    'estado' => 'pendiente',
+                ]);
+                
+                $this->notificarUsuario($doctor->user_id, "¡Nueva solicitud de cita!", "Un paciente ha solicitado una cita para el " . $request->fecha);
+                return redirect()->route('pacientes.citas')->with('success', 'Solicitud enviada correctamente!!');
+            
+            } elseif($user->role == 'doctor') {
+                Cita::create([
+                    'expediente_id' => $finalExpedienteId,
+                    'doctor_id' => $doctor->id,
+                    'fecha' => $request->fecha,
+                    'hora_inicio' => $horaInicio->format('H:i:s'),
+                    'motivo_consulta' => $request->motivo_consulta,
+                    'estado' => 'confirmada',
+                ]);
+                return redirect()->route('doctores.citas')->with('success', 'Cita programada correctamente!!');
             }
-
-
         });
+    }
 
+    public function storeExterna(Request $request)
+    {
+        $request->validate([
+            'tipo_paciente' => 'required|in:existente,nuevo',
+            'nueva_fecha' => 'required|date',
+            'nueva_hora' => 'required',
+        ]);
+
+        $user = Auth::user();
+        $doctor = $user->doctor;
+
+        if ($request->tipo_paciente == 'nuevo') {
+            $request->validate([
+                'nombre_completo' => 'required|string|max:80',
+                'fecha_nacimiento' => 'required|date',
+                'genero' => 'required|in:masculino,femenino,otro',
+            ]);
+
+            $expediente = Expediente::create([
+                'user_id' => $user->id,
+                'nombre_completo' => $request->nombre_completo,
+                'fecha_nacimiento' => $request->fecha_nacimiento,
+                'genero' => $request->genero,
+                'parentesco' => 'Paciente Externo',
+            ]);
+        } else {
+            $request->validate(['expediente_id' => 'required|exists:expedientes,id']);
+            $expediente = Expediente::findOrFail($request->expediente_id);
+        }
+
+        Cita::create([
+            'expediente_id' => $expediente->id,
+            'doctor_id' => $doctor->id,
+            'fecha' => $request->nueva_fecha,
+            'hora_inicio' => $request->nueva_hora,
+            'motivo_consulta' => $request->motivo_consulta ?? 'Cita registrada externamente por el doctor.',
+            'estado' => 'confirmada'
+        ]);
+
+        return back()->with('success', 'Cita externa agendada correctamente.');
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $cita = Cita::findOrFail($id);
+        $user = Auth::user();
+
+        $esDoctorOwner = $user->doctor && $user->doctor->id === $cita->doctor_id;
+        $esPacienteOwner = $cita->expediente->user_id === $user->id;
+
+        if (!$esDoctorOwner && !$esPacienteOwner) {
+            return back()->with('error', 'No tienes permiso para gestionar esta cita.');
+        }
+
+        if ($esPacienteOwner && $request->estado !== 'cancelada') {
+            return back()->with('error', 'Acción no permitida. Solo puedes cancelar tu solicitud.');
+        }
+
+        if (in_array($request->estado, ['finalizada', 'no asistida'])) {
+            $fechaCita = Carbon::parse($cita->fecha->format('Y-m-d') . ' ' . $cita->hora_inicio);
+            if ($fechaCita->isFuture()) {
+                return back()->with('error', 'No puedes finalizar una cita que aún no ha ocurrido.');
+            }
+        }
+
+        $cita->update(['estado' => $request->estado]);
+
+        $this->notificarContraparte($cita, $user->id, "Actualización de Cita", "El estado de tu cita ha cambiado a: " . strtoupper($request->estado));
+
+        $mensajes = [
+            'confirmada' => 'Cita confirmada.',
+            'cancelada'  => 'Cita cancelada.',
+            'finalizada' => 'Cita marcada como finalizada con éxito.',
+            'no asistida' => 'Se registró que el paciente no asistió.'
+        ];
+
+        return back()->with('success', $mensajes[$request->estado] ?? 'Estado de la cita actualizado.');
     }
 
     public function reprogramarLibre(Request $request, $id)
     {
         $cita = Cita::findOrFail($id);
 
-        // Validaciones de seguridad
         if ($cita->estado !== 'pendiente') {
             return redirect()->route('pacientes.citas')->with('error', 'Solo puedes reagendar citas que aún están en espera.');
-            
-           
         }
 
         if ($cita->reprogramada) {
             return redirect()->route('pacientes.citas')->with('error', 'Ya has agotado tu oportunidad de reprogramar esta cita.');
-
-            
         }
 
         $request->validate([
@@ -138,29 +215,98 @@ class CitaController extends Controller
             'nueva_hora' => 'required',
         ]);
 
-        // Actualizamos la cita
         $cita->update([
             'fecha' => $request->nueva_fecha,
             'hora_inicio' => $request->nueva_hora,
-            'reprogramada' => true // Bloqueamos futuros cambios
+            'reprogramada' => true
         ]);
 
+        $this->notificarUsuario($cita->doctor->user_id, "Cita Reagendada", "El paciente ha movido su cita a un nuevo horario.");
+
         return redirect()->route('pacientes.citas')->with('success', 'Cita reprogramada con éxito. Recuerda que es el único cambio permitido.');
-        
     }
 
+    public function solicitarCambio(Request $request, $id)
+    {
+        $cita = Cita::findOrFail($id);
+        $user = Auth::user();
+        
+        $yaPropuso = SolicitudCambio::where('cita_id', $id)->where('solicitante_id', $user->id)->exists();
 
+        if ($yaPropuso) {
+            return back()->with('error', 'Ya utilizaste tu única oportunidad de proponer un cambio para esta cita.');
+        }
 
+        $existePendiente = SolicitudCambio::where('cita_id', $id)->where('solicitante_id', $user->id)->where('estado', 'pendiente')->exists();
+        $estadoDiferente = SolicitudCambio::where('cita_id', $id)->where('solicitante_id', $user->id)->where('estado','!=', 'pendiente')->first();
 
+        if ($existePendiente) {
+            $ruta = $user->role == 'doctor' ? 'doctores.citas' : 'pacientes.citas';
+            return redirect()->route($ruta)->with('error', 'Ya hay una solicitud de cambio pendiente para esta cita.');
+        }
+
+        $solicitadoId = ($user->id == $cita->expediente->user_id) ? $cita->doctor->user_id : $cita->expediente->user_id;
+
+        if(!$estadoDiferente){
+            SolicitudCambio::create([
+                'cita_id' => $cita->id,
+                'solicitante_id' => $user->id,
+                'solicitado_id' => $solicitadoId,
+                'nueva_fecha' => $request->nueva_fecha,
+                'nueva_hora' => $request->nueva_hora,
+                'motivo' => $request->motivo,
+                'estado' => 'pendiente'
+            ]);
+        }else{
+            $estadoDiferente->update([
+                'nueva_fecha' => $request->nueva_fecha,
+                'nueva_hora' => $request->nueva_hora,
+                'motivo' => $request->motivo,
+                'estado' => 'pendiente'
+            ]);
+        }
+
+        $this->notificarUsuario($solicitadoId, "Propuesta de Cambio", "Tienes una nueva propuesta de horario para tu cita.");
+
+        $ruta = $user->role == 'doctor' ? 'doctores.citas' : 'pacientes.citas';
+        return redirect()->route($ruta)->with('success', 'Solicitud enviada');
+    }
+
+    public function responderCambio(Request $request, $id)
+    {
+        $user = Auth::user();
+        $solicitud = SolicitudCambio::where('cita_id', $id)->where('solicitado_id', $user->id)->where('estado', 'pendiente')->first();
+
+        if (!$solicitud) {
+            return back()->with('error', 'La solicitud ya no está disponible o ya fue respondida.');
+        }
+
+        if ($request->accion == 'aceptar') {
+            if($solicitud->cita->estado == 'confirmada'){
+                $solicitud->cita->update(['fecha' => $solicitud->nueva_fecha, 'hora_inicio' => $solicitud->nueva_hora]);
+            }else{
+                $solicitud->cita->update(['fecha' => $solicitud->nueva_fecha, 'hora_inicio' => $solicitud->nueva_hora, 'estado' => 'confirmada']);
+            }
+            $solicitud->update(['estado' => 'aceptada']);
+            $this->notificarUsuario($solicitud->solicitante_id, "Propuesta Aceptada", "Tu propuesta de horario fue aceptada.");
+            $msg = 'Se ha actualizado la fecha de la cita.';
+        } else {
+            $solicitud->update(['estado' => 'rechazada', 'motivo' => $request->motivo_rechazo]);
+            $this->notificarUsuario($solicitud->solicitante_id, "Propuesta Rechazada", "Tu propuesta de horario fue rechazada.");
+            $msg = 'Has rechazado la solicitud de cambio.';
+        }
+
+        $ruta = $user->role == 'paciente' ? 'pacientes.citas' : 'doctores.citas';
+        return redirect()->route($ruta)->with('success', $msg);
+    }
 
     public function getDisponibilidad(Request $request, $doctorId)
     {
         try {
             $fecha = $request->query('fecha');
             $date = Carbon::parse($fecha);
-            $esHoy = $date->isToday(); // Detectamos si la fecha consultada es hoy
-            $ahora = Carbon::now(); // Obtenemos la hora actual
-
+            $esHoy = $date->isToday(); 
+            $ahora = Carbon::now(); 
             $diaNumero = $date->dayOfWeek; 
 
             $horariosLaborales = DB::table('doctor_disponibilidad')
@@ -170,10 +316,7 @@ class CitaController extends Controller
 
             if ($horariosLaborales->isEmpty()) {
                 $nombres = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-                return response()->json([
-                    'slots' => [],
-                    'mensaje' => "El doctor no tiene turnos registrados para el día " . $nombres[$diaNumero] . "."
-                ]);
+                return response()->json(['slots' => [], 'mensaje' => "El doctor no tiene turnos registrados para el día " . $nombres[$diaNumero] . "."]);
             }
 
             $doctor = Doctor::findOrFail($doctorId);
@@ -194,302 +337,58 @@ class CitaController extends Controller
 
                 while ($inicio->lt($fin)) {
                     $horaActualStr = $inicio->format('H:i');
-                    
-                    // VALIDACIÓN CRÍTICA:
-                    // 1. Que no esté ocupada por otra cita.
-                    // 2. Si es hoy, que la hora del slot sea mayor a la hora actual.
                     $estaOcupada = in_array($horaActualStr, $citasOcupadas);
                     $yaPaso = $esHoy && $inicio->lt($ahora);
 
                     if (!$estaOcupada && !$yaPaso) {
                         $slots[] = $horaActualStr;
                     }
-                    
                     $inicio->addMinutes($intervalo);
                 }
             }
-
             return response()->json(['slots' => $slots]);
-
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function index()
-    {
-        $user = Auth::user();
-        
-        if ($user->role == 'paciente') {
-            // Obtenemos los IDs de todos los expedientes del paciente (el suyo y familiares)
-            $expedientesIds = $user->expedientes->pluck('id');
-            
-            $citas = Cita::whereIn('expediente_id', $expedientesIds)
-                ->with(['doctor.user', 'expediente'])
-                ->orderBy('fecha', 'desc')
-                ->get();
-
-               
-            return view('pacientes.citas', compact('citas'));
-        }
-
-        if ($user->role == 'doctor') {
-            $citas = Cita::where('doctor_id', $user->doctor->id)
-                ->with('expediente')
-                ->orderBy('fecha', 'desc')
-                ->get();
-                
-            return view('doctores.citas', compact('citas'));
-        }
-        
-    }
-
-    public function updateStatus(Request $request, $id)
-    {
-        $cita = Cita::findOrFail($id);
-        $user = Auth::user();
-
-        // Verificamos dueños (Doctor o Paciente a través de su expediente)
-        $esDoctorOwner = $user->doctor && $user->doctor->id === $cita->doctor_id;
-        
-        // Ahora validamos que el expediente de la cita pertenezca al paciente logueado
-        $esPacienteOwner = $cita->expediente->user_id === $user->id;
-
-        if (!$esDoctorOwner && !$esPacienteOwner) {
-            return back()->with('error', 'No tienes permiso para gestionar esta cita.');
-        }
-
-        // El paciente solo puede cancelar
-        if ($esPacienteOwner && $request->estado !== 'cancelada') {
-            return back()->with('error', 'Acción no permitida. Solo puedes cancelar tu solicitud.');
-        }
-
-        // Validación de tiempo para finalizar o marcar inasistencia (basado en tu lógica original)
-        if (in_array($request->estado, ['finalizada', 'no asistida'])) {
-            // Combinamos fecha y hora_inicio para la comparación
-            $fechaCita = Carbon::parse($cita->fecha->format('Y-m-d') . ' ' . $cita->hora_inicio);
-            if ($fechaCita->isFuture()) {
-                return back()->with('error', 'No puedes finalizar una cita que aún no ha ocurrido.');
-            }
-        }
-
-        // Actualización del estado
-        $cita->update(['estado' => $request->estado]);
-
-        // Restauración de tus mensajes originales
-        $mensajes = [
-            'confirmada' => 'Cita confirmada.',
-            'cancelada'  => 'Cita cancelada.',
-            'finalizada' => 'Cita marcada como finalizada con éxito.',
-            'no asistida' => 'Se registró que el paciente no asistió.'
-        ];
-
-        $mensajeFinal = $mensajes[$request->estado] ?? 'Estado de la cita actualizado.';
-
-        return back()->with('success', $mensajeFinal);
-    }
-
     public function destroy($id)
     {
         $cita = Cita::findOrFail($id);
-        
-        // Ahora permitimos eliminar (ocultar) si está cancelada, rechazada O finalizada
         if (in_array($cita->estado, ['cancelada', 'rechazada', 'finalizada'])) {
-            // En Laravel, si usas SoftDeletes, esto no borra la nota médica, 
-            // solo quita la cita de la lista principal.
             $cita->delete(); 
-            
             return back()->with('success', 'La cita se ha quitado de tu vista.');
         }
-
         return back()->with('error', 'No puedes ocultar una cita que aún está pendiente.');
     }
 
-
-    public function solicitarCambio(Request $request, $id)
+    // ==========================================
+    // NOTIFICACIONES PUSH (HELPER)
+    // ==========================================
+    private function notificarContraparte($cita, $actorId, $title, $body)
     {
-        $cita = Cita::findOrFail($id);
-        $user = Auth::user();
-        
-        $yaPropuso = \App\Models\SolicitudCambio::where('cita_id', $id)
-                            ->where('solicitante_id', $user->id)
-                            ->exists();
-
-        if ($yaPropuso) {
-        return back()->with('error', 'Ya utilizaste tu única oportunidad de proponer un cambio para esta cita.');
-        }
-
-        $existePendiente = \App\Models\SolicitudCambio::where('cita_id', $id)
-                            ->where('solicitante_id', $user->id)
-                            ->where('estado', 'pendiente')
-                            ->exists();
-
-        $estadoDiferente = \App\Models\SolicitudCambio::where('cita_id', $id)
-                            ->where('solicitante_id', $user->id)
-                            ->where('estado','!=', 'pendiente')
-                            ->first();
-
-        if ($existePendiente && $user->role == 'doctor') {
-            return redirect()->route('doctores.citas')->with('error', 'Ya hay una solicitud de cambio pendiente para esta cita.');
-        }elseif($existePendiente && $user->role == 'paciente'){
-            return redirect()->route('pacientes.citas')->with('error', 'Ya hay una solicitud de cambio pendiente para esta cita.');
-        }
-
-        // Identificar quién recibe la solicitud
-        $solicitadoId = ($user->id == $cita->expediente->user_id) 
-                        ? $cita->doctor->user_id 
-                        : $cita->expediente->user_id;
-
-        if(!$estadoDiferente){
-        \App\Models\SolicitudCambio::create([
-            'cita_id' => $cita->id,
-            'solicitante_id' => $user->id,
-            'solicitado_id' => $solicitadoId,
-            'nueva_fecha' => $request->nueva_fecha,
-            'nueva_hora' => $request->nueva_hora,
-            'motivo' => $request->motivo,
-            'estado' => 'pendiente'
-        ]);
-        }else{
-            $estadoDiferente->update([
-                
-                'nueva_fecha' => $request->nueva_fecha,
-                'nueva_hora' => $request->nueva_hora,
-                'motivo' => $request->motivo,
-                'estado' => 'pendiente'
-                ]);
-
-        }
-
-        if($user->role == 'doctor'){
-        return redirect()->route('doctores.citas')->with('success', 'Solicitud enviada');
-        } 
-        elseif ($user->role == 'paciente'){
-            return redirect()->route('pacientes.citas')->with('success', 'Solicitud enviada');
-        }
+        $receptorId = ($actorId == $cita->expediente->user_id) ? $cita->doctor->user_id : $cita->expediente->user_id;
+        $this->notificarUsuario($receptorId, $title, $body);
     }
 
-    // 2. Aceptar o Rechazar
-    public function responderCambio(Request $request, $id)
+    private function notificarUsuario($userId, $title, $body)
     {
-        $user = Auth::user();
-        
-        // BUSCAMOS ESPECÍFICAMENTE LA QUE ESTÁ PENDIENTE
-        $solicitud = \App\Models\SolicitudCambio::where('cita_id', $id)
-                    ->where('solicitado_id', $user->id)
-                    ->where('estado', 'pendiente')
-                    ->first();
-
-        // Si por alguna razón ya no hay solicitud pendiente, abortamos para no tronar
-        if (!$solicitud) {
-            return back()->with('error', 'La solicitud ya no está disponible o ya fue respondida.');
-        }
-
-        if ($request->accion == 'aceptar') {
-            // 1. Actualizar la cita real
-            if($solicitud->cita->estado == 'confirmada'){
-                $solicitud->cita->update([
-                    'fecha' => $solicitud->nueva_fecha,
-                    'hora_inicio' => $solicitud->nueva_hora
-                ]);
-            }else{
-                $solicitud->cita->update([
-                    'fecha' => $solicitud->nueva_fecha,
-                    'hora_inicio' => $solicitud->nueva_hora,
-                    'estado' => 'confirmada' // Por si estaba solo solicitada
+        $receptor = \App\Models\User::find($userId);
+        if ($receptor && $receptor->fcm_token) {
+            $serverKey = env('FCM_SERVER_KEY');
+            if($serverKey){
+                Http::withHeaders([
+                    'Authorization' => 'key=' . $serverKey,
+                    'Content-Type'  => 'application/json',
+                ])->post('https://fcm.googleapis.com/fcm/send', [
+                    'to' => $receptor->fcm_token,
+                    'notification' => [
+                        'title' => $title,
+                        'body'  => $body,
+                        'sound' => 'default'
+                    ]
                 ]);
             }
-            
-            // 2. Marcar solicitud como aceptada
-            $solicitud->update(['estado' => 'aceptada']);
-            
-            if($user->role == 'paciente'){
-                return redirect()->route('pacientes.citas')->with('success', 'Se ha actualizado la fecha de la cita.');
-            } 
-            elseif($user->role == 'doctor'){
-                return redirect()->route('doctores.citas')->with('success', 'Se ha actualizado la fecha de la cita.');
-            }
-            
-        } else {
-            // Marcar como rechazada y guardar el motivo del por qué
-            $solicitud->update([
-                'estado' => 'rechazada',
-                'motivo' => $request->motivo_rechazo
-            ]);
-            
-            if($user->role == 'paciente'){
-                return redirect()->route('pacientes.citas')->with('success', 'Has rechazado la solicitud de cambio.');
-            } 
-            elseif($user->role == 'doctor'){
-                return redirect()->route('doctores.citas')->with('success', 'Has rechazado la solicitud de cambio.');
-            }
-            }
-    }
-
-    public function finalizarConDiagnostico(Request $request, $id)
-    {
-        try {
-            $cita = \App\Models\Cita::findOrFail($id);
-            
-            $request->validate([
-                'diagnostico' => 'required|string|max:1000'
-            ]);
-
-            $cita->update(['estado' => 'finalizada']);
-
-            \App\Models\NotaMedica::create([
-                'cita_id' => $cita->id,
-                'expediente_id' => $cita->expediente_id,
-                'doctor_id' => $cita->doctor_id,
-                'diagnostico' => $request->diagnostico,
-            ]);
-
-            return response()->json(['success' => true, 'message' => 'Cita finalizada y diagnóstico guardado.']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al guardar el diagnóstico.'], 500);
         }
-    }
-
-    public function storeExterna(Request $request)
-    {
-        $request->validate([
-            'tipo_paciente' => 'required|in:existente,nuevo',
-            'nueva_fecha' => 'required|date',
-            'nueva_hora' => 'required',
-        ]);
-
-        $user = Auth::user();
-        $doctor = $user->doctor;
-
-        // 1. Resolver el Expediente
-        if ($request->tipo_paciente == 'nuevo') {
-            $request->validate([
-                'nombre_completo' => 'required|string|max:80',
-                'fecha_nacimiento' => 'required|date',
-                'genero' => 'required|in:masculino,femenino,otro',
-            ]);
-
-            $expediente = \App\Models\Expediente::create([
-                'user_id' => $user->id, // El doctor es el "dueño" de este registro
-                'nombre_completo' => $request->nombre_completo,
-                'fecha_nacimiento' => $request->fecha_nacimiento,
-                'genero' => $request->genero,
-                'parentesco' => 'Paciente Externo',
-            ]);
-        } else {
-            $request->validate(['expediente_id' => 'required|exists:expedientes,id']);
-            $expediente = \App\Models\Expediente::findOrFail($request->expediente_id);
-        }
-
-        \App\Models\Cita::create([
-            'expediente_id' => $expediente->id,
-            'doctor_id' => $doctor->id,
-            'fecha' => $request->nueva_fecha,
-            'hora_inicio' => $request->nueva_hora,
-            'motivo_consulta' => $request->motivo_consulta ?? 'Cita registrada externamente por el doctor.',
-            'estado' => 'confirmada'
-        ]);
-
-        return back()->with('success', 'Cita externa agendada correctamente.');
     }
 }
