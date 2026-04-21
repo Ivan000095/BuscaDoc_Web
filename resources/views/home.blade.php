@@ -1369,7 +1369,7 @@
 
                             {{-- 1. Buscamos el expediente propio --}}
                             @php
-                                $expedientePropio = Auth::user()->expedientes ? Auth::user()->expedientes->where('parentesco', 'Yo mismo')->first() : null;
+                                $expedientePropio = Auth::user()->expedientes ? Auth::user()->expedientes->where('parentesco', 'Expediente Propio')->first() : null;
                             @endphp
 
                             @if($expedientePropio)

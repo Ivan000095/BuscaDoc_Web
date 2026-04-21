@@ -85,7 +85,7 @@ class UserController extends Controller
         // 1. Validaciones ajustadas a lo que realmente envías en la vista
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => ['required', 'email', \Illuminate\Validation\Rule::unique('users')->ignore($user->id)],
+            
             'foto' => 'nullable|image|max:2048',
             'f_nacimiento' => 'nullable|date',
         ]);
@@ -102,7 +102,7 @@ class UserController extends Controller
             // AHORA SÍ: Actualizamos los campos principales incluyendo name y email
             $user->update([
                 'name' => $request->name,
-                'email' => $request->email,
+                
                 'f_nacimiento' => $request->f_nacimiento,
             ]);
 

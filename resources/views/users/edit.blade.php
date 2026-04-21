@@ -70,10 +70,7 @@ $isPatient = $user->role === 'paciente';
 
                     <div class="soft-card p-4">
                         <h5 class="fw-bold text-navy mb-4">Credenciales</h5>
-                        <div class="mb-3">
-                            <label class="text-label mb-2">Correo Electrónico</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
-                        </div>
+
                         <div class="mb-0">
                             <label class="text-label mb-2">Nueva Contraseña</label>
                             <input type="password" name="password" class="form-control" placeholder="Dejar en blanco para mantener">
@@ -102,6 +99,11 @@ $isPatient = $user->role === 'paciente';
                     </div>
 
                     @if($isPatient)
+
+                           {{-- 1. Buscamos el expediente principal entre todos los que tenga el usuario --}}
+                        @php
+                            $expedientePrincipal = $user->expedientes ? $user->expedientes->where('parentesco', 'Expediente Propio')->first() : null;
+                        @endphp
                     <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
                         <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-person-vcard-fill me-2"></i>Ficha Médica</h4>
                         <div class="row g-3">
@@ -109,25 +111,22 @@ $isPatient = $user->role === 'paciente';
                                 <label class="text-label mb-2">Tipo de Sangre</label>
                                 <select name="tipo_sangre" class="form-select">
                                     @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $tipo)
-                                        <option value="{{ $tipo }}" {{ (optional($user->patient)->tipo_sangre == $tipo) ? 'selected' : '' }}>{{ $tipo }}</option>
+                                        <option value="{{ $tipo }}" {{ ($expedientePrincipal->tipo_sangre == $tipo) ? 'selected' : '' }}>{{ $tipo }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-8">
-                                <label class="text-label mb-2">Contacto de Emergencia</label>
-                                <input type="text" name="contacto_emergencia" class="form-control" value="{{ old('contacto_emergencia', optional($user->patient)->contacto_emergencia) }}">
-                            </div>
+
                             <div class="col-12">
                                 <label class="text-label mb-2">Alergias</label>
-                                <textarea name="alergias" class="form-control" rows="2">{{ old('alergias', optional($user->patient)->alergias) }}</textarea>
+                                <textarea name="alergias" class="form-control" rows="2">{{ old('alergias', $expedientePrincipal->alergias) }}</textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-label mb-2">Padecimientos</label>
-                                <textarea name="padecimientos" class="form-control" rows="2">{{ old('padecimientos', optional($user->patient)->padecimientos) }}</textarea>
+                                <textarea name="padecimientos" class="form-control" rows="2">{{ old('padecimientos_cronicos', $expedientePrincipal->padecimientos_cronicos) }}</textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-label mb-2">Hábitos</label>
-                                <textarea name="habitos" class="form-control" rows="2">{{ old('habitos', optional($user->patient)->habitos) }}</textarea>
+                                <textarea name="habitos" class="form-control" rows="2">{{ old('habitos', $expedientePrincipal->habitos_salud) }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -163,107 +162,150 @@ $isPatient = $user->role === 'paciente';
                     @endif
 
                     {{-- ==================== FORMULARIO DOCTOR (VERSIÓN CORREGIDA) ==================== --}}
-                    @if($isDoctor)
-                    @php
-                        // Preparar datos iniciales de forma segura y compatible con @js()
-                        $horariosData = [];
-                        if ($user->doctor?->disponibilidades?->isNotEmpty()) {
-                            $horariosData = $user->doctor->disponibilidades->map(fn($d) => [
-                                'dia'    => (string) $d->dia_semana,
-                                'inicio' => substr($d->hora_inicio, 0, 5),
-                                'fin'    => substr($d->hora_fin, 0, 5)
-                            ])->values()->toArray();
-                        } else {
-                            $horariosData = [['dia' => '1', 'inicio' => '09:00', 'fin' => '14:00']];
-                        }
-                    @endphp
+            @if($isDoctor)
+ <div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {{-- Formulario principal apuntando a la función update --}}
+            <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
 
-                    <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
-                        <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-clipboard2-pulse me-2"></i>Perfil Profesional</h4>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold text-navy">Editar Perfil Profesional</h2>
+                    <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                        <i class="bi bi-check-lg me-2"></i>Guardar Cambios
+                    </button>
+                </div>
+
+                {{-- Card de Datos Profesionales --}}
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-navy mb-4 border-bottom pb-2">
+                            <i class="bi bi-clipboard2-pulse me-2"></i>Información del Doctor
+                        </h5>
+                        
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="text-label mb-2">Cédula Profesional</label>
-                                <input type="text" name="cedula" class="form-control" value="{{ old('cedula', $user->doctor?->cedula) }}">
+                                <label class="form-label fw-bold small">Cédula Profesional</label>
+                                <input type="text" name="cedula" class="form-control @error('cedula') is-invalid @enderror" 
+                                    value="{{ old('cedula', $user->doctor?->cedula) }}" required>
+                                @error('cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
+
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Costo Consulta</label>
-                                <div class="input-group">
-                                    <span class="input-group-text fw-bold text-success rounded-start-pill">$</span>
-                                    <input type="number" name="costo" step="0.01" min="0" class="form-control rounded-end-pill"
-                                        value="{{ old('costo', $user->doctor?->costo ?? '') }}" required placeholder="0.00">
-                                </div>
+                                <label class="form-label fw-bold small">Costo de Consulta ($)</label>
+                                <input type="number" name="costo" step="0.01" class="form-control @error('costo') is-invalid @enderror" 
+                                    value="{{ old('costo', $user->doctor?->costo) }}" required>
+                                @error('costo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                        </div>
 
-                        {{-- ALPINE INLINE UNIFICADO: Datos + Métodos en el mismo scope --}}
-                        <div class="mt-5 pt-4 border-top"
-                            x-data="{
-                                horarios: @js($horariosData),
-                                addHorario() {
-                                    this.horarios.push({ dia: '1', inicio: '09:00', fin: '14:00' });
-                                },
-                                removeHorario(index) {
-                                    if (this.horarios.length > 1) {
-                                        this.horarios.splice(index, 1);
-                                    }
-                                }
-                            }">
-
-                            <div class="mb-4">
-                                <label class="text-label mb-2">Duración promedio de cada cita</label>
-                                <select name="duracion_cita" class="form-select" style="max-width: 320px;">
-                                    @foreach([15, 20, 30, 45, 60] as $min)
-                                        <option value="{{ $min }}" {{ old('duracion_cita', $user->doctor?->duracion_cita ?? 30) == $min ? 'selected' : '' }}>
-                                            {{ $min == 60 ? '1 hora' : $min . ' minutos' }}
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small">Especialidad</label>
+                                <select name="especialidad_id" class="form-select @error('especialidad_id') is-invalid @enderror">
+                                    @foreach($especialidades as $especialidad)
+                                        <option value="{{ $especialidad->id }}" 
+                                            {{ old('especialidad_id', $user->doctor?->especialidad_id) == $especialidad->id ? 'selected' : '' }}>
+                                            {{ $especialidad->nombre }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-
-                            <h6 class="text-label mb-3 d-flex align-items-center">
-                                <i class="bi bi-calendar3 me-2"></i> AGENDA SEMANAL DISPONIBLE
-                            </h6>
-
-                            <template x-for="(horario, index) in horarios" :key="index">
-                                <div class="row g-3 mb-3 align-items-end p-4 rounded-4" style="background:#f8fafc; border:1px solid #e2e8f0;">
-                                    <div class="col-md-4">
-                                        <label class="text-label mb-2 d-block">DÍA DE ATENCIÓN</label>
-                                        <select :name="`horarios[${index}][dia]`" x-model="horario.dia" class="form-select">
-                                            @foreach(['1' => 'Lunes', '2' => 'Martes', '3' => 'Miércoles', '4' => 'Jueves', '5' => 'Viernes', '6' => 'Sábado', '0' => 'Domingo'] as $val => $label)
-                                                <option value="{{ $val }}">{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="text-label mb-2 d-block">HORA ENTRADA</label>
-                                        <input type="time" :name="`horarios[${index}][inicio]`" x-model="horario.inicio" class="form-control">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="text-label mb-2 d-block">HORA SALIDA</label>
-                                        <input type="time" :name="`horarios[${index}][fin]`" x-model="horario.fin" class="form-control">
-                                    </div>
-                                    <div class="col-md-2">
-                                        <button type="button" @click="removeHorario(index)" 
-                                                class="btn btn-outline-danger btn-sm w-100 mt-4"
-                                                x-show="horarios.length > 1">
-                                            <i class="bi bi-trash3"></i> Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <button type="button" @click="addHorario()" 
-                                    class="btn btn-light text-navy fw-bold d-inline-flex align-items-center mt-3">
-                                <i class="bi bi-plus-circle-fill me-2"></i> Añadir otro bloque de horario
-                            </button>
-                        </div>
-
-                        <div class="mt-5 pt-4 border-top">
-                            <label class="text-label mb-2">Descripción Profesional</label>
-                            <textarea name="descripcion" class="form-control" rows="4">{{ old('descripcion', $user->doctor?->descripcion) }}</textarea>
                         </div>
                     </div>
-                    @endif    
+                </div>
+
+                {{-- Sección de Disponibilidad con Alpine.js --}}
+                @php
+                    // Preparamos los datos para Alpine
+                    $oldHorarios = old('horarios');
+                    if (is_array($oldHorarios)) {
+                        $horariosIniciales = $oldHorarios;
+                    } elseif ($user->doctor?->disponibilidades->isNotEmpty()) {
+                        $horariosIniciales = $user->doctor->disponibilidades->map(fn($d) => [
+                            'dia' => (string)$d->dia_semana,
+                            'inicio' => substr($d->hora_inicio, 0, 5),
+                            'fin' => substr($d->hora_fin, 0, 5)
+                        ])->toArray();
+                    } else {
+                        $horariosIniciales = [['dia' => '1', 'inicio' => '09:00', 'fin' => '14:00']];
+                    }
+                @endphp
+
+                <div class="card border-0 shadow-sm rounded-4" 
+                     x-data="{ 
+                        horarios: @js($horariosIniciales),
+                        add() { this.horarios.push({dia: '1', inicio: '09:00', fin: '18:00'}) },
+                        remove(i) { if(this.horarios.length > 1) this.horarios.splice(i, 1) }
+                     }">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="card-title text-navy m-0">
+                                <i class="bi bi-calendar3 me-2"></i>Horarios de Atención
+                            </h5>
+                            <div class="d-flex align-items-center">
+                                <label class="me-2 small fw-bold text-muted">Duración de Cita:</label>
+                                <select name="duracion_cita" class="form-select form-select-sm" style="width: 140px;">
+                                    @foreach([15, 30, 45, 60] as $min)
+                                        <option value="{{ $min }}" {{ old('duracion_cita', $user->doctor?->duracion_cita) == $min ? 'selected' : '' }}>
+                                            {{ $min }} minutos
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle">
+                                <thead class="table-light">
+                                    <tr class="small text-uppercase text-muted">
+                                        <th>Día de la semana</th>
+                                        <th>Hora Inicio</th>
+                                        <th>Hora Fin</th>
+                                        <th width="50"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(h, index) in horarios" :key="index">
+                                        <tr>
+                                            <td>
+                                                <select :name="`horarios[${index}][dia]`" x-model="h.dia" class="form-select">
+                                                    <option value="1">Lunes</option>
+                                                    <option value="2">Martes</option>
+                                                    <option value="3">Miércoles</option>
+                                                    <option value="4">Jueves</option>
+                                                    <option value="5">Viernes</option>
+                                                    <option value="6">Sábado</option>
+                                                    <option value="0">Domingo</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="time" :name="`horarios[${index}][inicio]`" x-model="h.inicio" class="form-control" required>
+                                            </td>
+                                            <td>
+                                                <input type="time" :name="`horarios[${index}][fin]`" x-model="h.fin" class="form-control" required>
+                                            </td>
+                                            <td>
+                                                <button type="button" @click="remove(index)" class="btn btn-outline-danger btn-sm border-0" x-show="horarios.length > 1">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button type="button" @click="add()" class="btn btn-outline-primary btn-sm rounded-pill mt-2">
+                            <i class="bi bi-plus-lg me-1"></i> Agregar Bloque
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+            @endif
 
                     {{-- ==================== FIN FORMULARIO DOCTORES ==================== --}}
 
