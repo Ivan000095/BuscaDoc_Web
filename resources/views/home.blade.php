@@ -1033,7 +1033,7 @@
                                 </div>
                             </div>
                             {{-- <a href="https://www.dropbox.com/scl/fi/0ji277sj9ezscpzzezhot/buscadoc.apk?rlkey=6pcetenwkjrbrwpweqz81kxg3&st=68c5459l&dl=1" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>--}}
-                            <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
+                            <a href="{{ asset('descargas/buscadoc_v1.apk') }}" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
                         </div>
 
                         <h2 class="fw-bold text-navy mb-2">Bienvenido a BuscaDoc, {{ Auth::user()->name }}</h2>
