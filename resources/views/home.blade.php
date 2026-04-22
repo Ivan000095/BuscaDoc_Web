@@ -268,6 +268,40 @@
                 background-color: #32b56c;
                 transform: scale(1.05);
             }
+
+            @media (max-width: 767px) {
+                .hero-guest {
+                    padding: 3rem 1rem !important;
+                }
+                .hero-guest h1 {
+                    font-size: 2rem !important;
+                }
+                .search-form-card {
+                    border-radius: 24px !important;
+                    background-color: #ffffff !important; /* Más limpio en móvil */
+                }
+                /* Darle un poco más de altura a los inputs en móvil para que sea fácil tocarlos */
+                .search-input-group,
+                #searchDropdownGroup button,
+                .search-button {
+                    height: 56px !important; 
+                }
+            }
+
+            custom-user-role-dropdown .dropdown-menu {
+                background-color: #ffffff !important;
+                z-index: 1050 !important;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+            }
+            
+            .custom-user-role-dropdown .dropdown-item:hover {
+                background-color: #f8fafc !important;
+            }
+            
+            .heart-animated {
+                opacity: 0.05;
+                transition: transform 0.3s ease;
+            }
         </style>
     @endpush
 
@@ -301,78 +335,54 @@
 
                         <div class="row justify-content-center position-relative z-3 mb-5">
                             <div class="col-11 col-lg-10 col-xl-9">
-                                <div class="card border-0 shadow-lg rounded-5 search-form-card"
-                                    style="background-color: #f8f9fa;">
+                                <div class="card border-0 shadow-lg rounded-5 search-form-card" style="background-color: #f8f9fa;">
                                     <div class="card-body p-3 p-md-2">
-                                        <form action="{{ route('global.search') }}" method="GET" class="search-form-global"
-                                            id="searchForm">
+                                        <form action="{{ route('global.search') }}" method="GET" class="search-form-global" id="searchForm">
                                             <input type="hidden" name="type" id="searchTypeInput" value="">
 
-                                            <div class="row g-2 align-items-center">
+                                            <div class="row g-3 align-items-center">
                                                 <div class="col-12 col-md">
-                                                    <div
-                                                        class="input-group input-group-lg search-input-group bg-white rounded-pill overflow-hidden border">
-                                                        <span class="input-group-text bg-white border-0 ps-4"><i
-                                                                class="bi bi-search text-muted"></i></span>
-                                                        <input type="text" name="search"
-                                                            class="form-control border-0 shadow-none ps-2"
-                                                            placeholder="Nombre, clínica o síntoma...">
+                                                    <div class="input-group input-group-lg search-input-group bg-white rounded-pill overflow-hidden border">
+                                                        <span class="input-group-text bg-white border-0 ps-4">
+                                                            <i class="bi bi-search text-muted"></i>
+                                                        </span>
+                                                        <input type="text" name="search" class="form-control border-0 shadow-none ps-2" placeholder="Nombre, clínica o síntoma...">
                                                     </div>
                                                 </div>
 
                                                 <div class="col-12 col-md-auto">
-                                                    <div class="dropdown custom-user-role-dropdown w-100"
-                                                        id="searchDropdownGroup">
-                                                        <button
-                                                            class="btn btn-lg bg-white border rounded-pill text-start d-flex align-items-center justify-content-between w-100 px-4"
-                                                            style="height: 48px;" type="button" data-bs-toggle="dropdown"
-                                                            aria-expanded="false">
+                                                    <div class="dropdown custom-user-role-dropdown w-100" id="searchDropdownGroup">
+                                                        <button class="btn btn-lg bg-white border rounded-pill text-start d-flex align-items-center justify-content-between w-100 px-4" style="height: 48px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                             <div class="d-flex align-items-center">
-                                                                <div id="selectedRoleIcon"
-                                                                    class="d-flex align-items-center justify-content-center me-2 text-muted flex-shrink-0"
-                                                                    style="width: 24px;">
+                                                                <div id="selectedRoleIcon" class="d-flex align-items-center justify-content-center me-2 text-muted flex-shrink-0" style="width: 24px;">
                                                                     <i class="bi bi-funnel fs-5"></i>
                                                                 </div>
-                                                                <span class="dropdown-label text-navy fw-bold"
-                                                                    id="selectedRoleLabel">¿Qué buscas?</span>
+                                                                <span class="dropdown-label text-navy fw-bold" id="selectedRoleLabel">¿Qué buscas?</span>
                                                             </div>
                                                             <i class="bi bi-chevron-down text-muted ms-3 small"></i>
                                                         </button>
 
-                                                        <div
-                                                            class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 w-100 p-2 mt-2">
+                                                        <div class="dropdown-menu dropdown-menu-end bg-white shadow-sm border-0 rounded-4 w-100 p-2 mt-2">
                                                             <ul class="list-unstyled mb-0" id="roleSelector">
                                                                 <li>
-                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center mb-1"
-                                                                        href="#" data-value="doctor">
-                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper"
-                                                                            style="width: 30px; height: 30px;">
-                                                                            <x-mcr-stethoscope
-                                                                                style="width: 100%; height: 100%;" />
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center mb-1" href="#" data-value="doctor">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper" style="width: 30px; height: 30px;">
+                                                                            <x-mcr-stethoscope style="width: 100%; height: 100%;" />
                                                                         </div>
                                                                         <div class="text-group">
-                                                                            <span
-                                                                                class="fw-bold text-navy d-block">Doctores</span>
-                                                                            <span class="text-muted small"
-                                                                                style="font-size: 0.75rem;">Especialistas
-                                                                                médicos</span>
+                                                                            <span class="fw-bold text-navy d-block">Doctores</span>
+                                                                            <span class="text-muted small" style="font-size: 0.75rem;">Especialistas médicos</span>
                                                                         </div>
                                                                     </a>
                                                                 </li>
                                                                 <li>
-                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center"
-                                                                        href="#" data-value="farmacia">
-                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper"
-                                                                            style="width: 30px; height: 30px;">
-                                                                            <x-mcr-pills
-                                                                                style="width: 100%; height: 100%;" />
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center" href="#" data-value="farmacia">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper" style="width: 30px; height: 30px;">
+                                                                            <x-mcr-pills style="width: 100%; height: 100%;" />
                                                                         </div>
                                                                         <div class="text-group">
-                                                                            <span
-                                                                                class="fw-bold text-navy d-block">Farmacias</span>
-                                                                            <span class="text-muted small"
-                                                                                style="font-size: 0.75rem;">Medicamentos e
-                                                                                insumos</span>
+                                                                            <span class="fw-bold text-navy d-block">Farmacias</span>
+                                                                            <span class="text-muted small" style="font-size: 0.75rem;">Medicamentos e insumos</span>
                                                                         </div>
                                                                     </a>
                                                                 </li>
@@ -382,9 +392,7 @@
                                                 </div>
 
                                                 <div class="col-12 col-md-auto d-none" id="especialidadGroup">
-                                                    <select
-                                                        class="form-select form-select-lg rounded-pill border bg-white text-navy fw-bold"
-                                                        name="especialidad_id" style="height: 48px; min-width: 200px;">
+                                                    <select class="form-select form-select-lg rounded-pill border bg-white text-navy fw-bold" name="especialidad_id" style="height: 48px; min-width: 200px;">
                                                         <option value="" selected>Todas las especialidades</option>
                                                         @foreach($especialidades ?? [] as $esp)
                                                             <option value="{{ $esp->id }}">{{ $esp->nombre }}</option>
@@ -393,12 +401,8 @@
                                                 </div>
 
                                                 <div class="col-12 col-md-auto">
-                                                    {{-- Alineación del ícono de buscar --}}
-                                                    <button
-                                                        class="btn btn-navy btn-lg rounded-pill w-100 px-4 fw-bold search-button d-flex align-items-center justify-content-center"
-                                                        type="submit" style="height: 48px;">
-                                                        <x-mcl-search class="icon-white me-2 flex-shrink-0"
-                                                            style="width: 1.2rem;" /> Buscar
+                                                    <button class="btn btn-navy btn-lg rounded-pill w-100 px-4 fw-bold search-button d-flex align-items-center justify-content-center" type="submit" style="height: 48px;">
+                                                        <x-mcl-search class="icon-white me-2 flex-shrink-0" style="width: 1.2rem;" /> Buscar
                                                     </button>
                                                 </div>
                                             </div>
@@ -408,16 +412,13 @@
                             </div>
                         </div>
 
-                        
-
                         <div class="d-flex flex-wrap justify-content-center gap-3 position-relative z-1">
                             <a href="/login" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-navy shadow-sm hover-scale">Iniciar Sesión</a>
                             <a href="/register" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-scale">Crear Cuenta</a>
                             
-                            
-                            <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
+                            {{-- <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
                                 <i class="bi bi-android2 me-2 fs-5"></i> Descargar App
-                            </a>
+                            </a> --}}
                         </div>
 
                     </div>
