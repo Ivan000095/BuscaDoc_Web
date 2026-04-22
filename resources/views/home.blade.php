@@ -346,7 +346,7 @@
                                                         <span class="input-group-text bg-white border-0 ps-4">
                                                             <i class="bi bi-search text-muted"></i>
                                                         </span>
-                                                        <input type="text" name="search" class="form-control border-0 shadow-none ps-2" placeholder="Nombre, clínica o síntoma...">
+                                                        <input type="text" name="search" class="form-control border-0 shadow-none ps-2" placeholder="Nombre del Doctor o Farmacia">
                                                     </div>
                                                 </div>
 
