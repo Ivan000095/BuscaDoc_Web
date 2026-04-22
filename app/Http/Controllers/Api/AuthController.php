@@ -181,7 +181,7 @@ class AuthController extends Controller
                             "name" => $user->name,
                             "email" => $user->email,
                             "role" => $user->role,
-                            "foto" => "http://127.0.0.1:8000/storage/" . $user->foto,
+                            "foto" => "https://buscadoc.online/storage/" . $user->foto,
                             "email_verified_at" => $user->email_verified_at,
                         ],
                         "token" => $token,
