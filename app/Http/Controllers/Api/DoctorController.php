@@ -20,22 +20,19 @@ class DoctorController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            // 1. Obtenemos la fecha y día actual exactamente en Ocosingo
             $hoy = \Carbon\Carbon::now('America/Mexico_City');
-            $diaSemana = $hoy->dayOfWeek; // 0 = Domingo, 1 = Lunes... 6 = Sábado
+            $diaSemana = $hoy->dayOfWeek;
             $fechaHoy = $hoy->toDateString();
 
-            // 2. Cargamos TODO (Quitamos el filtro de "hoy" para que lleguen todos los días)
             $query = Doctor::with([
                 'user', 
                 'especialidades',
-                'disponibilidades', // <-- Carga toda la semana
+                'disponibilidades',
                 'excepciones' => function($q) use ($fechaHoy) {
                     $q->where('fecha', $fechaHoy);
                 }
             ]);
 
-            // Búsqueda por nombre o descripción
             if ($request->has("search")) {
                 $search = $request->input("search");
                 $query->where(function ($q) use ($search) {
@@ -46,28 +43,26 @@ class DoctorController extends Controller
                 });
             }
 
-            // Filtro por especialidad
             if ($request->has("especialidad_id")) {
                 $query->whereHas('especialidades', function ($q) use ($request) {
                     $q->where('especialidads.id', $request->input("especialidad_id"));
                 });
             }
 
-            // Ordenamiento y Paginación
             $sortBy = $request->input("sort_by", "created_at");
             $sortDirection = $request->input("sort_direction", "desc");
             $query->orderBy($sortBy, $sortDirection);
-            $perPage = min($request->input("per_page", 15), 100);
-            $doctors = $query->paginate($perPage);
+            
+            // 1. Obtenemos TODOS los registros sin límite de páginas
+            $doctors = $query->get();
 
-            // 3. Transformación de datos
-            $doctors->getCollection()->transform(function ($doctor) use ($diaSemana) {
+            // 2. Aplicamos la transformación directo a la colección
+            $doctors->transform(function ($doctor) use ($diaSemana) {
                 $entrada = null;
                 $salida = null;
 
                 $excepcion = $doctor->excepciones->first();
                 
-                // Buscamos en la memoria la disponibilidad específica de HOY
                 $disponibilidadHoy = $doctor->disponibilidades->where('dia_semana', $diaSemana)->first();
 
                 if ($excepcion) {
@@ -80,7 +75,6 @@ class DoctorController extends Controller
                     $salida = $disponibilidadHoy->hora_fin;
                 }
 
-                // Formateamos a HH:MM (ej. 08:00) o mandamos un texto si no trabaja hoy
                 $horaEntrada = $entrada ? \Carbon\Carbon::parse($entrada)->format('H:i') : 'Descanso';
                 $horaSalida = $salida ? \Carbon\Carbon::parse($salida)->format('H:i') : '';
 
@@ -97,7 +91,6 @@ class DoctorController extends Controller
                     "role" => $doctor->user->role,
                     "costos" => number_format($doctor->costo, 2),
                     
-                    // Horario de HOY
                     "horarioentrada" => $horaEntrada,
                     "horariosalida" => $horaSalida,
                     
@@ -105,20 +98,14 @@ class DoctorController extends Controller
                     "latitud" => $doctor->user->latitud,
                     "longitud" => $doctor->user->longitud,
 
-                    // ¡AQUÍ ESTÁ LA SOLUCIÓN! Pasamos el arreglo completo a Flutter
                     "disponibilidades" => $doctor->disponibilidades,
                 ];
             });
 
+            // 3. Devolvemos la data limpia sin metadata de paginación
             return response()->json([
                 "success" => true,
-                "data" => $doctors->items(),
-                "pagination" => [
-                    "current_page" => $doctors->currentPage(),
-                    "last_page" => $doctors->lastPage(),
-                    "per_page" => $doctors->perPage(),
-                    "total" => $doctors->total(),
-                ],
+                "data" => $doctors,
             ], 200);
 
         } catch (\Exception $e) {
