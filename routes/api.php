@@ -112,12 +112,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/update-profile', [AuthController::class, 'updateProfile']);
-<<<<<<< HEAD
-=======
-    
-    // Rutas de expedientes
-   
->>>>>>> e0f134b10420fe0fc259da4d909ae76735cf34f2
 });
 
 Route::fallback(function () {
