@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Cita;
 use App\Models\SolicitudCambio;
+use App\Models\Alerta; // Importamos el modelo de Alerta
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -54,7 +56,7 @@ class CitaController extends Controller
             return response()->json(['success' => true, 'data' => $data], 200);
 
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al cargar citas', 'error' => $e->getMessage() . ' en linea ' . $e->getLine()], 500);
+            return response()->json(['success' => false, 'message' => 'Error al cargar citas', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -74,10 +76,6 @@ class CitaController extends Controller
                 $rules['nuevo_fecha_nacimiento'] = 'required|date';
                 $rules['nuevo_genero'] = 'required|in:masculino,femenino';
                 $rules['nuevo_parentesco'] = 'required|string|max:30';
-                $rules['nuevo_tipo_sangre'] = 'nullable|string|max:5';
-                $rules['nuevo_alergias'] = 'nullable|string';
-                $rules['nuevo_padecimientos'] = 'nullable|string';
-                $rules['nuevo_habitos'] = 'nullable|string';
             }
 
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
@@ -130,7 +128,13 @@ class CitaController extends Controller
                 ]);
 
                 if($user->role == 'paciente'){
-                    $this->notificarUsuario($doctor->user_id, "¡Nueva solicitud de cita!", "Un paciente solicitó una cita para el " . $request->fecha);
+                    $this->crearAlerta(
+                        $doctor->user_id, 
+                        "¡Nueva solicitud de cita!", 
+                        "El paciente " . $user->name . " solicitó una cita para el " . $request->fecha,
+                        'cita',
+                        $cita->id
+                    );
                 }
 
                 return ['status' => 'success', 'cita' => $cita];
@@ -161,7 +165,14 @@ class CitaController extends Controller
             }
 
             $cita->update(['estado' => $request->estado]);
-            $this->notificarContraparte($cita, $user->id, "Actualización de Cita", "El estado de tu cita ha cambiado a: " . strtoupper($request->estado));
+            
+            $this->notificarContraparte(
+                $cita, 
+                $user->id, 
+                "Actualización de Cita", 
+                "El estado de tu cita ha cambiado a: " . strtoupper($request->estado),
+                'cita'
+            );
 
             return response()->json(['success' => true, 'message' => 'Estado actualizado a ' . $request->estado], 200);
         } catch (\Exception $e) {
@@ -194,7 +205,13 @@ class CitaController extends Controller
                 ]
             );
 
-            $this->notificarUsuario($solicitadoId, "Propuesta de Cambio", "Tienes una nueva propuesta de horario para tu cita.");
+            $this->crearAlerta(
+                $solicitadoId, 
+                "Propuesta de Cambio", 
+                $user->name . " ha propuesto un nuevo horario para tu cita.",
+                'cita',
+                $cita->id
+            );
 
             return response()->json(['success' => true, 'message' => 'Propuesta enviada.'], 200);
         } catch (\Exception $e) {
@@ -211,11 +228,27 @@ class CitaController extends Controller
             if ($request->accion == 'aceptar') {
                 $solicitud->cita->update(['fecha' => $solicitud->nueva_fecha, 'hora_inicio' => $solicitud->nueva_hora, 'estado' => 'confirmada']);
                 $solicitud->update(['estado' => 'aceptada']);
-                $this->notificarUsuario($solicitud->solicitante_id, "Propuesta Aceptada", "Tu propuesta de horario fue aceptada.");
+                
+                $this->crearAlerta(
+                    $solicitud->solicitante_id, 
+                    "Propuesta Aceptada", 
+                    "Tu propuesta de horario fue aceptada y la cita ha sido actualizada.",
+                    'cita',
+                    $solicitud->cita_id
+                );
+                
                 $msg = 'Fecha actualizada correctamente.';
             } else {
                 $solicitud->update(['estado' => 'rechazada', 'motivo' => $request->motivo_rechazo]);
-                $this->notificarUsuario($solicitud->solicitante_id, "Propuesta Rechazada", "Tu propuesta de horario fue rechazada.");
+                
+                $this->crearAlerta(
+                    $solicitud->solicitante_id, 
+                    "Propuesta Rechazada", 
+                    "Tu propuesta de horario fue rechazada. Motivo: " . $request->motivo_rechazo,
+                    'cita',
+                    $solicitud->cita_id
+                );
+                
                 $msg = 'Propuesta rechazada.';
             }
 
@@ -239,7 +272,13 @@ class CitaController extends Controller
                 'reprogramada' => true
             ]);
 
-            $this->notificarUsuario($cita->doctor->user_id, "Cita Reagendada", "El paciente ha movido su cita a un nuevo horario.");
+            $this->crearAlerta(
+                $cita->doctor->user_id, 
+                "Cita Reagendada", 
+                "El paciente ha movido su cita al " . $request->nueva_fecha,
+                'cita',
+                $cita->id
+            );
 
             return response()->json(['success' => true, 'message' => 'Cita reprogramada con éxito.'], 200);
         } catch (\Exception $e) {
@@ -262,7 +301,13 @@ class CitaController extends Controller
                 'diagnostico' => $request->diagnostico,
             ]);
 
-            $this->notificarContraparte($cita, $request->user()->id, "Consulta Finalizada", "Se ha agregado una nota médica a tu expediente.");
+            $this->notificarContraparte(
+                $cita, 
+                $request->user()->id, 
+                "Consulta Finalizada", 
+                "El doctor ha finalizado la consulta y agregado una nota médica a tu expediente.",
+                'cita'
+            );
 
             return response()->json(['success' => true, 'message' => 'Cita finalizada y diagnóstico guardado.']);
         } catch (\Exception $e) {
@@ -285,17 +330,29 @@ class CitaController extends Controller
     }
 
     // ==========================================
-    // NOTIFICACIONES PUSH (HELPER API)
+    // ALERTAS NATIVAS Y PUSH (HELPERS)
     // ==========================================
-    private function notificarContraparte($cita, $actorId, $title, $body)
+    
+    private function notificarContraparte($cita, $actorId, $title, $body, $tipo)
     {
         $receptorId = ($actorId == $cita->expediente->user_id) ? $cita->doctor->user_id : $cita->expediente->user_id;
-        $this->notificarUsuario($receptorId, $title, $body);
+        $this->crearAlerta($receptorId, $title, $body, $tipo, $cita->id);
     }
 
-    private function notificarUsuario($userId, $title, $body)
+    private function crearAlerta($userId, $title, $body, $tipo, $referenciaId)
     {
-        $receptor = \App\Models\User::find($userId);
+        // 1. Guardar Alerta en Base de Datos
+        Alerta::create([
+            'user_id'       => $userId,
+            'titulo'        => $title,
+            'mensaje'       => $body,
+            'tipo'          => $tipo,
+            'referencia_id' => $referenciaId,
+            'leido'         => false
+        ]);
+
+        // 2. Intento de Notificación Push (FCM) como respaldo
+        $receptor = User::find($userId);
         if ($receptor && $receptor->fcm_token) {
             $serverKey = env('FCM_SERVER_KEY');
             if($serverKey){

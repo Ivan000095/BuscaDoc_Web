@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Alerta; // Importamos el modelo de Alerta
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Kreait\Laravel\Firebase\Facades\Firebase;
@@ -81,7 +82,6 @@ class MensajeController extends Controller
         }
 
         $idsContactos = array_unique($idContactos);
-        // CORRECCIÓN DEL BUG DE LA 'S': Usamos $idsContactos en ambos lados
         $idsContactos = array_diff($idsContactos, [$authId]); 
 
         $contactos = User::whereIn('id', $idsContactos)->get();
@@ -111,10 +111,9 @@ class MensajeController extends Controller
             'contenido' => 'required|string|max:1000',
         ]);
 
-        $authId = (int) Auth::id(); // Aseguramos Entero
-        $destId = (int) $request->id_destinatario; // Aseguramos Entero
+        $authId = (int) Auth::id(); 
+        $destId = (int) $request->id_destinatario; 
         
-        // Al ser ambos enteros matemáticos, la lógica de '<' nunca fallará 
         $chatId = ($authId < $destId) ? "{$authId}_{$destId}" : "{$destId}_{$authId}";
 
         $nuevoMensaje = [
@@ -126,8 +125,21 @@ class MensajeController extends Controller
             'created_at' => now()->toDateTimeString()
         ];
 
+        // 1. Guardar en Firebase Realtime Database
         Firebase::database()->getReference('mensajes')->push($nuevoMensaje);
 
+        // 2. CREAR ALERTA NATIVA EN BASE DE DATOS
+        // Esto asegura que el usuario vea la notificación en la app aunque el push falle
+        Alerta::create([
+            'user_id'       => $destId,
+            'titulo'        => 'Nuevo mensaje de ' . Auth::user()->name,
+            'mensaje'       => $request->contenido,
+            'tipo'          => 'mensaje',
+            'referencia_id' => $authId, // Guardamos el ID de quien envía para abrir el chat
+            'leido'         => false
+        ]);
+
+        // 3. Intento de Notificación Push (Firebase Cloud Messaging)
         $destinatario = User::find($destId);
         
         if ($destinatario && $destinatario->fcm_token) {
