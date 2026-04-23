@@ -14,7 +14,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
-            $usuario = User::with(['doctor.especialidades', 'paciente'])->findOrFail($id);
+            $usuario = User::with(['doctor.especialidades', 'doctor.disponibilidades', 'paciente'])->findOrFail($id);
 
             $data = match ($usuario->role) {
                 'doctor' => $this->formatDoctorData($usuario),
@@ -31,23 +31,17 @@ class UserController extends Controller
         }
     }
 
-    // ─────────────────────────────────────────────────────
-    // ACTUALIZAR PERFIL DE USUARIO
-    // ─────────────────────────────────────────────────────
     public function update(Request $request, string $id)
     {
         DB::beginTransaction();
 
         try {
             $usuario = User::findOrFail($id);
-
-            // Actualizar datos básicos del usuario
             $usuario->update([
                 'name' => $request->input('name', $usuario->name),
                 'email' => $request->input('email', $usuario->email),
             ]);
 
-            // Actualizar datos según el rol
             match ($usuario->role) {
                 'doctor' => $this->updateDoctorProfile($usuario, $request),
                 'paciente' => $this->updatePacienteProfile($usuario, $request),
@@ -71,15 +65,10 @@ class UserController extends Controller
         }
     }
 
-    // ─────────────────────────────────────────────────────
-    // ELIMINAR CUENTA DE USUARIO
-    // ─────────────────────────────────────────────────────
     public function destroy(string $id)
     {
         try {
             $usuario = User::findOrFail($id);
-
-            // Verificar citas pendientes antes de eliminar
             if (!$this->canDeleteUser($usuario)) {
                 return response()->json([
                     'success' => false,
@@ -90,8 +79,6 @@ class UserController extends Controller
             }
 
             DB::beginTransaction();
-
-            // Eliminar perfil específico (doctor/paciente)
             if ($usuario->role === 'doctor' && $usuario->doctor) {
                 $usuario->doctor->especialidades()->detach();
                 $usuario->doctor->delete();
@@ -99,12 +86,10 @@ class UserController extends Controller
                 $usuario->paciente->delete();
             }
 
-            // Eliminar foto si existe
             if ($usuario->foto && Storage::disk('public')->exists($usuario->foto)) {
                 Storage::disk('public')->delete($usuario->foto);
             }
 
-            // Eliminar usuario (cascade elimina el resto)
             $usuario->delete();
 
             DB::commit();
@@ -119,9 +104,6 @@ class UserController extends Controller
         }
     }
 
-    // ─────────────────────────────────────────────────────
-    // GUARDAR TOKEN FCM PARA NOTIFICACIONES
-    // ─────────────────────────────────────────────────────
     public function guardarFcmToken(Request $request)
     {
         $request->validate(['fcm_token' => 'required|string']);
@@ -130,10 +112,6 @@ class UserController extends Controller
         
         return response()->json(['success' => true]);
     }
-
-    // ─────────────────────────────────────────────────────
-    // MÉTODOS AUXILIARES PRIVADOS
-    // ─────────────────────────────────────────────────────
 
     private function formatDoctorData(User $user): array
     {
@@ -155,8 +133,23 @@ class UserController extends Controller
             'image' => $user->foto ? asset('storage/' . $user->foto) : null,
             'cedula' => $doctor->cedula,
             'costos' => '$' . number_format($doctor->costo, 2),
+            'idiomas' => $doctor->idiomas ?? '',
+            'duracion_cita' => $doctor->duracion_cita ?? 30,
+            'citas' => (bool) ($doctor->citas ?? false),
+            'horarios' => $doctor->disponibilidades->map(function($h) {
+                return [
+                    'dia' => $h->dia_semana,
+                    'dia_semana' => $h->dia_semana,
+                    'inicio' => $h->hora_inicio,
+                    'hora_inicio' => $h->hora_inicio,
+                    'fin' => $h->hora_fin,
+                    'hora_fin' => $h->hora_fin,
+                ];
+            })->toArray(),
+
             'horarioentrada' => $doctor->horario_entrada,
             'horariosalida' => $doctor->horario_salida,
+            
             'latitud' => $user->latitud,
             'longitud' => $user->longitud,
             'estado' => $user->estado,
@@ -194,21 +187,47 @@ class UserController extends Controller
         }
 
         $doctor->update([
-            'descripcion' => $request->input('descripcion', $doctor->descripcion),
+            'descripcion' => $request->input('descripcion', $request->input('descripcion_doc', $doctor->descripcion)),
             'cedula' => $request->input('cedula', $doctor->cedula),
-            'costo' => $this->parseCosto($request->input('costos', $doctor->costo)),
-            'horario_entrada' => $request->input('horarioentrada', $doctor->horario_entrada),
-            'horario_salida' => $request->input('horariosalida', $doctor->horario_salida),
+            'costo' => $this->parseCosto($request->input('costo', $request->input('costos', $doctor->costo))),
+            'idiomas' => $request->input('idiomas', $doctor->idiomas),
+            'duracion_cita' => $request->integer('duracion_cita', $doctor->duracion_cita ?? 30),
+            'citas' => $request->boolean('citas', $doctor->citas ?? false),
+            
+            'horario_entrada' => $request->input('horario_entrada', $request->input('horarioentrada', $doctor->horario_entrada)),
+            'horario_salida' => $request->input('horario_salida', $request->input('horariosalida', $doctor->horario_salida)),
         ]);
 
-        // Actualizar especialidad si se envía
-        if ($request->has('especialidad_id')) {
+        if ($request->has('especialidades')) {
+            $especialidadesIds = $request->input('especialidades');
+            if (is_array($especialidadesIds)) {
+                $doctor->especialidades()->sync($especialidadesIds);
+            }
+        } elseif ($request->has('especialidad_id')) {
             $doctor->especialidades()->sync([$request->input('especialidad_id')]);
         }
 
-        // Actualizar foto si se envía
-        if ($request->hasFile('image')) {
-            $this->updateUserPhoto($user, $request->file('image'));
+        if ($request->has('horarios')) {
+            $nuevosHorarios = $request->input('horarios');
+            
+            if (is_array($nuevosHorarios)) {
+                $doctor->disponibilidades()->delete();
+
+                foreach ($nuevosHorarios as $horario) {
+                    if (is_array($horario) && isset($horario['dia'], $horario['inicio'], $horario['fin'])) {
+                        $doctor->disponibilidades()->create([
+                            'dia_semana' => (int) $horario['dia'],
+                            'hora_inicio' => $horario['inicio'],
+                            'hora_fin' => $horario['fin'],
+                        ]);
+                    }
+                }
+            }
+        }
+
+        if ($request->hasFile('foto') || $request->hasFile('image')) {
+            $file = $request->file('foto') ?? $request->file('image');
+            $this->updateUserPhoto($user, $file);
         }
     }
 
@@ -225,9 +244,9 @@ class UserController extends Controller
             'contacto_emergencia' => $request->input('contacto_emergencia'),
         ])->save();
 
-        // Actualizar foto si se envía
-        if ($request->hasFile('image')) {
-            $this->updateUserPhoto($user, $request->file('image'));
+        if ($request->hasFile('foto') || $request->hasFile('image')) {
+            $file = $request->file('foto') ?? $request->file('image');
+            $this->updateUserPhoto($user, $file);
         }
     }
 

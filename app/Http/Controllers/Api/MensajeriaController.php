@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Alerta; // Importamos el modelo de Alerta
 use Illuminate\Support\Facades\Auth;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -109,8 +110,21 @@ class MensajeriaController extends Controller
             'created_at' => now()->toDateTimeString()
         ];
 
+        // 1. Guardar en Firebase (Para el chat en tiempo real)
         Firebase::database()->getReference('mensajes')->push($nuevoMensaje);
 
+        // 2. CREAR ALERTA NATIVA (Sistema de "la campanita")
+        // Guardamos quién envió el mensaje en referencia_id para abrir el chat en la app
+        Alerta::create([
+            'user_id'       => $destId,
+            'titulo'        => 'Nuevo mensaje de ' . $request->user()->name,
+            'mensaje'       => $request->contenido,
+            'tipo'          => 'mensaje',
+            'referencia_id' => $authId, 
+            'leido'         => false
+        ]);
+
+        // 3. Intento de Push Notification (Respaldo)
         $destinatario = User::find($destId);
         
         if ($destinatario && $destinatario->fcm_token) {

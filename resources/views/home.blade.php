@@ -243,16 +243,42 @@
                 flex-shrink: 0;
             }
 
-            .bg-primary-subtle { background-color: #e0f2fe !important; }
-            .bg-success-subtle { background-color: #dcfce7 !important; }
-            .bg-info-subtle { background-color: #e0f7fa !important; }
-            .bg-danger-subtle { background-color: #fee2e2 !important; }
-            .bg-warning-subtle { background-color: #fef3c7 !important; }
-            .bg-secondary-subtle { background-color: #f1f5f9 !important; }
-            
-            .hover-scale:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(13, 46, 78, 0.1) !important; }
-            .transition-all { transition: all 0.3s ease; }
-            .rounded-5 { border-radius: 1.5rem !important; }
+            .bg-primary-subtle {
+                background-color: #e0f2fe !important;
+            }
+
+            .bg-success-subtle {
+                background-color: #dcfce7 !important;
+            }
+
+            .bg-info-subtle {
+                background-color: #e0f7fa !important;
+            }
+
+            .bg-danger-subtle {
+                background-color: #fee2e2 !important;
+            }
+
+            .bg-warning-subtle {
+                background-color: #fef3c7 !important;
+            }
+
+            .bg-secondary-subtle {
+                background-color: #f1f5f9 !important;
+            }
+
+            .hover-scale:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(13, 46, 78, 0.1) !important;
+            }
+
+            .transition-all {
+                transition: all 0.3s ease;
+            }
+
+            .rounded-5 {
+                border-radius: 1.5rem !important;
+            }
 
             .bg-navy-subtle {
                 background-color: #eef2f6 !important;
@@ -264,6 +290,7 @@
                 color: #00213D !important;
                 border: none;
             }
+
             .btn-apk:hover {
                 background-color: #32b56c;
                 transform: scale(1.05);
@@ -273,18 +300,22 @@
                 .hero-guest {
                     padding: 3rem 1rem !important;
                 }
+
                 .hero-guest h1 {
                     font-size: 2rem !important;
                 }
+
                 .search-form-card {
                     border-radius: 24px !important;
-                    background-color: #ffffff !important; /* Más limpio en móvil */
+                    background-color: #ffffff !important;
+                    /* Más limpio en móvil */
                 }
+
                 /* Darle un poco más de altura a los inputs en móvil para que sea fácil tocarlos */
                 .search-input-group,
                 #searchDropdownGroup button,
                 .search-button {
-                    height: 56px !important; 
+                    height: 56px !important;
                 }
             }
 
@@ -293,11 +324,11 @@
                 z-index: 1050 !important;
                 box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
             }
-            
+
             .custom-user-role-dropdown .dropdown-item:hover {
                 background-color: #f8fafc !important;
             }
-            
+
             .heart-animated {
                 opacity: 0.05;
                 transition: transform 0.3s ease;
@@ -419,54 +450,79 @@
 
                         <div class="row justify-content-center position-relative z-3 mb-5">
                             <div class="col-11 col-lg-10 col-xl-9">
-                                <div class="card border-0 shadow-lg rounded-5 search-form-card" style="background-color: #f8f9fa;">
+                                <div class="card border-0 shadow-lg rounded-5 search-form-card"
+                                    style="background-color: #f8f9fa;">
                                     <div class="card-body p-3 p-md-2">
-                                        <form action="{{ route('global.search') }}" method="GET" class="search-form-global" id="searchForm">
+                                        <form action="{{ route('global.search') }}" method="GET" class="search-form-global"
+                                            id="searchForm">
                                             <input type="hidden" name="type" id="searchTypeInput" value="">
 
                                             <div class="row g-3 align-items-center">
                                                 <div class="col-12 col-md">
-                                                    <div class="input-group input-group-lg search-input-group bg-white rounded-pill overflow-hidden border">
+                                                    <div
+                                                        class="input-group input-group-lg search-input-group bg-white rounded-pill overflow-hidden border">
                                                         <span class="input-group-text bg-white border-0 ps-4">
                                                             <i class="bi bi-search text-muted"></i>
                                                         </span>
-                                                        <input type="text" name="search" class="form-control border-0 shadow-none ps-2" placeholder="Nombre del Doctor o Farmacia">
+                                                        <input type="text" name="search"
+                                                            class="form-control border-0 shadow-none ps-2"
+                                                            placeholder="Nombre del Doctor o Farmacia">
                                                     </div>
                                                 </div>
 
                                                 <div class="col-12 col-md-auto">
-                                                    <div class="dropdown custom-user-role-dropdown w-100" id="searchDropdownGroup">
-                                                        <button class="btn btn-lg bg-white border rounded-pill text-start d-flex align-items-center justify-content-between w-100 px-4" style="height: 48px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <div class="dropdown custom-user-role-dropdown w-100"
+                                                        id="searchDropdownGroup">
+                                                        <button
+                                                            class="btn btn-lg bg-white border rounded-pill text-start d-flex align-items-center justify-content-between w-100 px-4"
+                                                            style="height: 48px;" type="button" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
                                                             <div class="d-flex align-items-center">
-                                                                <div id="selectedRoleIcon" class="d-flex align-items-center justify-content-center me-2 text-muted flex-shrink-0" style="width: 24px;">
+                                                                <div id="selectedRoleIcon"
+                                                                    class="d-flex align-items-center justify-content-center me-2 text-muted flex-shrink-0"
+                                                                    style="width: 24px;">
                                                                     <i class="bi bi-funnel fs-5"></i>
                                                                 </div>
-                                                                <span class="dropdown-label text-navy fw-bold" id="selectedRoleLabel">¿Qué buscas?</span>
+                                                                <span class="dropdown-label text-navy fw-bold"
+                                                                    id="selectedRoleLabel">¿Qué buscas?</span>
                                                             </div>
                                                             <i class="bi bi-chevron-down text-muted ms-3 small"></i>
                                                         </button>
 
-                                                        <div class="dropdown-menu dropdown-menu-end bg-white shadow-sm border-0 rounded-4 w-100 p-2 mt-2">
+                                                        <div
+                                                            class="dropdown-menu dropdown-menu-end bg-white shadow-sm border-0 rounded-4 w-100 p-2 mt-2">
                                                             <ul class="list-unstyled mb-0" id="roleSelector">
                                                                 <li>
-                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center mb-1" href="#" data-value="doctor">
-                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper" style="width: 30px; height: 30px;">
-                                                                            <x-mcr-stethoscope style="width: 100%; height: 100%;" />
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center mb-1"
+                                                                        href="#" data-value="doctor">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper"
+                                                                            style="width: 30px; height: 30px;">
+                                                                            <x-mcr-stethoscope
+                                                                                style="width: 100%; height: 100%;" />
                                                                         </div>
                                                                         <div class="text-group">
-                                                                            <span class="fw-bold text-navy d-block">Doctores</span>
-                                                                            <span class="text-muted small" style="font-size: 0.75rem;">Especialistas médicos</span>
+                                                                            <span
+                                                                                class="fw-bold text-navy d-block">Doctores</span>
+                                                                            <span class="text-muted small"
+                                                                                style="font-size: 0.75rem;">Especialistas
+                                                                                médicos</span>
                                                                         </div>
                                                                     </a>
                                                                 </li>
                                                                 <li>
-                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center" href="#" data-value="farmacia">
-                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper" style="width: 30px; height: 30px;">
-                                                                            <x-mcr-pills style="width: 100%; height: 100%;" />
+                                                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center"
+                                                                        href="#" data-value="farmacia">
+                                                                        <div class="me-3 text-navy d-flex align-items-center justify-content-center flex-shrink-0 icon-wrapper"
+                                                                            style="width: 30px; height: 30px;">
+                                                                            <x-mcr-pills
+                                                                                style="width: 100%; height: 100%;" />
                                                                         </div>
                                                                         <div class="text-group">
-                                                                            <span class="fw-bold text-navy d-block">Farmacias</span>
-                                                                            <span class="text-muted small" style="font-size: 0.75rem;">Medicamentos e insumos</span>
+                                                                            <span
+                                                                                class="fw-bold text-navy d-block">Farmacias</span>
+                                                                            <span class="text-muted small"
+                                                                                style="font-size: 0.75rem;">Medicamentos e
+                                                                                insumos</span>
                                                                         </div>
                                                                     </a>
                                                                 </li>
@@ -476,7 +532,9 @@
                                                 </div>
 
                                                 <div class="col-12 col-md-auto d-none" id="especialidadGroup">
-                                                    <select class="form-select form-select-lg rounded-pill border bg-white text-navy fw-bold" name="especialidad_id" style="height: 48px; min-width: 200px;">
+                                                    <select
+                                                        class="form-select form-select-lg rounded-pill border bg-white text-navy fw-bold"
+                                                        name="especialidad_id" style="height: 48px; min-width: 200px;">
                                                         <option value="" selected>Todas las especialidades</option>
                                                         @foreach($especialidades ?? [] as $esp)
                                                             <option value="{{ $esp->id }}">{{ $esp->nombre }}</option>
@@ -485,8 +543,11 @@
                                                 </div>
 
                                                 <div class="col-12 col-md-auto">
-                                                    <button class="btn btn-navy btn-lg rounded-pill w-100 px-4 fw-bold search-button d-flex align-items-center justify-content-center" type="submit" style="height: 48px;">
-                                                        <x-mcl-search class="icon-white me-2 flex-shrink-0" style="width: 1.2rem;" /> Buscar
+                                                    <button
+                                                        class="btn btn-navy btn-lg rounded-pill w-100 px-4 fw-bold search-button d-flex align-items-center justify-content-center"
+                                                        type="submit" style="height: 48px;">
+                                                        <x-mcl-search class="icon-white me-2 flex-shrink-0"
+                                                            style="width: 1.2rem;" /> Buscar
                                                     </button>
                                                 </div>
                                             </div>
@@ -497,15 +558,37 @@
                         </div>
 
                         <div class="d-flex flex-wrap justify-content-center gap-3 position-relative z-1">
-                            <a href="/login" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-navy shadow-sm hover-scale">Iniciar Sesión</a>
-                            <a href="/register" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-scale">Crear Cuenta</a>
-                            
-                            {{-- <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
-                                <i class="bi bi-android2 me-2 fs-5"></i> Descargar App
-                            </a> --}}
-                        </div>
+                            <a href="/login"
+                                class="btn btn-light rounded-pill px-4 py-2 fw-bold text-navy shadow-sm hover-scale">Iniciar
+                                Sesión</a>
+                            <a href="/register"
+                                class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold hover-scale">Crear Cuenta</a>
 
+                            {{--<a href="{{ asset('descargas/buscadoc.apk') }}"
+                                class="btn btn-apk rounded-pill px-4 py-2 fw-bold shadow-sm hover-scale d-flex align-items-center">
+                                <i class="bi bi-android2 me-2 fs-5"></i> Descargar App --}}
+                            </a>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <div x-data="{ mostrarBanner: true }" x-show="mostrarBanner" x-transition.opacity
+                class="alert bg-navy text-white border-0 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between" id="banner-apk-descarga">
+                
+                <div class="d-flex align-items-center flex-grow-1">
+                    <i class="bi bi-phone-vibrate fs-2 me-3 d-none d-md-block text-white opacity-75"></i>
+                    <div class="text-start">
+                        <h6 class="fw-bold mb-1">¿Eres un Doctor o un Paciente?</h6>
+                        <p class="mb-0 small opacity-75 lh-sm">¡Lleva BuscaDoc en tu bolsillo! Citas más rápidas y notificaciones en tiempo real.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 gap-md-3">
+                    <a href="{{ asset('descargas/buscadoc_v1.apk') }}" class="btn btn-sm rounded-pill fw-bold text-nowrap px-4 py-2 hover-scale" style="background-color: #3DDC84; color: #00213D;">
+                        <i class="bi bi-android2 me-1"></i> Instalar
+                    </a>
+                    <button type="button" onclick="document.getElementById('banner-apk-descarga').remove()" class="btn-close btn-close-white" style="cursor: pointer;" aria-label="Cerrar"></button>
                 </div>
             </div>
 
@@ -668,7 +751,8 @@
                             </div>
                             <div>
                                 <h2 class="fw-bold text-navy mb-0">Panel de Control Maestro</h2>
-                                <p class="text-muted mb-0">Gestión global de la plataforma BuscaDoc | Bienvenido, <span class="fw-bold text-dark">{{ Auth::user()->name }}</span></p>
+                                <p class="text-muted mb-0">Gestión global de la plataforma BuscaDoc | Bienvenido, <span
+                                        class="fw-bold text-dark">{{ Auth::user()->name }}</span></p>
                             </div>
                         </div>
                     </div>
@@ -677,8 +761,10 @@
                 <div class="row g-4 mb-5 justify-content-center">
                     <div class="col-6 col-md-4 col-lg-2">
                         <a href="{{ route('doctores.index') }}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
-                                <div class="bg-navy-subtle text-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 65px; height: 65px;">
+                            <div
+                                class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
+                                <div class="bg-navy-subtle text-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 65px; height: 65px;">
                                     <x-mcr-stethoscope style="width: 2rem;" />
                                 </div>
                                 <h6 class="fw-bold text-navy mb-0">Doctores</h6>
@@ -689,8 +775,10 @@
                     {{-- FARMACIAS --}}
                     <div class="col-6 col-md-4 col-lg-2">
                         <a href="{{ route('admin.farmacias.index') }}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
-                                <div class="bg-navy-subtle text-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 65px; height: 65px;">
+                            <div
+                                class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
+                                <div class="bg-navy-subtle text-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 65px; height: 65px;">
                                     <x-mcr-pills style="width: 2rem;" />
                                 </div>
                                 <h6 class="fw-bold text-navy mb-0">Farmacias</h6>
@@ -701,8 +789,10 @@
                     {{-- PACIENTES --}}
                     <div class="col-6 col-md-4 col-lg-2">
                         <a href="{{ route('pacientes.index') }}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
-                                <div class="bg-navy-subtle text-info rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 65px; height: 65px;">
+                            <div
+                                class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
+                                <div class="bg-navy-subtle text-info rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 65px; height: 65px;">
                                     <x-mcr-users-alt style="width: 2rem;" />
                                 </div>
                                 <h6 class="fw-bold text-navy mb-0">Pacientes</h6>
@@ -713,8 +803,10 @@
                     {{-- REPORTES --}}
                     <div class="col-6 col-md-4 col-lg-2">
                         <a href="{{ route('admin.reportes.index') }}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
-                                <div class="bg-navy-subtle text-danger rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 65px; height: 65px;">
+                            <div
+                                class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
+                                <div class="bg-navy-subtle text-danger rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 65px; height: 65px;">
                                     <x-mcr-flag style="width: 2rem;" />
                                 </div>
                                 <h6 class="fw-bold text-navy mb-0">Reportes</h6>
@@ -725,8 +817,10 @@
                     {{-- BACKUPS --}}
                     <div class="col-6 col-md-4 col-lg-2">
                         <a href="{{ route('backups.index') }}" class="text-decoration-none">
-                            <div class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
-                                <div class="bg-navy-subtle text-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 65px; height: 65px;">
+                            <div
+                                class="card h-100 border-0 shadow-sm rounded-5 hover-scale transition-all py-4 text-center bg-white">
+                                <div class="bg-navy-subtle text-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
+                                    style="width: 65px; height: 65px;">
                                     <x-mcr-folder-upload style="width: 2rem;" />
                                 </div>
                                 <h6 class="fw-bold text-navy mb-0">Backups</h6>
@@ -739,7 +833,7 @@
                 {{-- <button id="chatToggleBtn"
                     class="btn bg-navy text-white rounded-circle shadow-lg position-fixed d-flex align-items-center justify-content-center hover-scale border-0"
                     style="bottom: 30px; right: 30px; width: 65px; height: 65px; z-index: 1050; transition: transform 0.2s;">
-                    <x-mcl-zap class="text-warning" style="width: 1.8rem;"/>
+                    <x-mcl-zap class="text-warning" style="width: 1.8rem;" />
                 </button>
 
                 <div id="chatWidget" class="card shadow-lg position-fixed d-none flex-column fade-in border-0"
@@ -749,24 +843,26 @@
                         style="background: linear-gradient(135deg, #00213D 0%, #0d2e4e 100%);">
                         <div class="d-flex align-items-center">
                             <div class="bg-white bg-opacity-25 p-2 rounded-circle me-3">
-                                <x-mcl-zap class="text-warning" style="width: 1.2rem;"/>
+                                <x-mcl-zap class="text-warning" style="width: 1.2rem;" />
                             </div>
                             <div>
                                 <h6 class="fw-bold mb-0">Gemini AI Engine</h6>
                                 <small class="opacity-75">Soporte Administrativo</small>
                             </div>
                         </div>
-                        <button id="closeChatBtn" class="btn btn-link text-white p-0 shadow-none border-0 opacity-50 hover-opacity-100">
-                            <x-mcl-times style="width: 1.2rem;"/>
+                        <button id="closeChatBtn"
+                            class="btn btn-link text-white p-0 shadow-none border-0 opacity-50 hover-opacity-100">
+                            <x-mcl-times style="width: 1.2rem;" />
                         </button>
                     </div>
 
                     <div class="card-body bg-light p-0">
                         <div id="chat-messages" class="p-4" style="height: 400px; overflow-y: auto;">
                             <div class="d-flex flex-row justify-content-start mb-4">
-                                <div class="bg-white p-3 rounded-4 shadow-sm border" style="border-top-left-radius: 0 !important; max-width: 85%;">
+                                <div class="bg-white p-3 rounded-4 shadow-sm border"
+                                    style="border-top-left-radius: 0 !important; max-width: 85%;">
                                     <p class="small mb-0 text-dark">
-                                        Hola **{{ Auth::user()->name }}**, tengo acceso a la base de datos de BuscaDoc. 
+                                        Hola **{{ Auth::user()->name }}**, tengo acceso a la base de datos de BuscaDoc.
                                         ¿Necesitas un resumen de las citas de hoy o el estado de los reportes?
                                     </p>
                                 </div>
@@ -776,18 +872,17 @@
 
                     <div class="card-footer bg-white border-0 p-3">
                         <div class="input-group bg-light rounded-pill p-1 border shadow-sm">
-                            <input type="text"
-                                class="form-control border-0 bg-transparent shadow-none ps-3"
-                                id="chatInput" placeholder="Pregunta algo..." autocomplete="off">
-                            <button id="btnSend" class="btn bg-navy text-white rounded-circle d-flex align-items-center justify-content-center p-0"
+                            <input type="text" class="form-control border-0 bg-transparent shadow-none ps-3" id="chatInput"
+                                placeholder="Pregunta algo..." autocomplete="off">
+                            <button id="btnSend"
+                                class="btn bg-navy text-white rounded-circle d-flex align-items-center justify-content-center p-0"
                                 style="width: 40px; height: 40px;">
-                                <x-mcl-send style="width: 1.2rem;"/>
+                                <x-mcl-send style="width: 1.2rem;" />
                             </button>
                         </div>
                     </div>
                 </div>--}}
             @elseif (Auth::user()->role == 'doctor')
-                {{-- 1. ENCABEZADO DE BIENVENIDA --}}
                 <div class="row justify-content-center mb-5">
                     <div class="col-lg-10 text-center">
                         <div class="bg-navy-subtle d-inline-flex p-3 rounded-circle mb-3 shadow-sm">
@@ -876,11 +971,14 @@
                                                             class="rounded-circle me-3 border border-2 border-white shadow-sm"
                                                             width="45" height="45" style="object-fit: cover;">
                                                         <div>
-                                                            <span
-                                                                class="fw-bold text-dark d-block"><h4>{{ Str::limit($proximaCitaDoctor->expediente->nombre_completo, 20) }} </h4></span>
-                                                                <i class="bi bi-clock-fill me-2 text-navy"> Cita programada para el:</i>
-                                                                {{ $proximaCitaDoctor->fecha->format('d/m/Y') }} —
-                                                                <strong class="text-dark ms-1">{{ $proximaCitaDoctor->hora_inicio }}</strong>
+                                                            <span class="fw-bold text-dark d-block">
+                                                                <h4>{{ Str::limit($proximaCitaDoctor->expediente->nombre_completo, 20) }}
+                                                                </h4>
+                                                            </span>
+                                                            <i class="bi bi-clock-fill me-2 text-navy"> Cita programada para el:</i>
+                                                            {{ $proximaCitaDoctor->fecha->format('d/m/Y') }} —
+                                                            <strong
+                                                                class="text-dark ms-1">{{ $proximaCitaDoctor->hora_inicio }}</strong>
                                                         </div>
                                                     </div>
                                                     <div class="text-end">
@@ -951,7 +1049,8 @@
                                 </div>
                                 <h5 class="fw-bold text-navy mb-0">Dr. {{ Auth::user()->name }}</h5>
                                 <p class="text-primary small fw-bold mb-0">
-                                    {{ Auth::user()->doctor->especialidades->first()->nombre ?? 'Médico Especialista' }}</p>
+                                    {{ Auth::user()->doctor->especialidades->first()->nombre ?? 'Médico Especialista' }}
+                                </p>
                             </div>
 
                             <div class="bg-navy text-white rounded-4 p-3 mb-4 shadow-sm text-center">
@@ -1109,21 +1208,22 @@
                 <div class="row justify-content-center mb-4">
                     <div class="col-12 col-lg-10 col-xl-10 text-center">
 
-                        <div class="alert bg-navy text-white border-0 rounded-4 p-3 mb-4 d-flex flex-column flex-md-row align-items-center justify-content-between shadow-sm">
+                        <div
+                            class="alert bg-navy text-white border-0 rounded-4 p-3 mb-4 d-flex flex-column flex-md-row align-items-center justify-content-between shadow-sm">
                             <div class="d-flex align-items-center mb-2 mb-md-0">
                                 <div class="text-start">
                                     <h6 class="fw-bold mb-0">¡Lleva BuscaDoc en tu bolsillo!</h6>
-                                    <small class="opacity-75">Citas más rápidas y notificaciones en tiempo real con nuestra app.</small>
+                                    <small class="opacity-75">Citas más rápidas y notificaciones en tiempo real con nuestra
+                                        app.</small>
                                 </div>
                             </div>
-                            {{-- <a href="https://www.dropbox.com/scl/fi/0ji277sj9ezscpzzezhot/buscadoc.apk?rlkey=6pcetenwkjrbrwpweqz81kxg3&st=68c5459l&dl=1" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>--}}
-                            <a href="{{ asset('descargas/buscadoc_v1.apk') }}" class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
+                            <a href="{{ asset('descargas/buscadoc_v1.apk') }}"
+                                class="btn btn-apk btn-sm rounded-pill px-4 fw-bold">Instalar APK</a>
                         </div>
 
                         <h2 class="fw-bold text-navy mb-2">Bienvenido a BuscaDoc, {{ Auth::user()->name }}</h2>
                         <p class="text-muted mb-4">Encuentra lo que buscas, aquí mismo.</p>
 
-                        {{-- EL BUSCADOR GIGANTE --}}
                         <div class="row justify-content-center position-relative z-3 mb-5">
                             <div class="col-12 col-md-11 col-lg-12">
                                 <div class="card border-0 shadow-sm rounded-5 search-form-card"
@@ -1236,7 +1336,6 @@
                 <div class="row g-4">
                     <div class="col-lg-8">
 
-                        {{-- WIDGET DE MENSAJES (Mantenemos el Navy original) --}}
                         <a href="{{ route('mensajes.index') }}" class="text-decoration-none mb-4 d-block">
                             <div class="card border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden"
                                 style="background: linear-gradient(135deg, #0d2e4e 0%, #00213D 100%);">
@@ -1260,14 +1359,12 @@
                             </div>
                         </a>
 
-                        {{-- NUEVO WIDGET DE EXPEDIENTES (Color diferente e icono distinto) --}}
                         <a href="{{ route('expedientes.index') }}" class="text-decoration-none mb-4 d-block">
                             <div class="card border-0 shadow-sm rounded-4 p-4 hover-scale text-white position-relative overflow-hidden"
-                                style="background: linear-gradient(135deg, #0f766e 0%, #064e3b 100%);"> {{-- Tonos
-                                Teal/Esmeralda Médico --}}
+                                style="background: linear-gradient(135deg, #0f766e 0%, #064e3b 100%);">
                                 <div class="position-absolute"
                                     style="right: -10px; top: -25px; opacity: 0.1; transform: scale(1.5);">
-                                    <x-mcf-folder-open style="width: 8rem; height: 8rem;" /> {{-- Icono de carpeta --}}
+                                    <x-mcf-folder-open style="width: 8rem; height: 8rem;" />
                                 </div>
                                 <div class="position-relative z-1 d-flex align-items-center justify-content-between">
                                     <div class="d-flex align-items-center">
@@ -1344,7 +1441,6 @@
                             </div>
                         @endif
 
-                        {{-- SECCIÓN DE ESPECIALIDADES IMPORTADA DE GUEST --}}
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h4 class="fw-bold custom-text-dark mb-0">Nuestras especialidades</h4>
                         </div>
@@ -1366,7 +1462,6 @@
                             @endforelse
                         </div>
 
-                        {{-- CONTENEDOR CON ID EXACTO PARA QUE EL JS LO DETECTE --}}
                         <div id="specialties-container">
                             @php $contadorEspecialidades = 0; @endphp
 
@@ -1427,7 +1522,6 @@
                             @endforeach
                         </div>
 
-                        {{-- BOTÓN "VER MÁS" --}}
                         @if($contadorEspecialidades > 2)
                             <div class="row mt-2 mb-5">
                                 <div class="col-12 text-center">
@@ -1440,7 +1534,6 @@
                         @endif
                     </div>
 
-                    {{-- COLUMNA LATERAL (PERFIL PACIENTE / EXPEDIENTE) --}}
                     <div class="col-lg-4">
                         <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 20px; z-index: 1;">
                             <div class="d-flex align-items-center mb-4">
@@ -1453,7 +1546,6 @@
                                 </div>
                             </div>
 
-                            {{-- 1. Buscamos el expediente propio --}}
                             @php
                                 $expedientePropio = Auth::user()->expedientes ? Auth::user()->expedientes->where('parentesco', 'Propio')->first() : null;
                             @endphp
@@ -1755,27 +1847,27 @@
 
                 function appendUserMessage(text) {
                     const html = `
-                                            <div class="d-flex flex-row justify-content-end mb-4 fade-in">
-                                                <div class="p-3 me-3 bg-navy text-white shadow-sm" style="border-radius: 15px; border-top-right-radius: 0;">
-                                                    <p class="small mb-0">${text}</p>
+                                                <div class="d-flex flex-row justify-content-end mb-4 fade-in">
+                                                    <div class="p-3 me-3 bg-navy text-white shadow-sm" style="border-radius: 15px; border-top-right-radius: 0;">
+                                                        <p class="small mb-0">${text}</p>
+                                                    </div>
+                                                    <img src="{{ Auth::check() && Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?? 'U') }}" 
+                                                        alt="user avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
                                                 </div>
-                                                <img src="{{ Auth::check() && Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name ?? 'U') }}" 
-                                                    alt="user avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
-                                            </div>
-                                        `;
+                                            `;
                     chatMessages.insertAdjacentHTML('beforeend', html);
                     scrollToBottom();
                 }
 
                 function appendBotMessage(text) {
                     const html = `
-                                            <div class="d-flex flex-row justify-content-start mb-4 fade-in">
-                                                <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
-                                                <div class="p-3 ms-3 bg-white border border-light shadow-sm" style="border-radius: 15px; border-top-left-radius: 0;">
-                                                    <div class="small mb-0 text-dark chatbot-reply">${text}</div>
+                                                <div class="d-flex flex-row justify-content-start mb-4 fade-in">
+                                                    <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <div class="p-3 ms-3 bg-white border border-light shadow-sm" style="border-radius: 15px; border-top-left-radius: 0;">
+                                                        <div class="small mb-0 text-dark chatbot-reply">${text}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        `;
+                                            `;
                     chatMessages.insertAdjacentHTML('beforeend', html);
                     scrollToBottom();
                 }
@@ -1783,15 +1875,15 @@
                 function appendLoadingIndicator() {
                     const id = 'loader-' + Date.now();
                     const html = `
-                                            <div id="${id}" class="d-flex flex-row justify-content-start mb-4 fade-in typing-indicator-container">
-                                                <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm opacity-75" style="width: 40px; height: 40px; object-fit: cover;">
-                                                <div class="p-3 ms-3 bg-white border border-light shadow-sm d-flex align-items-center" style="border-radius: 15px; border-top-left-radius: 0; min-height: 40px;">
-                                                    <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem;"></div>
-                                                    <div class="spinner-grow spinner-grow-sm text-secondary mx-1" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.2s"></div>
-                                                    <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.4s"></div>
+                                                <div id="${id}" class="d-flex flex-row justify-content-start mb-4 fade-in typing-indicator-container">
+                                                    <img src="{{ asset('images/chatbot.png') }}" alt="bot avatar" class="rounded-circle shadow-sm opacity-75" style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <div class="p-3 ms-3 bg-white border border-light shadow-sm d-flex align-items-center" style="border-radius: 15px; border-top-left-radius: 0; min-height: 40px;">
+                                                        <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem;"></div>
+                                                        <div class="spinner-grow spinner-grow-sm text-secondary mx-1" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.2s"></div>
+                                                        <div class="spinner-grow spinner-grow-sm text-secondary" role="status" style="width: 0.8rem; height: 0.8rem; animation-delay: 0.4s"></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        `;
+                                            `;
                     chatMessages.insertAdjacentHTML('beforeend', html);
                     scrollToBottom();
                     return id;
@@ -1843,13 +1935,13 @@
                                 : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(usuario.name);
 
                             const contentString = `
-                                                    <div style="text-align: center; padding: 5px; min-width: 120px;">
-                                                        <img src="${photoUrl}" alt="${usuario.name}" 
-                                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 8px;">
-                                                        <h6 style="margin: 0; color: #0d2e4e; font-weight: bold; font-family: sans-serif;">${usuario.name}</h6>
-                                                        <small style="color: #6c757d; text-transform: capitalize; font-family: sans-serif;">${usuario.role}</small>
-                                                    </div>
-                                                `;
+                                                        <div style="text-align: center; padding: 5px; min-width: 120px;">
+                                                            <img src="${photoUrl}" alt="${usuario.name}" 
+                                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 8px;">
+                                                            <h6 style="margin: 0; color: #0d2e4e; font-weight: bold; font-family: sans-serif;">${usuario.name}</h6>
+                                                            <small style="color: #6c757d; text-transform: capitalize; font-family: sans-serif;">${usuario.role}</small>
+                                                        </div>
+                                                    `;
 
                             infoWindow.setContent(contentString);
                             infoWindow.open({

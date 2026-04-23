@@ -416,6 +416,15 @@
         .flatpickr-time {
             border-top: none !important;
         }
+
+        .was-validated .form-control-custom:invalid,
+        .was-validated .form-select-custom:invalid,
+        .form-control-custom.is-invalid,
+        .form-select-custom.is-invalid {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+        }
     </style>
 
     <div class="register-container">
@@ -475,7 +484,7 @@
                                 <i class="bi bi-person-fill input-icon"></i>
                                 <input type="text" name="name"
                                     class="form-control-custom @error('name') is-invalid @enderror"
-                                    value="{{ old('name') }}" required minlength="3" placeholder="Ej: Juan Pérez">
+                                    value="{{ old('name') }}" required minlength="3" pattern="[a-zA-Záéíóú\s]+" placeholder="Ej: Juan Pérez">
                             </div>
                         </div>
 
@@ -641,16 +650,16 @@
                                                 x-model="horario.inicio"
                                                 class="form-control-custom form-control-no-icon py-2 bg-white"
                                                 :required="role === 'doctor' && citasActivas"
-                                                x-init="flatpickr($el, { enableTime: true, noCalendar: true, dateFormat: 'h:i K' })"
-                                                placeholder="00:00 AM">
+                                                x-init="flatpickr($el, { enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true })"
+                                                placeholder="09:00">
                                         </div>
                                         <div class="col-md-3">
                                             <label class="small text-muted fw-bold">Salida</label>
                                             <input type="text" :name="`horarios[${index}][fin]`" x-model="horario.fin"
                                                 class="form-control-custom form-control-no-icon py-2 bg-white"
                                                 :required="role === 'doctor' && citasActivas"
-                                                x-init="flatpickr($el, { enableTime: true, noCalendar: true, dateFormat: 'h:i K' })"
-                                                placeholder="00:00 PM">
+                                                x-init="flatpickr($el, { enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true })"
+                                                placeholder="17:00">
                                         </div>
                                         <div class="col-md-2 text-center mt-4">
                                             <button type="button" @click="removeHorario(index)"
@@ -1023,132 +1032,70 @@
     </div>
 
     <script>
-        function previewAndLabel(input) {
-            const label = document.getElementById('foto_label_text');
-            const labelTextSpan = label.querySelector('span');
-            const icon = label.querySelector('i');
-            const preview = document.getElementById('imagePreview');
-
-            if (input.files && input.files[0]) {
-                let fileName = input.files[0].name;
-                if (fileName.length > 15) fileName = fileName.substring(0, 12) + '...';
-                labelTextSpan.textContent = fileName;
-                label.classList.add('has-file');
-                if (icon) icon.style.display = 'none';
-
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                labelTextSpan.textContent = 'Seleccionar...';
-                label.classList.remove('has-file');
-                preview.style.display = 'none';
-                if (icon) icon.style.display = 'inline-block';
-            }
-        }
-
-        function validarEdadDinamica(input) {
-            if (!input.value) return;
-            const role = document.querySelector('[x-data]').__x.$data.role;
-            const fechaNacimiento = new Date(input.value);
-            const hoy = new Date();
-
-            let edadMinima = 18;
-            if (role === 'doctor') edadMinima = 24;
-            if (role === 'farmacia') edadMinima = 21;
-
-            let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
-            const m = hoy.getMonth() - fechaNacimiento.getMonth();
-
-            if (m < 0 || (m === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
-                edad--;
-            }
-
-            const errorDiv = document.getElementById('age-error');
-            if (edad < edadMinima) {
-                input.setCustomValidity("Edad insuficiente");
-                input.classList.add('is-invalid');
-                errorDiv.textContent = `Para el perfil de ${role}, debe ser mayor de ${edadMinima} años.`;
-                errorDiv.style.display = 'block';
-            } else {
-                input.setCustomValidity("");
-                input.classList.remove('is-invalid');
-                errorDiv.style.display = 'none';
-            }
-        }
-
-        // Validación del lado del cliente antes de bloquear el botón
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('registerForm');
             const submitBtn = document.getElementById('submitBtn');
 
+            // 1. MAGIA DE UX PARA INPUTS DINÁMICOS
+            form.addEventListener('invalid', function (e) {
+                e.preventDefault(); // 🛑 Mata el globito nativo
+                
+                const input = e.target;
+                
+                // EL FIX: Usamos una propiedad directa en el input para no perder el span de vista jamás
+                if (!input._errorSpan) {
+                    const errorSpan = document.createElement('div');
+                    errorSpan.className = 'text-danger small fw-bold ps-4 mt-1 mi-error-dinamico';
+                    errorSpan.style.display = 'none';
+                    
+                    if(input.parentElement.classList.contains('input-wrapper')) {
+                        input.parentElement.insertAdjacentElement('afterend', errorSpan);
+                    } else {
+                        input.insertAdjacentElement('afterend', errorSpan);
+                    }
+                    
+                    input._errorSpan = errorSpan; // Lo guardamos directamente en el objeto del input
+                }
+
+                // Escribimos el error y pintamos de rojo
+                input._errorSpan.textContent = input.validationMessage;
+                input._errorSpan.style.display = 'block';
+                input.classList.add('is-invalid');
+
+                // Evento para limpiar cuando el usuario escribe
+                const limpiarError = function() {
+                    if (input.checkValidity()) {
+                        input._errorSpan.style.display = 'none';
+                        input.classList.remove('is-invalid');
+                        input.removeEventListener('input', limpiarError);
+                    }
+                };
+                input.addEventListener('input', limpiarError);
+
+            }, true); // El 'true' atrapa los eventos de los elementos de Alpine.js
+
+            // 2. INTERCEPTAR EL ENVÍO
             form.addEventListener('submit', function (e) {
                 if (!form.checkValidity()) {
-                    // Si el formulario no pasa la validación nativa (ej. faltan números en la cédula)
-                    // dejamos que HTML5 muestre el error rojo y NO deshabilitamos el botón.
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    form.classList.add('was-validated'); 
+                    
+                    const invalidInputs = form.querySelectorAll(':invalid');
+                    if (invalidInputs.length > 0) {
+                        invalidInputs[0].focus();
+                        invalidInputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                     return;
                 }
 
+                // 3. ENVIAR FORMULARIO
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Procesando...';
                 submitBtn.style.opacity = '0.8';
                 submitBtn.style.cursor = 'not-allowed';
             });
         });
-
-        function obtenerUbicacionActual() {
-            // Verificar si el navegador soporta geolocalización
-            if (!navigator.geolocation) {
-                alert("Tu navegador no soporta geolocalización.");
-                return;
-            }
-
-            // Opcional: Cambiar el texto del botón para indicar que está cargando
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Buscando...';
-            btn.disabled = true;
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    };
-
-                    // Mover el marcador y centrar el mapa
-                    marker.setPosition(pos);
-                    map.setCenter(pos);
-                    map.setZoom(17); // Zoom más cercano para precisión
-
-                    // Actualizar los inputs ocultos para Laravel
-                    updateInputs(pos.lat, pos.lng);
-
-                    // Restaurar botón
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                },
-                (error) => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    
-                    // Manejo de errores comunes
-                    if (error.code === 1) {
-                        alert("Por favor, permite el acceso a tu ubicación en los ajustes del navegador.");
-                    } else {
-                        alert("No se pudo obtener tu ubicación. Intenta mover el marcador manualmente.");
-                    }
-                },
-                {
-                    enableHighAccuracy: true, // Forzar uso de GPS si está disponible
-                    timeout: 5000,
-                    maximumAge: 0
-                }
-            );
-        }
     </script>
 
     <script>
@@ -1196,6 +1143,32 @@
             document.getElementById('latitud').value = lat;
             document.getElementById('longitud').value = lng;
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('registerForm');
+            const submitBtn = document.getElementById('submitBtn');
+
+            form.addEventListener('submit', function (e) {
+                if (!form.checkValidity()) {
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    
+                    form.classList.add('was-validated'); 
+                    
+                    const primerError = form.querySelector(':invalid');
+                    if(primerError) {
+                        primerError.focus();
+                        primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Procesando...';
+                submitBtn.style.opacity = '0.8';
+                submitBtn.style.cursor = 'not-allowed';
+            });
+        });
     </script>
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('API_KEY') }}&callback=initMap" async

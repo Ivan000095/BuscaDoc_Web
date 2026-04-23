@@ -19,6 +19,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RespuestaController; 
 use App\Http\Controllers\BackupController;    
 use App\Http\Controllers\ExpedienteController;
+use App\Http\Controllers\AlertaController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -101,6 +102,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/citas/{id}/reprogramar-libre', [CitaController::class, 'reprogramarLibre'])
          ->name('citas.reprogramarLibre');
     Route::post('/notas-medicas/{cita}', [App\Http\Controllers\NotaMedicaController::class, 'store'])->name('notas.store');
+
+    Route::get('/alertas', [AlertaController::class, 'index'])->name('alertas.index');
+    Route::post('/alertas/{id}/leer', [AlertaController::class, 'marcarLeida'])->name('alertas.leer');
 
     // Citas - Vistas por Rol
     Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');
@@ -191,5 +195,66 @@ Route::get('/backup/uP8&vQ8#zL8*nX8!', function () {
         return 'Backup completado exitosamente';
     } catch (\Exception $e) {
         return 'Error: ' . $e->getMessage();
+    }
+});
+
+
+Route::get('/ejecutar-seeder-fotos', function () {
+    try {
+        Artisan::call('db:seed', [
+            '--class' => 'UpdateDoctorPhotosSeeder',
+            '--force' => true
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Comando ejecutado correctamente',
+            'output' => Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/ejecutar-seeder-farmacias', function () {
+    try {
+        Artisan::call('db:seed', [
+            '--class' => 'UpdateFarmaciaPhotosSeeder',
+            '--force' => true
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Fotos de farmacias actualizadas correctamente.',
+            'output' => Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/ejecutar-seeder-horarios', function () {
+    try {
+        Artisan::call('db:seed', [
+            '--class' => 'UpdateDoctoresHorariosSeeder',
+            '--force' => true
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Horarios y estados de citas actualizados correctamente.',
+            'output' => Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
     }
 });
