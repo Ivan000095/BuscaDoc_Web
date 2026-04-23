@@ -194,12 +194,12 @@ Route::get('/backup/uP8&vQ8#zL8*nX8!', function () {
     }
 });
 
+
 Route::get('/ejecutar-seeder-fotos', function () {
     try {
-        // Ejecuta el comando CON EL FLAG FORCE
         Artisan::call('db:seed', [
             '--class' => 'UpdateDoctorPhotosSeeder',
-            '--force' => true  // <--- ESTA ES LA MAGIA
+            '--force' => true
         ]);
         
         return response()->json([
@@ -217,7 +217,7 @@ Route::get('/ejecutar-seeder-fotos', function () {
 
 Route::get('/ejecutar-seeder-farmacias', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+        Artisan::call('db:seed', [
             '--class' => 'UpdateFarmaciaPhotosSeeder',
             '--force' => true
         ]);
@@ -225,7 +225,7 @@ Route::get('/ejecutar-seeder-farmacias', function () {
         return response()->json([
             'success' => true,
             'message' => 'Fotos de farmacias actualizadas correctamente.',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
+            'output' => Artisan::output()
         ]);
     } catch (\Exception $e) {
         return response()->json([

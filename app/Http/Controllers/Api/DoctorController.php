@@ -90,6 +90,7 @@ class DoctorController extends Controller
                     "cedula" => $doctor->cedula,
                     "role" => $doctor->user->role,
                     "costos" => number_format($doctor->costo, 2),
+                    "citas" => $doctor->citas,
                     
                     "horarioentrada" => $horaEntrada,
                     "horariosalida" => $horaSalida,
