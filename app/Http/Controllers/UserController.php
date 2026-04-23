@@ -106,50 +106,61 @@ class UserController extends Controller
                 'f_nacimiento' => $request->f_nacimiento,
             ]);
 
-                if ($user->role === 'doctor') {
-                    $doctor = $user->doctor()->updateOrCreate(
-                        ['user_id' => $user->id],
-                        [
-                            'cedula'         => $request->cedula,
-                            'idiomas'        => $request->idiomas ?? '',
-                            'descripcion'    => $request->descripcion,
-                            'costo'          => $request->costo,
-                            'duracion_cita'  => $request->duracion_cita ?? 30,
-                            'citas'          => $request->has('citas') ? true : false,
-                        ]
-                    );
+ if ($user->role === 'doctor') {
+    // 1. Actualizar o crear registro de Doctor
+    $doctor = $user->doctor()->updateOrCreate(
+        ['user_id' => $user->id],
+        [
+            'cedula'        => $request->cedula,
+            'idiomas'       => $request->idiomas,
+            'descripcion'   => $request->descripcion_doctor,
+            'costo'         => $request->costo ?? 0,
+            'duracion_cita' => $request->duracion_cita ?? 30,
+            
+        ]
+    );
 
-                    // Sincronizar horarios (igual estructura que en show.blade.php)
-                    $doctor->disponibilidades()->delete();
+    // 2. Sincronizar disponibilidad (Estructura dinámica)
+    // Borramos la anterior para insertar los nuevos rangos
+    $doctor->disponibilidades()->delete(); 
 
-                    if ($request->filled('horarios') && is_array($request->horarios)) {
-                        $nuevosHorarios = [];
-                        foreach ($request->horarios as $h) {
-                            if (!empty($h['dia']) && !empty($h['inicio']) && !empty($h['fin'])) {
-                                $nuevosHorarios[] = [
-                                    'doctor_id'   => $doctor->id,
-                                    'dia_semana'  => (int) $h['dia'],
-                                    'hora_inicio' => $h['inicio'],
-                                    'hora_fin'    => $h['fin'],
-                                    'created_at'  => now(),
-                                    'updated_at'  => now(),
-                                ];
-                            }
-                        }
-                        if (!empty($nuevosHorarios)) {
-                            \App\Models\DoctorDisponibilidad::insert($nuevosHorarios);
-                        }
-                    }
+    if ($request->has('disponibilidad')) {
+        $nuevosHorarios = [];
+        
+        // Iteramos directamente sobre el array 'disponibilidad' que envía la vista
+        foreach ($request->disponibilidad as $horario) {
+            // Validamos que los campos internos no vengan vacíos
+            if (!empty($horario['dia']) || isset($horario['dia'])) {
+                $inicio = $horario['inicio'] ?? null;
+                $fin = $horario['fin'] ?? null;
+
+                if ($inicio && $fin) {
+                    $nuevosHorarios[] = [
+                        'doctor_id'   => $doctor->id,
+                        'dia_semana'  => (int)$horario['dia'],
+                        'hora_inicio' => $inicio,
+                        'hora_fin'    => $fin,
+                        'created_at'  => now(),
+                        'updated_at'  => now(),
+                    ];
                 }
-             elseif ($user->role === 'paciente') {
+            }
+        }
+
+        if (!empty($nuevosHorarios)) {
+            \App\Models\DoctorDisponibilidad::insert($nuevosHorarios);
+        }
+    }
+}elseif ($user->role === 'paciente') {
                 $user->paciente()->firstOrCreate(['user_id' => $user->id]);
                 $user->expedientes()->updateOrCreate(
-                    ['user_id' => $user->id],
+                    ['user_id' => $user->id,
+                    'parentesco' => 'Propio'],
                     [
                         'nombre_completo' => $request->nombre_completo ?? $user->name,
                         'fecha_nacimiento' => $request->fecha_nacimiento ?? $user->f_nacimiento,
                         'genero' => $request->genero ?? 'otro',
-                        'parentesco' => $request->parentesco ?? 'Expediente Propio', 
+                        'parentesco' => $request->parentesco ?? 'Propio', 
                         
                         'tipo_sangre' => $request->tipo_sangre,
                         'alergias' => $request->alergias,

@@ -175,7 +175,7 @@
                                                     </form>
                                                     
                                                     <button type="button" 
-                                                    class="btn btn-xs btn-danger rounded-pill " data-bs-toggle="modal"
+                                                    class="btn btn-xs btn-danger rounded-pill " data-bs-toggle="modal" 
                                                     data-bs-target="#modalRechazarCambio{{$cita->id}}" data-bs-config='{"backdrop":true, "keyboard":true}'>
                                                          Rechazar  
                                                     </button>

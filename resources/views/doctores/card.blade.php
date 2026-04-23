@@ -187,10 +187,73 @@ $lng = $doctor->user->longitud ?? -92.0946;
             color: #94a3b8;
         }
 
-        .textarea-respuesta {
-            width: 100%;
-            min-height: 20px !important;
-        }
+                .textarea-respuesta {
+                    width: 100%;
+                    min-height: 20px !important;
+                }
+
+        :root {
+                --buscadoc-blue: #0284c7;
+                --buscadoc-light: #f0f9ff;
+            }
+
+            /* Ocultamos la barra de scroll nativa para que parezca app */
+            .agenda-scroll {
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none;  /* IE and Edge */
+                scroll-behavior: smooth; /* Movimiento fluido al presionar las flechas */
+            }
+            .agenda-scroll::-webkit-scrollbar {
+                display: none; /* Chrome, Safari and Opera */
+            }
+
+            .wrapper-carrusel {
+                padding: 0 10px; /* Espacio para que las tarjetas no choquen con los bordes al inicio/fin */
+            }
+
+            .agenda-dia {
+                width: 130px; /* Ancho fijo ligeramente más grande */
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 15px 10px;
+            }
+
+            .slot-etiqueta {
+                background-color: var(--buscadoc-light);
+                color: var(--buscadoc-blue);
+                border: 1px solid #bae6fd;
+                padding: 4px 0;
+                font-size: 0.875rem;
+                cursor: default;
+            }
+            
+            /* Estilos de los botones flotantes de navegación */
+            .btn-carrusel {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: 10;
+                background: white;
+                border: 1px solid #e2e8f0;
+                color: var(--buscadoc-blue);
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                transition: all 0.2s;
+            }
+            .btn-carrusel:hover {
+                background: var(--buscadoc-light);
+                color: var(--buscadoc-blue);
+            }
+            .btn-prev { left: -15px; }
+            .btn-next { right: -15px; }
+
+
     </style>
 
     @if(session('success'))
@@ -279,43 +342,69 @@ $lng = $doctor->user->longitud ?? -92.0946;
                     </div>
 
                     {{-- Horarios --}}
-                        <div class="mt-4" x-data="{ diaSeleccionado: {{ now()->dayOfWeek }} }">
-                            <h5 class="text-navy fw-bold mb-3">Horarios de Atención</h5>
+                    <div class="buscadoc-agenda-container mt-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold text-buscadoc m-0"><i class="far fa-clock me-2"></i>Horarios de atención </h5>
+
+                        </div>
+                        
+                        <div class="position-relative wrapper-carrusel">
                             
-                            {{-- Selector de días --}}
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                @foreach(['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'] as $num => $nombre)
-                                    @php $tieneHorario = $doctor->disponibilidades->contains('dia_semana', $num); @endphp
-                                    <button @click="diaSeleccionado = {{ $num }}" 
-                                        class="btn btn-sm rounded-pill px-3 transition-all"
-                                        :class="diaSeleccionado == {{ $num }} ? 'btn-navy shadow' : 'btn-outline-secondary'"
-                                        {{ !$tieneHorario ? 'disabled style=opacity:0.4' : '' }}>
-                                        {{ $nombre }}
-                                    </button>
-                                @endforeach
+                            <button type="button" class="btn btn-carrusel btn-prev " id="slide-left">
+                                <b>&#10094;</b>
+                            </button>
+
+                            <div class="d-flex overflow-auto gap-3 pb-2 agenda-scroll" id="agenda-track">
+                                
+                                @forelse($agenda as $fecha => $horas)
+                                    @php
+                                        $fechaCarbon = \Carbon\Carbon::parse($fecha);
+                                    @endphp
+                                    
+                                    <div class="agenda-dia text-center flex-shrink-0">
+                                        <div class="dia-header mb-3 pb-2 border-bottom">
+                                            <span class="d-block fw-bold text-capitalize fs-6">{{ $fechaCarbon->translatedFormat('D') }}</span>
+                                            <span class="d-block text-muted small">{{ $fechaCarbon->translatedFormat('d M') }}</span>
+                                        </div>
+
+                                        <div class="horas-list d-flex flex-column gap-2">
+                                            @foreach($horas->take(4) as $slot)
+                                                <div class="slot-etiqueta rounded-pill fw-semibold {{ !$doctor->citas ? 'opacity-50' : '' }}">
+                                                    {{ $slot->hora }}
+                                                </div>
+                                            @endforeach
+
+                                            @if($horas->count() > 4)
+                                                <div class="horas-ocultas d-none d-flex flex-column gap-2 mt-0">
+                                                    @foreach($horas->skip(4) as $slot)
+                                                        <div class="slot-etiqueta rounded-pill fw-semibold {{ !$doctor->citas ? 'opacity-50' : '' }}">
+                                                            {{ $slot->hora }}
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <button type="button" class="btn btn-link btn-sm text-decoration-none mt-1 btn-ver-mas text-muted">
+                                                    Ver más <i class="fas fa-chevron-down ms-1"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center w-100 py-4 border rounded-3 bg-light text-muted">
+                                        <i class="far fa-calendar-times fs-2 mb-2"></i>
+                                        <p class="mb-0 small">No hay horarios disponibles en los próximos días.</p>
+                                    </div>
+                                @endforelse
+                                
                             </div>
 
-                            {{-- Contenedor de horas dinámicas --}}
-                            <div class="bg-light p-3 rounded-4 border">
-                                @foreach($doctor->disponibilidades->groupBy('dia_semana') as $dia => $bloques)
-                                    <div x-show="diaSeleccionado == {{ $dia }}" x-transition>
-                                        <p class="small fw-bold text-muted mb-2">Turnos disponibles:</p>
-                                        @foreach($bloques as $bloque)
-                                            <div class="d-flex align-items-center mb-1">
-                                                <i class="bi bi-check2-circle text-success me-2"></i>
-                                                <span class="text-navy">
-                                                    {{ \Carbon\Carbon::parse($bloque->hora_inicio)->format('g:i A') }} a 
-                                                    {{ \Carbon\Carbon::parse($bloque->hora_fin)->format('g:i A') }}
-                                                </span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endforeach
-                                <div x-show="!{{ $doctor->disponibilidades->pluck('dia_semana')->toJson() }}.includes(diaSeleccionado)">
-                                    <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> El doctor no labora este día.</p>
-                                </div>
-                            </div>
+                            <button type="button" class="btn btn-carrusel btn-next" id="slide-right">
+                                <b>&#10095;</b>
+                            </button>
+
                         </div>
+                    </div>
+
+
                     <div class="info-row">
                         <div class="info-icon"><x-mcr-envelope /></div>
                         <div>
@@ -638,7 +727,67 @@ $lng = $doctor->user->longitud ?? -92.0946;
     @endif
 
 </x-layout>
- 
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // Lógica de "Ver más"
+        const botonesVerMas = document.querySelectorAll('.btn-ver-mas');
+        botonesVerMas.forEach(boton => {
+            boton.addEventListener('click', function() {
+                const contenedorOculto = this.previousElementSibling;
+                if (contenedorOculto.classList.contains('d-none')) {
+                    contenedorOculto.classList.remove('d-none');
+                    this.innerHTML = 'Ver menos <i class="fas fa-chevron-up ms-1"></i>';
+                } else {
+                    contenedorOculto.classList.add('d-none');
+                    this.innerHTML = 'Ver más <i class="fas fa-chevron-down ms-1"></i>';
+                }
+            });
+        });
+
+        // Lógica del Carrusel (Flechas Izquierda y Derecha)
+        const track = document.getElementById('agenda-track');
+        const btnLeft = document.getElementById('slide-left');
+        const btnRight = document.getElementById('slide-right');
+
+        // Cuántos píxeles se mueve por cada clic (Aprox. 2 columnas)
+        const scrollAmount = 280; 
+
+        // Actualizar visibilidad de flechas según el scroll
+        const updateArrows = () => {
+            // Si estamos totalmente a la izquierda, ocultar flecha izquierda
+            if (track.scrollLeft <= 0) {
+                btnLeft.classList.add('d-none');
+            } else {
+                btnLeft.classList.remove('d-none');
+            }
+
+            // Si llegamos al final de la derecha, ocultar flecha derecha
+            // (Usamos un margen de 2px por los redondeos de decimales de JS)
+            if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 2) {
+                btnRight.classList.add('d-none');
+            } else {
+                btnRight.classList.remove('d-none');
+            }
+        };
+
+        // Eventos de clic en las flechas
+        btnLeft.addEventListener('click', () => {
+            track.scrollLeft -= scrollAmount;
+        });
+
+        btnRight.addEventListener('click', () => {
+            track.scrollLeft += scrollAmount;
+        });
+
+        // Escuchar el evento scroll nativo (por si el usuario lo mueve con el dedo en móvil)
+        track.addEventListener('scroll', updateArrows);
+        
+        // Validar flechas al cargar la página por primera vez
+        updateArrows();
+    });
+    </script>
+        
     <script async src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey; ?>&callback=initMap"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
