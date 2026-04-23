@@ -298,7 +298,9 @@ $isAdmin = $user->role === 'admin';
 
                         {{-- 1. Buscamos el expediente principal entre todos los que tenga el usuario --}}
                         @php
-                            $expedientePrincipal = $user->expedientes ? $user->expedientes->where('parentesco', 'Propio')->first() : null;
+                        $expedientePrincipal =  $user->expedientes
+                        ? $user->expedientes->whereIn('parentesco', ['Propio','propio', 'Yo mismo', 'Expediente propio'])->first() 
+                        : null;
                         @endphp
 
                         {{-- 2. Validamos si encontró su expediente personal --}}

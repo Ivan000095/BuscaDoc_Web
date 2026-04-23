@@ -160,7 +160,10 @@ class UserController extends Controller
                         'nombre_completo' => $request->nombre_completo ?? $user->name,
                         'fecha_nacimiento' => $request->fecha_nacimiento ?? $user->f_nacimiento,
                         'genero' => $request->genero ?? 'otro',
-                        'parentesco' => $request->parentesco ?? 'Propio', 
+                        'parentesco' => match($request->parentesco) {
+    'Yo mismo', 'Expediente propio', null, '', 'propio' => 'Propio',
+    default => $request->parentesco,
+}, 
                         
                         'tipo_sangre' => $request->tipo_sangre,
                         'alergias' => $request->alergias,

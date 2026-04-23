@@ -1547,7 +1547,9 @@
                             </div>
 
                             @php
-                                $expedientePropio = Auth::user()->expedientes ? Auth::user()->expedientes->where('parentesco', 'Propio')->first() : null;
+                                $expedientePropio = Auth::user()->expedientes 
+                                ? Auth::user()->expedientes->whereIn('parentesco', ['Propio','propio' ,'Yo mismo', 'Expediente propio'])->first() 
+                                : null;
                             @endphp
 
                             @if($expedientePropio)
