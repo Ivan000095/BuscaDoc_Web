@@ -19,6 +19,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RespuestaController; 
 use App\Http\Controllers\BackupController;    
 use App\Http\Controllers\ExpedienteController;
+use App\Http\Controllers\AlertaController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -101,6 +102,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/citas/{id}/reprogramar-libre', [CitaController::class, 'reprogramarLibre'])
          ->name('citas.reprogramarLibre');
     Route::post('/notas-medicas/{cita}', [App\Http\Controllers\NotaMedicaController::class, 'store'])->name('notas.store');
+
+    Route::get('/alertas', [AlertaController::class, 'index'])->name('alertas.index');
+    Route::post('/alertas/{id}/leer', [AlertaController::class, 'marcarLeida'])->name('alertas.leer');
 
     // Citas - Vistas por Rol
     Route::get('/mis-citas', [CitaController::class, 'index'])->name('pacientes.citas');

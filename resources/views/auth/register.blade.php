@@ -484,7 +484,7 @@
                                 <i class="bi bi-person-fill input-icon"></i>
                                 <input type="text" name="name"
                                     class="form-control-custom @error('name') is-invalid @enderror"
-                                    value="{{ old('name') }}" required minlength="3" placeholder="Ej: Juan Pérez">
+                                    value="{{ old('name') }}" required minlength="3" placeholder="Ej: Juan Pérez" >
                             </div>
                         </div>
 
@@ -1036,13 +1036,11 @@
             const form = document.getElementById('registerForm');
             const submitBtn = document.getElementById('submitBtn');
 
-            // 1. MAGIA DE UX PARA INPUTS DINÁMICOS
             form.addEventListener('invalid', function (e) {
-                e.preventDefault(); // 🛑 Mata el globito nativo
+                e.preventDefault();
                 
                 const input = e.target;
                 
-                // EL FIX: Usamos una propiedad directa en el input para no perder el span de vista jamás
                 if (!input._errorSpan) {
                     const errorSpan = document.createElement('div');
                     errorSpan.className = 'text-danger small fw-bold ps-4 mt-1 mi-error-dinamico';
@@ -1054,15 +1052,13 @@
                         input.insertAdjacentElement('afterend', errorSpan);
                     }
                     
-                    input._errorSpan = errorSpan; // Lo guardamos directamente en el objeto del input
+                    input._errorSpan = errorSpan;
                 }
 
-                // Escribimos el error y pintamos de rojo
                 input._errorSpan.textContent = input.validationMessage;
                 input._errorSpan.style.display = 'block';
                 input.classList.add('is-invalid');
 
-                // Evento para limpiar cuando el usuario escribe
                 const limpiarError = function() {
                     if (input.checkValidity()) {
                         input._errorSpan.style.display = 'none';
@@ -1072,9 +1068,7 @@
                 };
                 input.addEventListener('input', limpiarError);
 
-            }, true); // El 'true' atrapa los eventos de los elementos de Alpine.js
-
-            // 2. INTERCEPTAR EL ENVÍO
+            }, true);
             form.addEventListener('submit', function (e) {
                 if (!form.checkValidity()) {
                     e.preventDefault(); 
@@ -1089,7 +1083,6 @@
                     return;
                 }
 
-                // 3. ENVIAR FORMULARIO
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Procesando...';
                 submitBtn.style.opacity = '0.8';

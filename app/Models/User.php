@@ -91,5 +91,8 @@ class User extends Authenticatable
         return $this->hasMany(Expediente::class);
     }
 
-
+    public function alertas()
+    {
+        return $this->hasMany(Alerta::class);
+    }
 }

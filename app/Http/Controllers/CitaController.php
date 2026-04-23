@@ -7,6 +7,8 @@ use App\Models\Cita;
 use App\Models\Doctor;
 use App\Models\Expediente;
 use App\Models\SolicitudCambio;
+use App\Models\Alerta; // Importamos el modelo de Alerta
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -102,7 +104,14 @@ class CitaController extends Controller
                     'estado' => 'pendiente',
                 ]);
                 
-                $this->notificarUsuario($doctor->user_id, "¡Nueva solicitud de cita!", "Un paciente ha solicitado una cita para el " . $request->fecha);
+                $this->crearAlerta(
+                    $doctor->user_id, 
+                    "¡Nueva solicitud de cita!", 
+                    "El paciente " . $user->name . " ha solicitado una cita para el " . $request->fecha,
+                    'cita',
+                    $cita->id
+                );
+
                 return redirect()->route('pacientes.citas')->with('success', 'Solicitud enviada correctamente!!');
             
             } elseif($user->role == 'doctor') {
@@ -186,7 +195,13 @@ class CitaController extends Controller
 
         $cita->update(['estado' => $request->estado]);
 
-        $this->notificarContraparte($cita, $user->id, "Actualización de Cita", "El estado de tu cita ha cambiado a: " . strtoupper($request->estado));
+        $this->notificarContraparte(
+            $cita, 
+            $user->id, 
+            "Actualización de Cita", 
+            "El estado de tu cita ha cambiado a: " . strtoupper($request->estado),
+            'cita'
+        );
 
         $mensajes = [
             'confirmada' => 'Cita confirmada.',
@@ -221,7 +236,13 @@ class CitaController extends Controller
             'reprogramada' => true
         ]);
 
-        $this->notificarUsuario($cita->doctor->user_id, "Cita Reagendada", "El paciente ha movido su cita a un nuevo horario.");
+        $this->crearAlerta(
+            $cita->doctor->user_id, 
+            "Cita Reagendada", 
+            "El paciente ha movido su cita al " . $request->nueva_fecha . " a las " . $request->nueva_hora,
+            'cita',
+            $cita->id
+        );
 
         return redirect()->route('pacientes.citas')->with('success', 'Cita reprogramada con éxito. Recuerda que es el único cambio permitido.');
     }
@@ -266,7 +287,13 @@ class CitaController extends Controller
             ]);
         }
 
-        $this->notificarUsuario($solicitadoId, "Propuesta de Cambio", "Tienes una nueva propuesta de horario para tu cita.");
+        $this->crearAlerta(
+            $solicitadoId, 
+            "Propuesta de Cambio", 
+            "Tienes una nueva propuesta de horario para tu cita de parte de " . $user->name,
+            'cita',
+            $cita->id
+        );
 
         $ruta = $user->role == 'doctor' ? 'doctores.citas' : 'pacientes.citas';
         return redirect()->route($ruta)->with('success', 'Solicitud enviada');
@@ -288,11 +315,27 @@ class CitaController extends Controller
                 $solicitud->cita->update(['fecha' => $solicitud->nueva_fecha, 'hora_inicio' => $solicitud->nueva_hora, 'estado' => 'confirmada']);
             }
             $solicitud->update(['estado' => 'aceptada']);
-            $this->notificarUsuario($solicitud->solicitante_id, "Propuesta Aceptada", "Tu propuesta de horario fue aceptada.");
+            
+            $this->crearAlerta(
+                $solicitud->solicitante_id, 
+                "Propuesta Aceptada", 
+                "Tu propuesta de horario para la cita ha sido aceptada.",
+                'cita',
+                $solicitud->cita_id
+            );
+
             $msg = 'Se ha actualizado la fecha de la cita.';
         } else {
             $solicitud->update(['estado' => 'rechazada', 'motivo' => $request->motivo_rechazo]);
-            $this->notificarUsuario($solicitud->solicitante_id, "Propuesta Rechazada", "Tu propuesta de horario fue rechazada.");
+            
+            $this->crearAlerta(
+                $solicitud->solicitante_id, 
+                "Propuesta Rechazada", 
+                "Tu propuesta de horario fue rechazada. Motivo: " . $request->motivo_rechazo,
+                'cita',
+                $solicitud->cita_id
+            );
+
             $msg = 'Has rechazado la solicitud de cambio.';
         }
 
@@ -361,19 +404,25 @@ class CitaController extends Controller
         }
         return back()->with('error', 'No puedes ocultar una cita que aún está pendiente.');
     }
-
-    // ==========================================
-    // NOTIFICACIONES PUSH (HELPER)
-    // ==========================================
-    private function notificarContraparte($cita, $actorId, $title, $body)
+    
+    private function notificarContraparte($cita, $actorId, $title, $body, $tipo)
     {
         $receptorId = ($actorId == $cita->expediente->user_id) ? $cita->doctor->user_id : $cita->expediente->user_id;
-        $this->notificarUsuario($receptorId, $title, $body);
+        $this->crearAlerta($receptorId, $title, $body, $tipo, $cita->id);
     }
 
-    private function notificarUsuario($userId, $title, $body)
+    private function crearAlerta($userId, $title, $body, $tipo, $referenciaId)
     {
-        $receptor = \App\Models\User::find($userId);
+        Alerta::create([
+            'user_id'       => $userId,
+            'titulo'        => $title,
+            'mensaje'       => $body,
+            'tipo'          => $tipo,
+            'referencia_id' => $referenciaId,
+            'leido'         => false
+        ]);
+
+        $receptor = User::find($userId);
         if ($receptor && $receptor->fcm_token) {
             $serverKey = env('FCM_SERVER_KEY');
             if($serverKey){
