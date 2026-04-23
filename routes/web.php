@@ -193,3 +193,22 @@ Route::get('/backup/uP8&vQ8#zL8*nX8!', function () {
         return 'Error: ' . $e->getMessage();
     }
 });
+
+Route::get('/ejecutar-seeder-fotos', function () {
+    try {
+        Artisan::call('db:seed', [
+            '--class' => 'UpdateDoctorPhotosSeeder'
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Comando ejecutado correctamente',
+            'output' => Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
