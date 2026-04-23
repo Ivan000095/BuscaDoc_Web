@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\PacienteController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ReplyController;
 use App\Http\Controllers\Api\CitaController;
+use App\Http\Controllers\Api\AlertaController;
 
 Route::get('/status', function () {
     return response()->json([
@@ -99,6 +100,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/expedientes/{id}', [App\Http\Controllers\Api\ExpedienteController::class, 'update']);
     
     Route::post('/citas/{id}/finalizar', [App\Http\Controllers\Api\CitaController::class, 'finalizarConDiagnostico']);
+
+    Route::get('/alertas', [AlertaController::class, 'index']);
+    Route::get('/alertas/unread-count', [AlertaController::class, 'contadorNoLeidas']);
+    Route::post('/alertas/{id}/leer', [AlertaController::class, 'marcarLeida']);
 
 });
 
