@@ -359,7 +359,7 @@
                             <hr class="dropdown-divider my-0">
 
                             @forelse(Auth::user()->alertas()->where('leido', false)->latest()->take(5)->get() as $alerta)
-                                <div class="dropdown-item py-3 border-bottom d-flex align-items-start gap-2" href="#">
+                                <div class="dropdown-item py-3 border-bottom d-flex align-items-start gap-2">
                                     <div class="bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
                                         <i class="bi {{ $alerta->tipo == 'mensaje' ? 'bi-chat-dots' : 'bi-calendar-check' }} text-white"></i>
                                     </div>

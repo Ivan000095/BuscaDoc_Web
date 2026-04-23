@@ -585,7 +585,7 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2 gap-md-3">
-                    <a href="{{ asset('descargas/buscadoc_v1.apk') }}" class="btn btn-sm rounded-pill fw-bold text-nowrap px-4 py-2 hover-scale" style="background-color: #3DDC84; color: #00213D;">
+                    <a href="{{ asset('descargas/buscadoc.apk') }}" class="btn btn-sm rounded-pill fw-bold text-nowrap px-4 py-2 hover-scale" style="background-color: #3DDC84; color: #00213D;">
                         <i class="bi bi-android2 me-1"></i> Instalar
                     </a>
                     <button type="button" onclick="document.getElementById('banner-apk-descarga').remove()" class="btn-close btn-close-white" style="cursor: pointer;" aria-label="Cerrar"></button>
