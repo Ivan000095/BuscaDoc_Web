@@ -18,14 +18,19 @@ class SearchController extends Controller
         $type = $request->query('type'); // 'doctor' o 'farmacia'
         $especialidadId = $request->query('especialidad_id');
 
-        // 👇 LA SOLUCIÓN: Agregamos 'disponibilidades' y 'excepciones' aquí
-        $queryDocs = Doctor::with(['user', 'especialidades', 'disponibilidades', 'excepciones']);
+        $queryDocs = Doctor::with(['user', 'especialidades', 'disponibilidades', 'excepciones', 'reviews']);
         $queryFarms = Farmacia::with('user');
 
         if ($type === 'doctor') {
             if ($searchTerm) $queryDocs->whereHas('user', fn($q) => $q->where('name', 'LIKE', "%$searchTerm%"));
             if ($especialidadId) $queryDocs->whereHas('especialidades', fn($q) => $q->where('especialidads.id', $especialidadId));
+            
             $resultados = $queryDocs->get();
+
+            $resultados->each(function ($doctor) {
+                $doctor->promedio = round($doctor->reviews->avg('calificacion') ?? 0, 1);
+            });
+
         } else {
             if ($searchTerm) $queryFarms->where('nom_farmacia', 'LIKE', "%$searchTerm%");
             $resultados = $queryFarms->get();
