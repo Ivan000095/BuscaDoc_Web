@@ -12,8 +12,7 @@ class UpdateDoctorPhotosSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Intentar varias rutas por si acaso
-        $origenPath = public_path('image/doctores');
+        $origenPath = public_path('images/doctores');
         
         Log::info("Iniciando Seeder. Buscando imágenes en: " . $origenPath);
 
