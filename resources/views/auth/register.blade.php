@@ -1096,6 +1096,74 @@
                 submitBtn.style.cursor = 'not-allowed';
             });
         });
+
+        function obtenerUbicacionActual() {
+            const btn = event.currentTarget; // Capturamos el botón para dar feedback visual
+            const originalContent = btn.innerHTML;
+            
+            if (navigator.geolocation) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+
+                        // Centrar mapa y mover marcador
+                        map.setCenter(pos);
+                        marker.setPosition(pos);
+                        
+                        // Actualizar los inputs ocultos
+                        updateInputs(pos.lat, pos.lng);
+
+                        // Restaurar botón
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    },
+                    (error) => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                        alert("Error: No se pudo obtener tu ubicación. Asegúrate de dar permisos de GPS.");
+                        console.error(error);
+                    }
+                );
+            } else {
+                alert("Tu navegador no soporta geolocalización.");
+            }
+        }
+
+        function previewAndLabel(input) {
+            const preview = document.getElementById('imagePreview');
+            const labelText = document.querySelector('#foto_label_text span');
+            const labelContainer = document.getElementById('foto_label_text');
+
+            if (input.files && input.files[0]) {
+                // 1. Usar FileReader para leer la imagen en memoria
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // 2. Asignar la imagen al src y hacerla visible
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+                
+                // 3. Cambiar el texto del botón por el nombre del archivo
+                labelText.textContent = input.files[0].name;
+                // Agregar la clase para que el CSS lo pinte de azul claro
+                labelContainer.classList.add('has-file');
+            } else {
+                // Reset por si el usuario cancela la selección
+                preview.src = '#';
+                preview.style.display = 'none';
+                labelText.textContent = 'Seleccionar...';
+                labelContainer.classList.remove('has-file');
+            }
+        }
     </script>
 
     <script>
