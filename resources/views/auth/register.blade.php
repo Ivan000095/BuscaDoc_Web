@@ -1134,6 +1134,36 @@
                 alert("Tu navegador no soporta geolocalización.");
             }
         }
+
+        function previewAndLabel(input) {
+            const preview = document.getElementById('imagePreview');
+            const labelText = document.querySelector('#foto_label_text span');
+            const labelContainer = document.getElementById('foto_label_text');
+
+            if (input.files && input.files[0]) {
+                // 1. Usar FileReader para leer la imagen en memoria
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // 2. Asignar la imagen al src y hacerla visible
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+                
+                // 3. Cambiar el texto del botón por el nombre del archivo
+                labelText.textContent = input.files[0].name;
+                // Agregar la clase para que el CSS lo pinte de azul claro
+                labelContainer.classList.add('has-file');
+            } else {
+                // Reset por si el usuario cancela la selección
+                preview.src = '#';
+                preview.style.display = 'none';
+                labelText.textContent = 'Seleccionar...';
+                labelContainer.classList.remove('has-file');
+            }
+        }
     </script>
 
     <script>
