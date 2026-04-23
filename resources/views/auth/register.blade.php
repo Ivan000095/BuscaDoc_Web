@@ -1096,6 +1096,44 @@
                 submitBtn.style.cursor = 'not-allowed';
             });
         });
+
+        function obtenerUbicacionActual() {
+            const btn = event.currentTarget; // Capturamos el botón para dar feedback visual
+            const originalContent = btn.innerHTML;
+            
+            if (navigator.geolocation) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+
+                        // Centrar mapa y mover marcador
+                        map.setCenter(pos);
+                        marker.setPosition(pos);
+                        
+                        // Actualizar los inputs ocultos
+                        updateInputs(pos.lat, pos.lng);
+
+                        // Restaurar botón
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    },
+                    (error) => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                        alert("Error: No se pudo obtener tu ubicación. Asegúrate de dar permisos de GPS.");
+                        console.error(error);
+                    }
+                );
+            } else {
+                alert("Tu navegador no soporta geolocalización.");
+            }
+        }
     </script>
 
     <script>

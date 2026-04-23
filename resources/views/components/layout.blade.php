@@ -368,7 +368,7 @@
                                         <p class="mb-0 small text-muted text-truncate" style="max-width: 200px;">{{ $alerta->mensaje }}</p>
                                         <small class="text-primary font-monospace" style="font-size: 0.7rem;">{{ $alerta->created_at->diffForHumans() }}</small>
                                     </div>
-                                <div/>
+                                </div>
                             @empty
                                 <div class="text-center py-4">
                                     <i class="bi bi-bell-slash text-muted fs-2"></i>
