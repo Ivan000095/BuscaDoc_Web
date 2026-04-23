@@ -237,15 +237,15 @@ Route::get('/ejecutar-seeder-farmacias', function () {
 
 Route::get('/ejecutar-seeder-horarios', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('db:seed', [
-            '--class' => 'UpdateDoctorSchedulesSeeder',
+        Artisan::call('db:seed', [
+            '--class' => 'UpdateDoctoresHorariosSeeder',
             '--force' => true
         ]);
         
         return response()->json([
             'success' => true,
             'message' => 'Horarios y estados de citas actualizados correctamente.',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
+            'output' => Artisan::output()
         ]);
     } catch (\Exception $e) {
         return response()->json([
