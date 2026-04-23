@@ -196,8 +196,10 @@ Route::get('/backup/uP8&vQ8#zL8*nX8!', function () {
 
 Route::get('/ejecutar-seeder-fotos', function () {
     try {
+        // Ejecuta el comando CON EL FLAG FORCE
         Artisan::call('db:seed', [
-            '--class' => 'UpdateDoctorPhotosSeeder'
+            '--class' => 'UpdateDoctorPhotosSeeder',
+            '--force' => true  // <--- ESTA ES LA MAGIA
         ]);
         
         return response()->json([
