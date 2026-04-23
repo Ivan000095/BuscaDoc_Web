@@ -359,7 +359,7 @@
                             <hr class="dropdown-divider my-0">
 
                             @forelse(Auth::user()->alertas()->where('leido', false)->latest()->take(5)->get() as $alerta)
-                                <a class="dropdown-item py-3 border-bottom d-flex align-items-start gap-2" href="#">
+                                <div class="dropdown-item py-3 border-bottom d-flex align-items-start gap-2" href="#">
                                     <div class="bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
                                         <i class="bi {{ $alerta->tipo == 'mensaje' ? 'bi-chat-dots' : 'bi-calendar-check' }} text-white"></i>
                                     </div>
@@ -368,7 +368,7 @@
                                         <p class="mb-0 small text-muted text-truncate" style="max-width: 200px;">{{ $alerta->mensaje }}</p>
                                         <small class="text-primary font-monospace" style="font-size: 0.7rem;">{{ $alerta->created_at->diffForHumans() }}</small>
                                     </div>
-                                </a>
+                                <div/>
                             @empty
                                 <div class="text-center py-4">
                                     <i class="bi bi-bell-slash text-muted fs-2"></i>
