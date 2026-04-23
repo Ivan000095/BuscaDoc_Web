@@ -333,6 +333,90 @@
                 opacity: 0.05;
                 transition: transform 0.3s ease;
             }
+
+
+
+
+            :root {
+                --buscadoc-blue: #0284c7; /* Azul médico de confianza */
+                --buscadoc-blue-hover: #0369a1;
+                --buscadoc-light: #f0f9ff;
+                --star-color: #fbbf24;
+                --star-inactive: #e2e8f0;
+            }
+
+            /* Estilo de la Modal */
+            .buscadoc-modal {
+                border-radius: 16px;
+                border: none;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            }
+
+            .text-buscadoc {
+                color: var(--buscadoc-blue);
+            }
+
+            /* Botones */
+            .btn-buscadoc {
+                background-color: var(--buscadoc-blue);
+                color: white;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+
+            .btn-buscadoc:hover {
+                background-color: var(--buscadoc-blue-hover);
+                color: white;
+                transform: translateY(-1px);
+            }
+
+            /* Textarea personalizado */
+            .styled-textarea {
+                border-radius: 12px;
+                border: 1px solid #cbd5e1;
+                background-color: #f8fafc;
+                resize: none;
+                transition: all 0.3s ease;
+            }
+
+            .styled-textarea:focus {
+                border-color: var(--buscadoc-blue);
+                background-color: #ffffff;
+                box-shadow: 0 0 0 3px var(--buscadoc-light);
+            }
+
+                    /* --- Lógica visual de las Estrellas --- */
+            .rating-buscadoc {
+                gap: 0.5rem;
+            }
+
+            .rating-buscadoc input {
+                display: none; /* Ocultamos los radio buttons reales */
+            }
+
+            .rating-buscadoc label {
+                font-size: 2.5rem;
+                color: var(--star-inactive);
+                cursor: pointer;
+                transition: color 0.2s ease-in-out, transform 0.2s ease;
+                line-height: 1;
+            }
+
+            /* Efecto hover y selección de estrellas */
+            .rating-buscadoc label:hover,
+            .rating-buscadoc label:hover ~ label,
+            .rating-buscadoc input:checked ~ label {
+                color: var(--star-color);
+            }
+
+            .rating-buscadoc label:hover {
+                transform: scale(1.1);
+            }
+
+
+
+
+
         </style>
     @endpush
 
@@ -1555,8 +1639,131 @@
         @endauth
     </div>
 
+
+    @php
+        $user = Auth::user();
+        $cita = null; // Es mejor inicializar objetos como null en lugar de false
+        $debeMostrarModal = false;
+        
+        if ($user && $user->role == 'paciente') {
+            
+            // 1. Buscamos el expediente
+            $expediente = \App\Models\Expediente::where('user_id', $user->id)
+                            ->latest()
+                            ->first();
+            
+            // 2. SOLO si encontramos el expediente, buscamos la cita
+            if ($expediente) {
+                $cita = \App\Models\Cita::where('expediente_id', $expediente->id) 
+                                ->where('estado', 'finalizada')
+                                ->first(); 
+                
+                // 3. SOLO si encontramos una cita finalizada, buscamos los comentarios
+                if ($cita) {
+                    $debeMostrarModal = \App\Models\Comentario::where('id_autor', $user->id)
+                                    ->where('id_destinatario', $cita->doctor_id)
+                                    ->where('tipo', 'resena')
+                                    ->exists();
+
+                  
+                    
+                }
+            }
+        }
+    @endphp
+        
+
+
+        @if($debeMostrarModal == false && $cita && $user && $user->role == 'paciente')
+
+        <button id="btn-auto-abrir" class="d-none" data-bs-toggle="modal" data-bs-target="#reviewModal"></button>
+            <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+
+
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content buscadoc-modal">
+                        
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title fw-bold text-buscadoc" id="reviewModalLabel">
+                                <i class="fas fa-stethoscope me-2"></i>Califica tu experiencia
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <form action="{{ route('comentarios.store') }}" method="POST">
+                            @csrf
+
+                            <div class="modal-body p-4">
+                                <input type="hidden" name="destinatario_id" value="{{ $cita->doctor_id }}">
+                                <input type="hidden" name="tipo" value="resena">
+
+                                <div class="text-center mb-4">
+                                    <span class="text-muted d-block mb-2">¿Cómo fue tu atención médica?</span>
+                                    <div class="rating-buscadoc d-flex justify-content-center flex-row-reverse">
+                                        <input type="radio" name="rating" value="5" id="star5" required><label for="star5">★</label>
+                                        <input type="radio" name="rating" value="4" id="star4"><label for="star4">★</label>
+                                        <input type="radio" name="rating" value="3" id="star3"><label for="star3">★</label>
+                                        <input type="radio" name="rating" value="2" id="star2"><label for="star2">★</label>
+                                        <input type="radio" name="rating" value="1" id="star1"><label for="star1">★</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label for="contenido" class="form-label text-muted small fw-semibold">Detalles de tu visita</label>
+                                    <textarea name="contenido" id="contenido" class="form-control styled-textarea"
+                                        placeholder="Cuéntanos, ¿qué tal te pareció la atención del especialista?..."
+                                        rows="4" required></textarea>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer border-0 pt-0 pb-4 px-4 d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-buscadoc rounded-pill px-4 shadow-sm">Enviar Reseña</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+            @endif
+
+
+
     @push('scripts')
+
+
+
+
+            @if($debeMostrarModal == false && $cita && $user && $user->role == 'paciente')
+           
+                
+
         <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var myModalEl = document.getElementById('reviewModal');
+                    var botonOculto = document.getElementById('btn-auto-abrir');
+                    
+                    if (myModalEl && botonOculto) { 
+                        // Paso 1: Movemos la modal al fondo del HTML para que la sombra gris NO la tape
+                        document.body.appendChild(myModalEl); 
+                        
+                        // Paso 2: Hacemos un "clic fantasma" en el botón para abrirla
+                        // Esto evita usar la palabra "bootstrap" y esquiva el error rojo
+                        botonOculto.click();
+                    }
+                });
+            </script>
+              
+                
+       
+            @endif
+
+
+
+        <script>
+
+
             document.addEventListener('DOMContentLoaded', function () {
                 const chatToggleBtn = document.getElementById('chatToggleBtn');
                 const closeChatBtn = document.getElementById('closeChatBtn');

@@ -221,7 +221,59 @@ class DoctorController extends Controller
     {
         $doctor = Doctor::with(['user','especialidades', 'disponibilidades'])->findOrFail($id);
 
-        return view('doctores.card', compact('doctor'));
+        $doctor = Doctor::with('disponibilidades')->findOrFail($id);
+
+            // 1. Obtenemos las citas que bloquean el horario
+            // Filtramos por estados que NO sean 'cancelada'
+            $citasOcupadas = Cita::where('doctor_id', $doctor->id)
+                ->whereIn('estado', ['pendiente', 'confirmada', 'finalizada'])
+                ->where('fecha', '>=', Carbon::today()->toDateString())
+                ->get(['fecha', 'hora_inicio']);
+
+            $reglas = $doctor->disponibilidades;
+            $duracion = $doctor->duracion_cita;
+            $agenda = collect();
+
+            // Generamos los próximos 14 días
+            for ($i = 0; $i < 30; $i++) {
+                $fechaActual = Carbon::today()->addDays($i);
+                $fechaString = $fechaActual->toDateString();
+                
+                $reglasDelDia = $reglas->where('dia_semana', $fechaActual->dayOfWeek);
+                $horasGeneradas = collect();
+
+                foreach ($reglasDelDia as $regla) {
+                    $inicio = Carbon::parse($fechaString . ' ' . $regla->hora_inicio);
+                    $fin = Carbon::parse($fechaString . ' ' . $regla->hora_fin);
+
+                while ($inicio->copy()->addMinutes($duracion)->lte($fin)) {
+                    $slot = $inicio->format('H:i');
+                    
+                    // Usamos 'contains' para tener control total de la comparación
+                    $ocupado = $citasOcupadas->contains(function ($cita) use ($fechaString, $slot) {
+                        // Normalizamos la fecha y la hora de la cita de la BD
+                        $fechaCita = \Carbon\Carbon::parse($cita->fecha)->toDateString();
+                        $horaCita = \Carbon\Carbon::parse($cita->hora_inicio)->format('H:i');
+                        
+                        return $fechaCita === $fechaString && $horaCita === $slot;
+                    });
+
+                    if (!$ocupado) {
+                        $horasGeneradas->push((object)['hora' => $slot]);
+                    }
+                    
+                    $inicio->addMinutes($duracion);
+                }
+                }
+
+                if ($horasGeneradas->isNotEmpty()) {
+                    $agenda->put($fechaString, $horasGeneradas);
+                }
+            }
+
+
+
+        return view('doctores.card', compact('doctor','agenda'));
     }
 
     public function destroy($id)
