@@ -18,7 +18,8 @@ class SearchController extends Controller
         $type = $request->query('type'); // 'doctor' o 'farmacia'
         $especialidadId = $request->query('especialidad_id');
 
-        $queryDocs = Doctor::with(['user', 'especialidades']);
+        // 👇 LA SOLUCIÓN: Agregamos 'disponibilidades' y 'excepciones' aquí
+        $queryDocs = Doctor::with(['user', 'especialidades', 'disponibilidades', 'excepciones']);
         $queryFarms = Farmacia::with('user');
 
         if ($type === 'doctor') {

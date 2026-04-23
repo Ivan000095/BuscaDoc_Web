@@ -234,3 +234,23 @@ Route::get('/ejecutar-seeder-farmacias', function () {
         ], 500);
     }
 });
+
+Route::get('/ejecutar-seeder-horarios', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--class' => 'UpdateDoctorSchedulesSeeder',
+            '--force' => true
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Horarios y estados de citas actualizados correctamente.',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
