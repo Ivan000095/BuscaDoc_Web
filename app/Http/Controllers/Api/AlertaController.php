@@ -54,4 +54,13 @@ class AlertaController extends Controller
         $count = $request->user()->alertas()->where('leido', false)->count();
         return response()->json(['unread_count' => $count], 200);
     }
+
+    // Api/AlertaController.php
+
+    public function marcarTodasLeidas(Request $request)
+    {
+        $request->user()->alertas()->where('leido', false)->update(['leido' => true]);
+
+        return response()->json(['success' => true]);
+    }
 }

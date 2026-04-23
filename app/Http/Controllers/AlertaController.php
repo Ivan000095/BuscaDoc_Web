@@ -11,14 +11,17 @@ class AlertaController extends Controller
     // Ver todas las alertas (leídas y no leídas)
     public function index()
     {
-        $alertas = Alerta::where('user_id', Auth::id())
+        $user = Auth::user();
+
+        $alertas = $user->alertas()
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(15);
+
+        $user->alertas()->where('leido', false)->update(['leido' => true]);
 
         return view('alertas.index', compact('alertas'));
     }
 
-    // Marcar como leída vía AJAX
     public function marcarLeida($id)
     {
         $alerta = Alerta::where('id', $id)
@@ -26,6 +29,13 @@ class AlertaController extends Controller
             ->firstOrFail();
 
         $alerta->update(['leido' => true]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function marcarTodasLeidasWeb()
+    {
+        auth()->user()->alertas()->where('leido', false)->update(['leido' => true]);
 
         return response()->json(['success' => true]);
     }

@@ -335,52 +335,49 @@
                         @endif
                     @else
 
-                    @if(in_array(Auth::user()->role, ['paciente', 'doctor']))
-                        <li class="nav-item dropdown me-2">
-                            <a id="notificationsDropdown" class="nav-link btn rounded-pill px-3 py-1 d-inline-flex align-items-center justify-content-center position-relative" 
-                            href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                            style="background-color: rgba(251, 252, 253, 0.1); color: white;">
-                                
-                                <i class="bi bi-bell-fill fs-5"></i>
+                   @if(in_array(Auth::user()->role, ['paciente', 'doctor']))
+                    <li class="nav-item dropdown me-2">
+                        <a id="notificationsDropdown" class="nav-link btn rounded-pill px-3 py-1 d-inline-flex align-items-center justify-content-center position-relative" 
+                        href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                        style="background-color: rgba(251, 252, 253, 0.1); color: white;"
+                        onclick="marcarLeidas()"> <i class="bi bi-bell-fill fs-5"></i>
 
-                                @php $unreadCount = Auth::user()->alertas()->where('leido', false)->count(); @endphp
-                                
-                                @if($unreadCount > 0)
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                        style="font-size: 0.65rem; border: 2px solid var(--bg-surface);">
-                                        {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                                    </span>
-                                @endif
-                            </a>
+                            @php $unreadCount = Auth::user()->alertas()->where('leido', false)->count(); @endphp
+                            
+                            @if($unreadCount > 0)
+                                <span id="badge-notificaciones" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                                    style="font-size: 0.65rem; border: 2px solid var(--bg-surface);">
+                                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                                </span>
+                            @endif
+                        </a>
 
-                            <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="notificationsDropdown" style="width: 300px; max-height: 400px; overflow-y: auto;">
-                                <div class="dropdown-header d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold text-dark">Notificaciones</span>
-                                </div>
-                                <hr class="dropdown-divider my-0">
-
-                                @forelse(Auth::user()->alertas()->where('leido', false)->latest()->take(5)->get() as $alerta)
-                                    <a class="dropdown-item py-3 border-bottom d-flex align-items-start gap-2" href="{{ route('alertas.index') }}">
-                                        <div class="bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                                            <i class="bi {{ $alerta->tipo == 'mensaje' ? 'bi-chat-dots' : 'bi-calendar-check' }} text-white"></i>
-                                        </div>
-                                        <div style="white-space: normal;">
-                                            <p class="mb-0 fw-bold small text-dark">{{ $alerta->titulo }}</p>
-                                            <p class="mb-0 small text-muted text-truncate" style="max-width: 200px;">{{ $alerta->mensaje }}</p>
-                                            <small class="text-primary font-monospace" style="font-size: 0.7rem;">{{ $alerta->created_at->diffForHumans() }}</small>
-                                        </div>
-                                    </a>
-                                @empty
-                                    <div class="text-center py-4">
-                                        <i class="bi bi-bell-slash text-muted fs-2"></i>
-                                        <p class="text-muted small mt-2">No tienes notificaciones nuevas</p>
-                                    </div>
-                                @endforelse
-
-                                
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="notificationsDropdown" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                            <div class="dropdown-header d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark">Notificaciones</span>
                             </div>
-                        </li>
-                    @endif
+                            <hr class="dropdown-divider my-0">
+
+                            @forelse(Auth::user()->alertas()->where('leido', false)->latest()->take(5)->get() as $alerta)
+                                <a class="dropdown-item py-3 border-bottom d-flex align-items-start gap-2" href="#">
+                                    <div class="bg-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <i class="bi {{ $alerta->tipo == 'mensaje' ? 'bi-chat-dots' : 'bi-calendar-check' }} text-white"></i>
+                                    </div>
+                                    <div style="white-space: normal;">
+                                        <p class="mb-0 fw-bold small text-dark">{{ $alerta->titulo }}</p>
+                                        <p class="mb-0 small text-muted text-truncate" style="max-width: 200px;">{{ $alerta->mensaje }}</p>
+                                        <small class="text-primary font-monospace" style="font-size: 0.7rem;">{{ $alerta->created_at->diffForHumans() }}</small>
+                                    </div>
+                                </a>
+                            @empty
+                                <div class="text-center py-4">
+                                    <i class="bi bi-bell-slash text-muted fs-2"></i>
+                                    <p class="text-muted small mt-2">No tienes notificaciones nuevas</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </li>
+                @endif
                         <li class="nav-item dropdown w-100">
                             <a id="navbarDropdown" class="nav-link dropdown-toggle btn user-dropdown-toggle rounded-pill px-3 py-1 d-inline-flex align-items-center justify-content-center w-100 text-nowrap" href="#"
                                 role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -534,6 +531,25 @@
                 console.log('Mensaje recibido en primer plano: ', payload);
                 alert(payload.notification.title + ": " + payload.notification.body);
             });
+        </script>
+
+        <script>
+        function marcarLeidas() {
+            let badge = document.getElementById('badge-notificaciones');
+            
+            if (badge && badge.style.display !== 'none') {
+                badge.style.display = 'none';
+
+                fetch('/alertas/leer-todas', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                }).catch(error => console.log('Error al marcar leídas:', error));
+            }
+        }
         </script>
     @endauth
 

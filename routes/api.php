@@ -104,6 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/alertas', [AlertaController::class, 'index']);
     Route::get('/alertas/unread-count', [AlertaController::class, 'contadorNoLeidas']);
     Route::post('/alertas/{id}/leer', [AlertaController::class, 'marcarLeida']);
+    Route::post('/alertas/leer-todas', [AlertaController::class, 'marcarTodasLeidas']);
 
 });
 

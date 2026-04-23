@@ -160,6 +160,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/respaldos/eliminar/{file_name}', [BackupController::class, 'destroy'])->name('backups.destroy');
 
     Route::post('/citas/externa', [CitaController::class, 'storeExterna'])->name('citas.externa');
+
+    Route::post('/alertas/leer-todas', [App\Http\Controllers\AlertaController::class, 'marcarTodasLeidasWeb'])->middleware('auth');
 });
 
 
