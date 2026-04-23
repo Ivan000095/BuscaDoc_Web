@@ -214,3 +214,23 @@ Route::get('/ejecutar-seeder-fotos', function () {
         ], 500);
     }
 });
+
+Route::get('/ejecutar-seeder-farmacias', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--class' => 'UpdateFarmaciaPhotosSeeder',
+            '--force' => true
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Fotos de farmacias actualizadas correctamente.',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
