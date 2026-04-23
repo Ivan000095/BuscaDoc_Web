@@ -515,7 +515,10 @@ $isPatient = $user->role === 'paciente';
 
                            {{-- 1. Buscamos el expediente principal entre todos los que tenga el usuario --}}
                         @php
-                            $expedientePrincipal = $user->expedientes ? $user->expedientes->where('parentesco', 'Propio')->first() : null;
+                        $expedientePrincipal =  $user->expedientes
+                        ? $user->expedientes->whereIn('parentesco', ['Propio','propio', 'Yo mismo', 'Expediente propio'])->first() 
+                        : null;
+                        
                         @endphp
                     <div class="soft-card p-5 mb-4 border-start border-4 border-navy">
                         <h4 class="mb-4 fw-bold text-navy"><i class="bi bi-person-vcard-fill me-2"></i>Ficha Médica</h4>
