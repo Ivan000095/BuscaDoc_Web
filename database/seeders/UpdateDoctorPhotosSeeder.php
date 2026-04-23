@@ -6,63 +6,66 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class UpdateDoctorPhotosSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // 1. Definir la ruta de origen donde pondrás tus fotos manualmente
-        $origenPath = public_path('images/doctores');
+        // 1. Intentar varias rutas por si acaso
+        $origenPath = public_path('image/doctores');
+        
+        Log::info("Iniciando Seeder. Buscando imágenes en: " . $origenPath);
 
-        // Validar que la carpeta exista
         if (!File::exists($origenPath)) {
-            $this->command->error("La carpeta {$origenPath} no existe. Por favor, créala y agrega algunas imágenes.");
+            Log::error("ERROR: La carpeta de imágenes NO existe.");
             return;
         }
 
-        // Obtener todos los archivos de esa carpeta
         $archivos = File::files($origenPath);
+        Log::info("Imágenes encontradas: " . count($archivos));
 
-        if (empty($archivos)) {
-            $this->command->error("No hay imágenes dentro de {$origenPath}.");
+        if (count($archivos) === 0) {
+            Log::error("ERROR: No hay archivos dentro de la carpeta.");
             return;
         }
 
-        // 2. Filtrar a los doctores cuyo email empiece con "doctor"
+        // 2. Filtro más flexible (usamos WHERE ILIKE para Postgres o LOWER para MySQL)
         $doctores = User::where('role', 'doctor')
-                        ->where('email', 'LIKE', 'doctor%')
+                        ->where('email', 'ILIKE', 'doctor%') // ILIKE para Postgres (Railway)
                         ->get();
+        
+        // Si no encuentra con ILIKE (MySQL), intentamos normal
+        if($doctores->isEmpty()){
+            $doctores = User::where('role', 'doctor')
+                            ->where('email', 'LIKE', 'doctor%')
+                            ->get();
+        }
+
+        Log::info("Doctores encontrados para actualizar: " . $doctores->count());
 
         if ($doctores->isEmpty()) {
-            $this->command->info("No se encontraron doctores con un email que empiece con 'doctor'.");
+            Log::warning("No se encontraron doctores que coincidan con el criterio.");
             return;
         }
 
-        $this->command->info("Iniciando actualización para " . $doctores->count() . " doctores...");
-
-        // 3. Iterar y actualizar
         foreach ($doctores as $index => $doctor) {
-            // Seleccionar una foto secuencialmente (si hay menos fotos que doctores, se repiten usando módulo)
             $archivo = $archivos[$index % count($archivos)];
-            
-            // Generar un nombre único para evitar colisiones en el storage
-            $nombreArchivo = 'doc_' . $doctor->id . '_' . $archivo->getFilename();
+            $nombreArchivo = 'doc_' . $doctor->id . '_' . time() . '_' . $archivo->getFilename();
             $destinoPath = 'perfiles/' . $nombreArchivo;
 
-            // Copiar el archivo al disco de Storage (storage/app/public/perfiles)
-            Storage::disk('public')->put($destinoPath, File::get($archivo));
+            try {
+                // Copiar físicamente el archivo
+                Storage::disk('public')->put($destinoPath, File::get($archivo));
 
-            // Actualizar la base de datos
-            $doctor->update([
-                'foto' => $destinoPath
-            ]);
+                // Actualizar DB
+                $doctor->foto = $destinoPath;
+                $doctor->save(); // Usamos save() para saltar posibles temas de $fillable
 
-            $this->command->line("✅ Actualizado: {$doctor->email} -> {$nombreArchivo}");
+                Log::info("Doctor actualizado: {$doctor->email} con foto: {$destinoPath}");
+            } catch (\Exception $e) {
+                Log::error("Error actualizando al doctor {$doctor->email}: " . $e->getMessage());
+            }
         }
-
-        $this->command->info("¡Todas las fotos fueron actualizadas con éxito!");
     }
 }
