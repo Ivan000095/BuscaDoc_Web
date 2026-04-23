@@ -484,7 +484,7 @@
                                 <i class="bi bi-person-fill input-icon"></i>
                                 <input type="text" name="name"
                                     class="form-control-custom @error('name') is-invalid @enderror"
-                                    value="{{ old('name') }}" required minlength="3" placeholder="Ej: Juan Pérez">
+                                    value="{{ old('name') }}" required minlength="3" pattern="[a-zA-Záéíóú\s]+" placeholder="Ej: Juan Pérez">
                             </div>
                         </div>
 
