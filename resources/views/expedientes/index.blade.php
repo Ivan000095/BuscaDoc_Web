@@ -21,9 +21,11 @@
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-0 text-navy">{{ $expediente->nombre_completo }}</h6>
-                                    <span class="badge bg-light text-muted border rounded-pill small">
-                                        {{ $expediente->parentesco }}
-                                    </span>
+                                        @if ($expediente->parentesco == 'Propio')
+                                                <span class="badge bg-info rounded-pill px-3">Expediente {{ ucfirst($expediente->parentesco) }}</span>
+                                                @else 
+                                                <span class="badge bg-info rounded-pill px-3">{{ ucfirst($expediente->parentesco) }}</span>
+                                                @endif
                                 </div>
                             </div>
 
